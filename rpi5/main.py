@@ -1,42 +1,45 @@
 '''
     Estados:
-        - Modo disparo
+        - Modo disparo:
+            - pulse generators
+            - input
         - Modo Habilitado: calibração foco + exposição
+            - pizeroclient
+            - input
+
         - Modo Ativado: stream MJPEG | preprocessing | odometer | pulser
+            - pizeroclient
+            - pulse generators
+            - input
+
 '''
 
-from pi_zero_client import PiZeroClient
-import preprocessing.grayscale
-import preprocessing.window
-import preprocessing.fft
-import visual_odometer
+from ihm import IHM
+import modos
 
 def main():
-    client = PiZeroClient()
-    vid = client.get_mjpeg_stream()
+    ihm = IHM()
+    ihm.start_listening()
 
-    frame_num = -10
+    # client = PiZeroClient()
+    # vid = client.get_mjpeg_stream()
 
-    img_old = None
-    img = None
-    M = None
-    N = None
+    estado = modos.ModoHabilitado()
+    next_estado = None
 
     while True:
-        ret, frame = vid.read()
+        while next_estado is None:
+            while ev := ihm.poll_event():
+                if ev == 'modo_disparo':
+                    next_estado = modos.ModoDisparo()
+                elif ev == 'modo_ativado':
+                    next_estado = modos.ModoAtivado(None)
+                elif ev == 'modo_habilitado':
+                    next_estado = modos.ModoHabilitado()
 
-        img = preprocessing.grayscale.cv2_to_nparray_grayscale(frame)
-        img = preprocessing.window.apply_border_windowing_on_image(img)
-        img = preprocessing.fft.image_preprocessing(img)
+            estado.run()
 
-        M, N = img.shape
-
-        if frame_num > 0:
-            deltax, deltay = visual_odometer.optimized_svd_method(img, img_old, M, N)
-            print(f"Frame:  {frame_num:>3.2f}, delta:[{deltax:>5.2f},{deltay:>5.2f}]")
-
-        frame_num += 1
-        img_old = img
+        estado, next_estado = next_estado, None
 
 
 if __name__ == '__main__':

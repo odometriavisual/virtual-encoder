@@ -1,15 +1,26 @@
-import RPi.GPIO as gpio
+import gpiod
+from gpiod.line import Direction, Value
 
 class PulseGenerator:
-    sequenceArray = [[gpio.HIGH, gpio.HIGH], [gpio.HIGH, gpio.LOW], [gpio.LOW, gpio.LOW], [gpio.LOW, gpio.HIGH]]
+    sequenceArray = [[Value.ACTIVE, Value.ACTIVE], [Value.ACTIVE, Value.INACTIVE], [Value.INACTIVE, Value.INACTIVE], [Value.INACTIVE, Value.ACTIVE]]
 
-    def __init__(self, PIN_A: int, PIN_B: int):
+    def __init__(self, PIN_A: int, PIN_B: int, chip: str = "/dev/gpiochip4"):
+        self.positionReference = 0
         self.PIN_A = PIN_A
         self.PIN_B = PIN_B
-        self.positionReference = 0
+        self.LINES = gpiod.request_lines(
+            chip,
+            consumer="pulse-generator",
+            config={
+                self.PIN_A: gpiod.LineSettings(
+                    direction=Direction.OUTPUT, output_value=self.sequenceArray[self.positionReference][0]
+                ),
+                self.PIN_B: gpiod.LineSettings(
+                    direction=Direction.OUTPUT, output_value=self.sequenceArray[self.positionReference][1]
+                )
+            },
+        )
 
-        gpio.setup(self.PIN_A, gpio.OUT)
-        gpio.setup(self.PIN_B, gpio.OUT)
 
     def send_pulses(self, count: int):
         if count > 0:
@@ -21,7 +32,5 @@ class PulseGenerator:
 
         for i in range(absoluteCount):
             self.positionReference = (self.positionReference + pulseDirectionMultiplier)%4
-
-            gpio.output(self.PIN_A,self.sequenceArray[self.positionReference][0])
-            gpio.output(self.PIN_B,self.sequenceArray[self.positionReference][1])
-
+            self.LINES.set_value(self.PIN_A,self.sequenceArray[self.positionReference][0])
+            self.LINES.set_value(self.PIN_B,self.sequenceArray[self.positionReference][1])

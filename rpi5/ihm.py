@@ -15,7 +15,6 @@ class IHM:
                 x = input('> ').strip()
                 send_event(x)
 
-
         def read_flask():
             from server import app
             app.send_event = send_event

@@ -1,6 +1,5 @@
-from flask import Flask, Response, request, jsonify
+from flask import Flask, Response, request
 import cv2
-import requests
 
 app = Flask(__name__)
 

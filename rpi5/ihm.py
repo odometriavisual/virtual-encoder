@@ -12,7 +12,12 @@ class IHM:
                 x = input('> ').strip()
                 self._event_queue.put(x)
 
-        self._thread = Thread(target=read_input)
+
+        def read_flask():
+            from server import app
+            app.run(host='0.0.0.0', port=5000)
+
+        self._thread = Thread(target=read_flask)
         self._thread.start()
 
     def poll_event(self):

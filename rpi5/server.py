@@ -4,6 +4,11 @@ import requests
 
 app = Flask(__name__)
 
+def do_nothing(_):
+    pass
+
+app.send_event = do_nothing
+
 def generate_frames():
     vid = cv2.VideoCapture('http://raspberrypi00.local:7123/stream.mjpg')
     while True:
@@ -71,15 +76,10 @@ def index():
 def set_focus():
     data = request.get_json()
     focus_value = data.get('focus_value')
+
     if focus_value:
-        try:
-            # Faz a requisição para ajustar o foco na câmera
-            print("Requisição iniciada")
-            requests.get(f'http://raspberrypi00.local:7123/focus.html/{focus_value}')
-            print("Requisição finalizada")
-            return "Foco ajustado com sucesso!"
-        except requests.RequestException as e:
-            return f"Erro ao ajustar o foco: {e}"
+        app.send_event(('set_focus', focus_value))
+
     return "Nenhum valor de foco fornecido."
 
 if __name__ == "__main__":

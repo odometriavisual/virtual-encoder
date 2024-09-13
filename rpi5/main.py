@@ -15,14 +15,15 @@
 '''
 
 from ihm import IHM
+from pi_zero_client import PiZeroClient
 import modos
 
 def main():
     ihm = IHM()
     ihm.start_listening()
 
-    # client = PiZeroClient()
-    # vid = client.get_mjpeg_stream()
+    client = PiZeroClient()
+    vid = client.get_mjpeg_stream()
 
     estado = modos.ModoHabilitado()
     next_estado = None
@@ -30,12 +31,16 @@ def main():
     while True:
         while next_estado is None:
             while ev := ihm.poll_event():
-                if ev == 'modo_disparo':
-                    next_estado = modos.ModoDisparo()
-                elif ev == 'modo_ativado':
-                    next_estado = modos.ModoAtivado(None)
-                elif ev == 'modo_habilitado':
-                    next_estado = modos.ModoHabilitado()
+                match ev:
+                    case 'modo_disparo':
+                        next_estado = modos.ModoDisparo()
+                    case 'modo_ativado':
+                        next_estado = modos.ModoAtivado(None)
+                    case 'modo_habilitado':
+                        next_estado = modos.ModoHabilitado()
+
+                    case ('set_focus', focus):
+                        client.set_focus(focus)
 
             estado.run()
 

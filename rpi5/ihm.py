@@ -7,14 +7,18 @@ class IHM:
         self._thread = None
 
     def start_listening(self):
+        def send_event(ev):
+            self._event_queue.put(ev)
+
         def read_input():
             while True:
                 x = input('> ').strip()
-                self._event_queue.put(x)
+                send_event(x)
 
 
         def read_flask():
             from server import app
+            app.send_event = send_event
             app.run(host='0.0.0.0', port=5000)
 
         self._thread = Thread(target=read_flask)

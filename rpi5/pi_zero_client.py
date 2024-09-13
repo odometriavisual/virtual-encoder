@@ -3,7 +3,7 @@ from numpy import integer
 import cv2
 import requests
 
-PIZERO_HOST = 'http://raspberrypi00.local:7123/'
+PIZERO_HOST = 'http://raspberrypi00.local:7123'
 
 class PiZeroClient:
     video_stream = None

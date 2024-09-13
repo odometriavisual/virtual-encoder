@@ -43,7 +43,7 @@ class ModoAtivado:
         self.M, self.N = self.img.shape
 
         if self.frame_num > 0:
-            deltax, deltay = visual_odometer.optimized_svd_method(self.img, self.img_old, self.M, self.N)
+            deltax, deltay = visual_odometer.svd_method(self.img, self.img_old, self.M, self.N)
             print(f"Frame:  {self.frame_num:>3.2f}, delta:[{deltax:>5.2f},{deltay:>5.2f}]")
 
         self.frame_num += 1

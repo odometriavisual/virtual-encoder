@@ -16,7 +16,7 @@ class PiZeroClient:
                 if self.vid.isOpened():
                     self.frame = self.vid.grab()
 
-        self.vid_thread = threading.Thread(target=update)
+        self.vid_thread = threading.Thread(daemon=True, target=update)
         self.vid_thread.start()
 
     def set_focus(self, focus: int):

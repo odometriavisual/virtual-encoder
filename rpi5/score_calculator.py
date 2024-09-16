@@ -1,6 +1,8 @@
 import cv2
 import numpy
 
+#O frame do cv2 é do tipo numpy.ndarray, por isso não é necessário converter
+
 def calculate_laplacian_variance(frame: numpy.ndarray)  -> float:
     return numpy.std(cv2.Laplacian(frame, cv2.CV_64F)) ** 2
 

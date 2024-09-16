@@ -15,7 +15,7 @@
 '''
 
 from ihm import IHM
-from pi_zero_client import PiZeroClient
+from pi_zero_client import PiZeroClient, ImageStream
 import modos
 
 def main():
@@ -23,7 +23,7 @@ def main():
     ihm.start_listening()
 
     client = PiZeroClient()
-    vid = client.get_mjpeg_stream()
+    stream = ImageStream()
 
     estado = modos.ModoHabilitado()
     next_estado = None
@@ -38,9 +38,8 @@ def main():
                         next_estado = modos.ModoAtivado(None)
                     case 'modo_habilitado':
                         next_estado = modos.ModoHabilitado()
-
-                    case ('set_focus', focus):
-                        client.set_focus(focus)
+                    case 'modo_calibracao':
+                        next_estado = modos.ModoCalibracao(stream=stream, client=client)
 
             estado.run()
 

@@ -12,12 +12,18 @@ import cv2
 from pi_zero_client import PiZeroClient, ImageStream
 
 class ModoDisparo:
-    def __init__(self):
-        print('Disparo!')
+    def __init__(self, encoder):
+        self.encoder = encoder
+        self.last_run_time =  time.monotonic()
 
     def run(self):
-        time.sleep(1)
+        current_time = time.monotonic()
+        if (current_time - self.last_run_time) >= 1:
+            self.encoder.send_pulses(count=1)
+            self.last_run_time = current_time
 
+        time.sleep(0.001)
+        return None
 
 class ModoHabilitado:
     def __init__(self):
@@ -25,6 +31,7 @@ class ModoHabilitado:
 
     def run(self):
         time.sleep(1)
+        return None
 
 
 class ModoAtivado:
@@ -53,6 +60,7 @@ class ModoAtivado:
 
         self.frame_num += 1
         self.img_old = self.img
+        return None
 
 class ModoCalibracao:
 
@@ -89,4 +97,6 @@ class ModoCalibracao:
 
         else:
             self.client.set_focus(self.best_focus_value)
-            exit()
+            return ModoHabilitado()
+
+        return None

@@ -12,15 +12,20 @@ class IHM:
 
         def read_input():
             while True:
-                x = input('> ').strip()
-                send_event(x)
+                try:
+                    x = input('> ').strip()
+                    send_event(x)
+                except:
+                    import time
+                    time.sleep(1)
+                    pass
 
         def read_flask():
             from server import app
             app.send_event = send_event
             app.run(host='0.0.0.0', port=5000)
 
-        self._thread = Thread(target=read_flask)
+        self._thread = Thread(target=read_input)
         self._thread.start()
 
     def poll_event(self):

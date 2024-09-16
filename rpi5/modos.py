@@ -1,13 +1,8 @@
-from __future__ import annotations
-
+from visual_odometer import VisualOdometer
 from score_calculator import calculate_teng_score
 import preprocessing.grayscale
-import preprocessing.window
-import preprocessing.fft
 
-import visual_odometer
 import time
-import cv2
 
 from pi_zero_client import PiZeroClient, ImageStream
 
@@ -35,35 +30,25 @@ class ModoHabilitado:
 
 
 class ModoAtivado:
-    def __init__(self, stream: ImageStream):
+    def __init__(self, stream: ImageStream, odometer: VisualOdometer):
         print('Ativado!')
         self.stream = stream
-        self.frame_num = -10
+        self.odometer = odometer
 
-        self.img_old = None
-        self.img = None
-        self.M = None
-        self.N = None
+        img = preprocessing.grayscale.cv2_to_nparray_grayscale(self.stream.get_img())
+        self.odometer.feed_image(img)
 
     def run(self):
         frame = self.stream.get_img()
 
-        self.img = preprocessing.grayscale.cv2_to_nparray_grayscale(frame)
-        self.img = preprocessing.window.apply_border_windowing_on_image(self.img)
-        self.img = preprocessing.fft.image_preprocessing(self.img)
+        img = preprocessing.grayscale.cv2_to_nparray_grayscale(frame)
+        self.odometer.feed_image(img)
+        deltax, deltay = self.odometer.estimate_last_displacement()
 
-        self.M, self.N = self.img.shape
-
-        if self.frame_num > 0:
-            deltax, deltay = visual_odometer.svd_method(self.img, self.img_old, self.M, self.N)
-            print(f"Frame:  {self.frame_num:>3.2f}, delta:[{deltax:>5.2f},{deltay:>5.2f}]")
-
-        self.frame_num += 1
-        self.img_old = self.img
+        print(f"Frame:  delta:[{deltax:>5.2f},{deltay:>5.2f}]")
         return None
 
 class ModoCalibracao:
-
     def __init__(self, stream: ImageStream, client: PiZeroClient, calibration_start:int = 0, calibration_end:int = 15, calibration_step:int = 1):
         #Nota, a PyCamera aceita valores floats como foco, porém é necessário reformular o código do servidor para aceitar esses valores.
 

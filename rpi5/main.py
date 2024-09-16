@@ -17,8 +17,9 @@
 from ihm import IHM
 from pi_zero_client import PiZeroClient, ImageStream
 import modos
-from rpi5.pulse_generator import PulseGenerator
 
+from pulse_generator import PulseGenerator
+from visual_odometer import VisualOdometer
 
 def main():
     ihm = IHM()
@@ -27,9 +28,11 @@ def main():
     client = PiZeroClient()
     stream = ImageStream()
 
-    encoder_1 = PulseGenerator(PIN_A=5,PIN_B=6)
-    #encoder_2 = PulseGenerator(PIN_A=17,PIN_B=27)
-    #encoder_3 = PulseGenerator(PIN_A=23,PIN_B=24)
+    odometer = VisualOdometer((640, 480))
+
+    # encoder_1 = PulseGenerator(PIN_A=5,PIN_B=6)
+    encoder_2 = PulseGenerator(PIN_A=17,PIN_B=27)
+    # encoder_3 = PulseGenerator(PIN_A=23,PIN_B=24)
 
     estado = modos.ModoHabilitado()
     next_estado = None
@@ -37,15 +40,17 @@ def main():
     while True:
         while next_estado is None:
             while ev := ihm.poll_event():
+                print(f'Recebido ev: {ev}')
+
                 match ev:
-                    case 'modo_disparo':
-                        next_estado = modos.ModoDisparo(encoder = encoder_1)
-                    case 'modo_ativado':
-                        next_estado = modos.ModoAtivado(stream)
                     case 'modo_habilitado':
                         next_estado = modos.ModoHabilitado()
+                    case 'modo_disparo':
+                        next_estado = modos.ModoDisparo(encoder = encoder_2)
                     case 'modo_calibracao':
                         next_estado = modos.ModoCalibracao(stream=stream, client=client)
+                    case 'modo_ativado':
+                        next_estado = modos.ModoAtivado(stream, odometer)
 
             next_estado = estado.run()
 

@@ -4,7 +4,7 @@ import preprocessing.grayscale
 
 import time
 
-from pi_zero_client import PiZeroClient, ImageStream
+from pi_zero_client import PiZeroClient
 
 class ModoDisparo:
     def __init__(self, encoder):
@@ -30,16 +30,16 @@ class ModoHabilitado:
 
 
 class ModoAtivado:
-    def __init__(self, stream: ImageStream, odometer: VisualOdometer):
+    def __init__(self, client: PiZeroClient, odometer: VisualOdometer):
         print('Ativado!')
-        self.stream = stream
+        self.client = client
         self.odometer = odometer
 
-        img = preprocessing.grayscale.cv2_to_nparray_grayscale(self.stream.get_img())
+        img = preprocessing.grayscale.cv2_to_nparray_grayscale(self.client.get_img())
         self.odometer.feed_image(img)
 
     def run(self):
-        frame = self.stream.get_img()
+        frame = self.client.get_img()
 
         img = preprocessing.grayscale.cv2_to_nparray_grayscale(frame)
         self.odometer.feed_image(img)
@@ -49,11 +49,10 @@ class ModoAtivado:
         return None
 
 class ModoCalibracao:
-    def __init__(self, stream: ImageStream, client: PiZeroClient, calibration_start:int = 0, calibration_end:int = 15, calibration_step:int = 1):
+    def __init__(self, client: PiZeroClient, calibration_start:int = 0, calibration_end:int = 15, calibration_step:int = 1):
         #Nota, a PyCamera aceita valores floats como foco, porém é necessário reformular o código do servidor para aceitar esses valores.
 
         self.client = client
-        self.stream = stream
 
         self.best_focus_value = None
         self.best_score = -float('inf')
@@ -71,7 +70,7 @@ class ModoCalibracao:
             self.client.set_focus(self.actual_focus)
             time.sleep(0.3)
 
-            frame = self.stream.get_img()
+            frame = self.client.get_img()
 
             score = calculate_teng_score(frame)
 

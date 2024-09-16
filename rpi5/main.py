@@ -15,7 +15,7 @@
 '''
 
 from ihm import IHM
-from pi_zero_client import PiZeroClient, ImageStream
+from pi_zero_client import PiZeroClient
 import modos
 
 from pulse_generator import PulseGenerator
@@ -26,7 +26,6 @@ def main():
     ihm.start_listening()
 
     client = PiZeroClient()
-    stream = ImageStream()
 
     odometer = VisualOdometer((640, 480))
 
@@ -48,9 +47,9 @@ def main():
                     case 'modo_disparo':
                         next_estado = modos.ModoDisparo(encoder = encoder_2)
                     case 'modo_calibracao':
-                        next_estado = modos.ModoCalibracao(stream=stream, client=client)
+                        next_estado = modos.ModoCalibracao(client=client)
                     case 'modo_ativado':
-                        next_estado = modos.ModoAtivado(stream, odometer)
+                        next_estado = modos.ModoAtivado(client, odometer)
 
             next_estado = estado.run()
 

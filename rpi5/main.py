@@ -25,7 +25,7 @@ import time
 def main():
     client = PiZeroClient()
 
-    ihm = IHM(client.get_img())
+    ihm = IHM(client.get_img)
     ihm.start_listening()
 
     odometer = VisualOdometer((640, 480))

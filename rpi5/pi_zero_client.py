@@ -8,13 +8,15 @@ PIZERO_HOST = 'http://raspberrypi00.local:7123'
 class PiZeroClient:
     def __init__(self):
         self.vid = cv2.VideoCapture()
-        self.frame = None
+        self.vid_lock = threading.Lock()
 
         def update():
             while True:
-                time.sleep(0.5)
+                time.sleep(0.001)
                 if self.vid.isOpened():
-                    self.frame = self.vid.grab()
+                    self.vid_lock.acquire()
+                    self.vid.grab()
+                    self.vid_lock.release()
 
         self.vid_thread = threading.Thread(daemon=True, target=update)
         self.vid_thread.start()
@@ -34,7 +36,11 @@ class PiZeroClient:
             self.vid.set(cv2.CAP_PROP_BUFFERSIZE, 1)
             time.sleep(1)
 
-        return self.vid.retrieve(self.frame)[1]
+        self.vid_lock.acquire()
+        frame = self.vid.retrieve()[1]
+        self.vid_lock.release()
+        return frame
+
 
     def download_all_images(self):
         raise NotImplemented

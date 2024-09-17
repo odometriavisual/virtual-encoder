@@ -1,23 +1,23 @@
 from queue import Queue
 from threading import Thread
-from server import VideoStreamApp
+from server import FlaskInterfaceApp
 
 class IHM:
-    def __init__(self, client):
+    def __init__(self, get_img):
         self._event_queue = Queue(4)
         self._threads = []
 
-        self.flask_interface = VideoStreamApp(client)
+        self.flask_interface = FlaskInterfaceApp(self.send_event, get_img)
+
+    def send_event(self, ev):
+        self._event_queue.put(ev)
 
     def start_listening(self):
-        def send_event(ev):
-            self._event_queue.put(ev)
-
         def read_input():
             while True:
                 try:
                     x = input('> ').strip()
-                    send_event(x)
+                    self.send_event(x)
                 except:
                     import time
                     time.sleep(1)

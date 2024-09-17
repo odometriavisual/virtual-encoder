@@ -23,18 +23,18 @@ from visual_odometer import VisualOdometer
 import time
 
 def main():
-
     client = PiZeroClient()
-    ihm = IHM(client)
-    ihm.start_listening()
 
-    time.sleep(1)
+    ihm = IHM(client.get_img())
+    ihm.start_listening()
 
     odometer = VisualOdometer((640, 480))
 
     # encoder_1 = PulseGenerator(PIN_A=5,PIN_B=6)
     encoder_2 = PulseGenerator(PIN_A=17,PIN_B=27)
     # encoder_3 = PulseGenerator(PIN_A=23,PIN_B=24)
+
+    time.sleep(1)
 
     estado = modos.ModoAtivado(client, odometer)
     next_estado = None
@@ -53,6 +53,9 @@ def main():
                         next_estado = modos.ModoCalibracao(client=client)
                     case 'modo_ativado':
                         next_estado = modos.ModoAtivado(client, odometer)
+
+                    case ('set_focus', focus):
+                        client.set_focus(focus)
 
             next_estado = estado.run()
 

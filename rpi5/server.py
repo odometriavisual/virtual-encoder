@@ -1,22 +1,20 @@
 from flask import Flask, Response, request
 import cv2
-import time
 
-class VideoStreamApp:
-    def __init__(self, client, host='0.0.0.0', port=5000):
+class FlaskInterfaceApp:
+    def __init__(self, send_event, get_img, host='0.0.0.0', port=5000):
         self.app = Flask(__name__)
-        self.client = client
-        self.host = host
-        self.port = port
-        self.app.send_event = self.do_nothing
         self.setup_routes()
 
-    def do_nothing(self, _):
-        pass
+        self.host = host
+        self.port = port
+
+        self.get_img = get_img
+        self.send_event = send_event
 
     def generate_frames(self):
         while True:
-            frame = self.client.get_img()
+            frame = self.get_img()
             buffer = cv2.imencode('.jpg', frame)
             buffer_bytes = buffer[1].tobytes()
             yield (b'--frame\r\n'
@@ -74,7 +72,7 @@ class VideoStreamApp:
         @self.app.route('/set_focus', methods=['POST'])
         def set_focus():
             data = request.get_json()
-            focus_value = data.get('focus_value')
+            self.send_event(('set_focus', data.get('focus_value')))
             return "Nenhum valor de foco fornecido."
 
     def run(self):

@@ -1,5 +1,6 @@
 from flask import Flask, Response, request
 import cv2
+import time
 
 class VideoStreamApp:
     def __init__(self, client, host='0.0.0.0', port=5000):
@@ -14,19 +15,12 @@ class VideoStreamApp:
         pass
 
     def generate_frames(self):
-        vid = cv2.VideoCapture(self.video_source)
         while True:
-            success, frame = vid.read()
-            if not success:
-                break
-            else:
-                # Converte o frame para JPEG
-                ret, buffer = cv2.imencode('.jpg', frame)
-                frame = buffer.tobytes()
-
-                # Retorna o frame em formato de bytes
-                yield (b'--frame\r\n'
-                       b'Content-Type: image/jpeg\r\n\r\n' + frame + b'\r\n')
+            frame = self.client.get_img()
+            buffer = cv2.imencode('.jpg', frame)
+            buffer_bytes = buffer[1].tobytes()
+            yield (b'--frame\r\n'
+                    b'Content-Type: image/jpeg\r\n\r\n' + buffer_bytes + b'\r\n')
 
     def setup_routes(self):
         @self.app.route('/video_feed')
@@ -81,10 +75,6 @@ class VideoStreamApp:
         def set_focus():
             data = request.get_json()
             focus_value = data.get('focus_value')
-
-            if focus_value:
-                self.app.send_event(('set_focus', focus_value))
-                return f'Foco ajustado para {focus_value}.'
             return "Nenhum valor de foco fornecido."
 
     def run(self):

@@ -7,8 +7,6 @@ class IHM:
         self._event_queue = Queue(4)
         self._thread = None
         self.stream = VideoStreamApp(client)
-        self.stream.run()
-
 
     def start_listening(self):
         def send_event(ev):
@@ -24,7 +22,10 @@ class IHM:
                     time.sleep(1)
                     pass
 
-        self._thread = Thread(target=read_input)
+        def read_flask():
+            self.stream.run()
+
+        self._thread = Thread(target=read_flask)
         self._thread.start()
 
     def poll_event(self):

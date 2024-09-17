@@ -12,9 +12,9 @@ class PiZeroClient:
 
         def update():
             while True:
-                time.sleep(0.01)
+                time.sleep(0.5)
                 if self.vid.isOpened():
-                    ret, self.frame = self.vid.grab()
+                    self.frame = self.vid.grab()
 
         self.vid_thread = threading.Thread(target=update)
         self.vid_thread.start()
@@ -32,6 +32,7 @@ class PiZeroClient:
         if not self.vid.isOpened():
             self.vid.open(f'{PIZERO_HOST}/stream.mjpg')
             self.vid.set(cv2.CAP_PROP_BUFFERSIZE, 1)
+            time.sleep(1)
 
         return self.vid.retrieve(self.frame)[1]
 

@@ -40,6 +40,7 @@ class ModoAtivado:
 
     def run(self):
         frame = self.client.get_img()
+    
 
         img = preprocessing.grayscale.cv2_to_nparray_grayscale(frame)
         self.odometer.feed_image(img)

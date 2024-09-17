@@ -22,10 +22,11 @@ from pulse_generator import PulseGenerator
 from visual_odometer import VisualOdometer
 
 def main():
-    ihm = IHM()
-    ihm.start_listening()
 
     client = PiZeroClient()
+
+    ihm = IHM(client)
+    ihm.start_listening()
 
     odometer = VisualOdometer((640, 480))
 

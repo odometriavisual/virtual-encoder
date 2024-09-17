@@ -1,10 +1,14 @@
 from queue import Queue
 from threading import Thread
+from server import VideoStreamApp
 
 class IHM:
-    def __init__(self):
+    def __init__(self, client):
         self._event_queue = Queue(4)
         self._thread = None
+        self.stream = VideoStreamApp(client)
+        self.stream.run()
+
 
     def start_listening(self):
         def send_event(ev):
@@ -19,11 +23,6 @@ class IHM:
                     import time
                     time.sleep(1)
                     pass
-
-        def read_flask():
-            from server import app
-            app.send_event = send_event
-            app.run(host='0.0.0.0', port=5000)
 
         self._thread = Thread(target=read_input)
         self._thread.start()

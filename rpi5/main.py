@@ -20,13 +20,15 @@ import modos
 
 from pulse_generator import PulseGenerator
 from visual_odometer import VisualOdometer
+import time
 
 def main():
 
     client = PiZeroClient()
-
     ihm = IHM(client)
     ihm.start_listening()
+
+    time.sleep(1)
 
     odometer = VisualOdometer((640, 480))
 
@@ -34,7 +36,7 @@ def main():
     encoder_2 = PulseGenerator(PIN_A=17,PIN_B=27)
     # encoder_3 = PulseGenerator(PIN_A=23,PIN_B=24)
 
-    estado = modos.ModoHabilitado()
+    estado = modos.ModoAtivado(client, odometer)
     next_estado = None
 
     while True:

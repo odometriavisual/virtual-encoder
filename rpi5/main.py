@@ -1,25 +1,10 @@
-'''
-    Estados:
-        - Modo disparo:
-            - pulse generators
-            - input
-        - Modo Habilitado: calibração foco + exposição
-            - pizeroclient
-            - input
-
-        - Modo Ativado: stream MJPEG | preprocessing | odometer | pulser
-            - pizeroclient
-            - pulse generators
-            - input
-
-'''
-
 from ihm import IHM
 from pi_zero_client import PiZeroClient
-import modos
-
 from pulse_generator import PulseGenerator
 from visual_odometer import VisualOdometer
+
+from modos import *
+
 import time
 
 def main():
@@ -36,25 +21,21 @@ def main():
 
     time.sleep(1)
 
-    estado = modos.ModoAtivado(client, odometer)
+    estado = EstadoSet()
     next_estado = None
 
     while True:
         while next_estado is None:
             while ev := ihm.poll_event():
-                print(f'Recebido ev: {ev}')
+                match (estado, ev):
+                    case (EstadoSet(), 'botao2'):
+                        print('Transicao: Set -> Calibracao')
+                        next_estado = EstadoCalibracao(client, next_estado=EstadoReady())
+                    case (EstadoReady(), 'botao2'):
+                        print('Transicao: Ready -> Disparo')
+                        next_estado = EstadoDisparo(encoder_2)
 
-                match ev:
-                    case 'modo_habilitado':
-                        next_estado = modos.ModoHabilitado()
-                    case 'modo_disparo':
-                        next_estado = modos.ModoDisparo(encoder = encoder_2)
-                    case 'modo_calibracao':
-                        next_estado = modos.ModoCalibracao(client=client)
-                    case 'modo_ativado':
-                        next_estado = modos.ModoAtivado(client, odometer)
-
-                    case ('set_focus', focus):
+                    case (_, ('set_focus', focus)):
                         client.set_focus(focus)
 
             next_estado = estado.run()

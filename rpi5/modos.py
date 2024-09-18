@@ -23,14 +23,15 @@ class EstadoReady:
 
 class EstadoDisparo:
     def __init__(self, encoder):
+        self.period = 1
+        self.next_time = time.monotonic() + self.period
         self.encoder = encoder
-        self.last_run_time =  time.monotonic()
 
     def run(self):
         current_time = time.monotonic()
-        if (current_time - self.last_run_time) >= 1:
+        if current_time > self.next_time:
             self.encoder.send_pulses(count=1)
-            self.last_run_time = current_time
+            self.next_time = current_time + self.period
 
         time.sleep(0.001)
         return None

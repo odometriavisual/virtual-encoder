@@ -25,27 +25,29 @@ class IHM:
                     time.sleep(1)
                     pass
 
+        def check_all_buttons():
+            button1 = GpiodButton(18)
+            button2 = GpiodButton(27)
+            button3 = GpiodButton(24)
+
+            while True:
+                if button1.checkButton() is True:
+                    self.send_event("botao1")
+                    time.sleep(1)
+                if button2.checkButton() is True:
+                    self.send_event("botao2")
+                    time.sleep(1)
+                if button3.checkButton() is True:
+                    self.send_event("botao3")
+                    time.sleep(1)
+                time.sleep(0.1)
+
         self._threads.append(Thread(daemon=True, target=read_input))
         self._threads.append(Thread(daemon=True, target=self.flask_interface.run))
+        self._threads.append(Thread(daemon=True, target=check_all_buttons))
         for t in self._threads:
             t.start()
 
-    def check_all_buttons(self):
-        button1 = GpiodButton(18)
-        button2 = GpiodButton(27)
-        button3 = GpiodButton(24)
-
-        while True:
-            if button1.checkButton() is True:
-                self.send_event("botao1")
-                time.sleep(1)
-            if button2.checkButton() is True:
-                self.send_event("botao2")
-                time.sleep(1)
-            if button3.checkButton() is True:
-                self.send_event("botao3")
-                time.sleep(1)
-            time.sleep(0.1)
 
     def poll_event(self):
         if self._event_queue.empty():

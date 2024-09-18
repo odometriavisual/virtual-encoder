@@ -15,8 +15,8 @@ def main():
 
     odometer = VisualOdometer((640, 480))
 
-    # encoder_1 = PulseGenerator(PIN_A=5,PIN_B=6)
-    encoder_2 = PulseGenerator(PIN_A=17,PIN_B=27)
+    encoder_1 = PulseGenerator(PIN_A=5,PIN_B=6)
+    #encoder_2 = PulseGenerator(PIN_A=17,PIN_B=27)
     # encoder_3 = PulseGenerator(PIN_A=23,PIN_B=24)
 
     time.sleep(1)
@@ -33,12 +33,13 @@ def main():
                         next_estado = EstadoCalibracao(client, next_estado=EstadoReady())
                     case (EstadoReady(), 'botao2'):
                         print('Transicao: Ready -> Disparo')
-                        next_estado = EstadoDisparo(encoder_2)
+                        next_estado = EstadoDisparo(encoder_1)
 
                     case (_, ('set_focus', focus)):
                         client.set_focus(focus)
 
-            next_estado = estado.run()
+            if next_estado is None:
+                next_estado = estado.run()
 
         estado, next_estado = next_estado, None
 

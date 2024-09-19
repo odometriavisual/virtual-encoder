@@ -26,9 +26,11 @@ def calculate_max_laplacian(frame: numpy.ndarray) -> float:
     return numpy.max(cv2.convertScaleAbs(cv2.Laplacian(frame, 3)))
 
 class EstadoCalibracao:
-    def __init__(self, client: PiZeroClient, next_estado = EstadoReady(), calibration_start:int = 0, calibration_end:int = 15, calibration_step:int = 1):
+    def __init__(self, ihm, client: PiZeroClient, calibration_start:int = 0, calibration_end:int = 15, calibration_step:int = 1):
         #Nota, a PyCamera aceita valores floats como foco, porém é necessário reformular o código do servidor para aceitar esses valores.
+        ihm.print_message(f'CALIBRANDO...')
 
+        self.ihm = ihm
         self.client = client
 
         self.best_focus_value = None
@@ -37,7 +39,6 @@ class EstadoCalibracao:
         self.actual_focus = calibration_start
         self.calibration_step = calibration_step
         self.calibration_end = calibration_end
-        self.next_estado = next_estado
 
         self.client.set_focus(self.actual_focus)
 
@@ -59,7 +60,7 @@ class EstadoCalibracao:
 
         else:
             self.client.set_focus(self.best_focus_value)
-            return self.next_estado
+            return EstadoReady(self.ihm)
 
         return None
 

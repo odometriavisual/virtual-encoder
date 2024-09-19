@@ -1,23 +1,24 @@
 import time
 
 class EstadoSet:
-    def __init__(self):
-        pass
+    def __init__(self, ihm):
+        ihm.print_message(f'Estado: SET')
 
     def run(self):
         time.sleep(0.001)
         return None
 
 class EstadoReady:
-    def __init__(self):
-        pass
+    def __init__(self, ihm):
+        ihm.print_message(f'Estado: READY')
 
     def run(self):
         time.sleep(0.001)
         return None
 
 class EstadoDisparo:
-    def __init__(self, encoder):
+    def __init__(self, ihm, encoder):
+        ihm.print_message(f'Estado: DISPARO')
         self.period = 1
         self.next_time = time.monotonic() + self.period
         self.encoder = encoder

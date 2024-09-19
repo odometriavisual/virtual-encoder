@@ -20,7 +20,7 @@ def main():
 
     time.sleep(1)
 
-    estado = EstadoSet()
+    estado = EstadoSet(ihm)
     next_estado = None
 
     while True:
@@ -29,10 +29,10 @@ def main():
                 match (estado, ev):
                     case (EstadoSet(), 'botao2'):
                         print('Transicao: Set -> Calibracao')
-                        next_estado = EstadoCalibracao(client, next_estado=EstadoReady())
+                        next_estado = EstadoCalibracao(ihm, client)
                     case (EstadoReady(), 'botao2'):
                         print('Transicao: Ready -> Disparo')
-                        next_estado = EstadoDisparo(encoder_1)
+                        next_estado = EstadoDisparo(ihm, encoder_1)
 
                     case (_, ('set_focus', focus)):
                         client.set_focus(focus)

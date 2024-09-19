@@ -1,5 +1,4 @@
 from .estados import EstadoSet, EstadoDisparo, EstadoReady
-
 from .calibracao import EstadoCalibracao
 from .ativado import EstadoAtivado
 

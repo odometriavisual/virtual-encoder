@@ -1,11 +1,10 @@
+import time
+from visual_odometer import VisualOdometer
+
 from ihm import IHM
 from pi_zero_client import PiZeroClient
 from pulse_generator import PulseGenerator
-from visual_odometer import VisualOdometer
-
 from estados import *
-
-import time
 
 def main():
     client = PiZeroClient()
@@ -42,7 +41,6 @@ def main():
                 next_estado = estado.run()
 
         estado, next_estado = next_estado, None
-
 
 if __name__ == '__main__':
     main()

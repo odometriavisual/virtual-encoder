@@ -3,7 +3,7 @@ from pi_zero_client import PiZeroClient
 from pulse_generator import PulseGenerator
 from visual_odometer import VisualOdometer
 
-from modos import *
+from estados import *
 
 import time
 

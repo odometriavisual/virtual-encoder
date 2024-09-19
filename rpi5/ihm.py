@@ -1,8 +1,8 @@
+import time
 from queue import Queue
 from threading import Thread
 from server import FlaskInterfaceApp
 from gpiod_button import GpiodButton
-import time
 
 class IHM:
     def __init__(self, get_img):

@@ -10,8 +10,8 @@ while True:
 '''
 
 import busio
-from PIL import Image, ImageDraw, ImageFont
 import adafruit_ssd1306
+from PIL import Image, ImageDraw, ImageFont
 
 class Screen:
     def __init__(self, width:int=128, height:int=64, i2c_scl:int=3, i2c_sda:int=2, addr=0x3C):

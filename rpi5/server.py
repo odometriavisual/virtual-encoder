@@ -1,5 +1,5 @@
-from flask import Flask, Response, request
 import cv2
+from flask import Flask, Response, request
 
 class FlaskInterfaceApp:
     def __init__(self, send_event, get_img, host='0.0.0.0', port=5000):

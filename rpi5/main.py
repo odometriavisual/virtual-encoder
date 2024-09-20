@@ -24,10 +24,11 @@ def main():
     ihm.start_listening()
 
     odometer = VisualOdometer((640, 480))
-
-    encoder_1 = PulseGenerator(PIN_A=13,PIN_B=19)
-    encoder_2 = PulseGenerator(PIN_A=26,PIN_B=16)
-    encoder_3 = PulseGenerator(PIN_A=5,PIN_B=6)
+    encoders = (
+        PulseGenerator(PIN_A=13,PIN_B=19),
+        PulseGenerator(PIN_A=26,PIN_B=16),
+        PulseGenerator(PIN_A=5,PIN_B=6)
+    )
 
     time.sleep(1)
 
@@ -43,7 +44,7 @@ def main():
                         next_estado = EstadoCalibracao(ihm, client)
                     case (EstadoReady(), 'botao2'):
                         print('Transicao: Ready -> Disparo')
-                        next_estado = EstadoDisparo(ihm, encoder_1)
+                        next_estado = EstadoDisparo(ihm, encoders)
                     case (EstadoDisparo(), 'botao2'):
                         print('Transicao: Disparo -> Set')
                         next_estado = EstadoSet(ihm)

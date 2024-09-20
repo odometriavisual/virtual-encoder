@@ -2,7 +2,7 @@ import time
 
 class EstadoSet:
     def __init__(self, ihm):
-        ihm.print_message(f'Estado: SET')
+        ihm.print_message(f'\nEstado: SET')
 
     def run(self):
         time.sleep(0.001)
@@ -10,7 +10,7 @@ class EstadoSet:
 
 class EstadoReady:
     def __init__(self, ihm):
-        ihm.print_message(f'Estado: READY')
+        ihm.print_message(f'\nEstado: READY')
 
     def run(self):
         time.sleep(0.001)
@@ -18,7 +18,7 @@ class EstadoReady:
 
 class EstadoDisparo:
     def __init__(self, ihm, encoder):
-        ihm.print_message(f'Estado: DISPARO')
+        ihm.print_message(f'\nEstado: DISPARO')
         self.period = 1
         self.next_time = time.monotonic() + self.period
         self.encoder = encoder

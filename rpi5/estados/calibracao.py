@@ -28,7 +28,7 @@ def calculate_max_laplacian(frame: numpy.ndarray) -> float:
 class EstadoCalibracao:
     def __init__(self, ihm, client: PiZeroClient, calibration_start:int = 0, calibration_end:int = 15, calibration_step:int = 1):
         #Nota, a PyCamera aceita valores floats como foco, porém é necessário reformular o código do servidor para aceitar esses valores.
-        ihm.print_message(f'CALIBRANDO...')
+        ihm.print_message(f'\nCALIBRANDO...')
 
         self.ihm = ihm
         self.client = client

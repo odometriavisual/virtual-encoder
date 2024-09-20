@@ -7,6 +7,17 @@ from pulse_generator import PulseGenerator
 from estados import *
 
 def main():
+    """
+    OLED: 2 (SDA)
+          3 (SCL)
+    PB_1: 18
+    PB_2: 27
+    PB_3: 24
+
+    Encoder 1: 5, 6
+    Encoder 2: _, _
+    Encoder 3: _, _
+    """
     client = PiZeroClient()
 
     ihm = IHM(client.get_img)
@@ -33,6 +44,9 @@ def main():
                     case (EstadoReady(), 'botao2'):
                         print('Transicao: Ready -> Disparo')
                         next_estado = EstadoDisparo(ihm, encoder_1)
+                    case (EstadoDisparo(), 'botao2'):
+                        print('Transicao: Disparo -> Set')
+                        next_estado = EstadoSet(ihm)
 
                     case (_, ('set_focus', focus)):
                         client.set_focus(focus)

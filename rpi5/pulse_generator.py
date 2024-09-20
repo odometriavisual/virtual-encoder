@@ -21,6 +21,8 @@ class PulseGenerator:
             },
         )
 
+        self.LINES.set_value(self.PIN_A, self.sequenceArray[self.positionReference][0])
+        self.LINES.set_value(self.PIN_B, self.sequenceArray[self.positionReference][1])
 
     def send_pulses(self, count: int):
         if count > 0:

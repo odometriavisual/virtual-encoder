@@ -14,9 +14,10 @@ def main():
     Push Button 2: 27
     Push Button 3: 24
 
-    Encoder 1: 13, 19
+                A,  B
+    Encoder 1: 19, 13
     Encoder 2: 26, 16
-    Encoder 3: 5, 6
+    Encoder 3:  5,  6
     """
     client = PiZeroClient()
 
@@ -25,7 +26,7 @@ def main():
 
     odometer = VisualOdometer((640, 480))
     encoders = (
-        PulseGenerator(PIN_A=13,PIN_B=19),
+        PulseGenerator(PIN_A=19,PIN_B=13),
         PulseGenerator(PIN_A=26,PIN_B=16),
         PulseGenerator(PIN_A=5,PIN_B=6)
     )

@@ -10,13 +10,13 @@ def main():
     """
     OLED: 2 (SDA)
           3 (SCL)
-    PB_1: 18
-    PB_2: 27
-    PB_3: 24
+    Push Button 1: 18
+    Push Button 2: 27
+    Push Button 3: 24
 
-    Encoder 1: 5, 6
-    Encoder 2: _, _
-    Encoder 3: _, _
+    Encoder 1: 13, 19
+    Encoder 2: 26, 16
+    Encoder 3: 5, 6
     """
     client = PiZeroClient()
 
@@ -25,9 +25,9 @@ def main():
 
     odometer = VisualOdometer((640, 480))
 
-    encoder_1 = PulseGenerator(PIN_A=5,PIN_B=6)
-    #encoder_2 = PulseGenerator(PIN_A=17,PIN_B=27)
-    # encoder_3 = PulseGenerator(PIN_A=23,PIN_B=24)
+    encoder_1 = PulseGenerator(PIN_A=13,PIN_B=19)
+    encoder_2 = PulseGenerator(PIN_A=26,PIN_B=16)
+    encoder_3 = PulseGenerator(PIN_A=5,PIN_B=6)
 
     time.sleep(1)
 

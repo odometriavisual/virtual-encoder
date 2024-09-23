@@ -1,10 +1,10 @@
 import time
 from visual_odometer import VisualOdometer
 
-from ihm import IHM
-from pi_zero_client import PiZeroClient
-from pulse_generator import PulseGenerator
-from estados import *
+from src.ihm.ihm import IHM
+from src.pi_zero_client import PiZeroClient
+from src.pulse_generator import PulseGenerator
+from src.estados import *
 
 def main():
     """

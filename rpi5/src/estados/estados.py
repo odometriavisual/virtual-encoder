@@ -1,6 +1,6 @@
 import time
 
-from __main__ import PulseGenerator
+from ..pulse_generator import PulseGenerator
 
 class EstadoSet:
     def __init__(self, ihm):

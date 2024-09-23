@@ -3,7 +3,7 @@ import cv2
 from PIL import Image, ImageOps
 from visual_odometer import VisualOdometer
 
-from __main__ import PiZeroClient
+from ..pi_zero_client import PiZeroClient
 
 def grayscale(frame: cv2.Mat) -> np.ndarray:
     cv2_img = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)

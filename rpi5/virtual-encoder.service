@@ -1,0 +1,14 @@
+[Unit]
+Description=Virtual Encoder
+After=multi-user.target
+
+[Service]
+Type=exec
+Restart=always
+User=pi
+Group=pi
+WorkingDirectory=/home/pi/virtual-encoder/rpi5
+ExecStart=/home/pi/virtual-encoder/venv/bin/python3 main.py
+
+[Install]
+WantedBy=multi-user.target

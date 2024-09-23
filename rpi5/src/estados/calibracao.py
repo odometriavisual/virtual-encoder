@@ -2,7 +2,7 @@ import time
 import cv2
 import numpy
 
-from __main__ import PiZeroClient
+from ..pi_zero_client import PiZeroClient
 from . import EstadoReady
 
 #O frame do cv2 é do tipo numpy.ndarray, por isso não é necessário converter

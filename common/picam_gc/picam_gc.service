@@ -1,0 +1,13 @@
+[Unit]
+Description=Picam's garbage collector
+After=multi-user.target
+
+[Service]
+Type=simple
+User=pi
+Group=pi
+WorkingDirectory=/home/pi/virtual-encoder/common/picam_gc
+ExecStart=/usr/bin/python picam_gc.py
+
+[Install]
+WantedBy=multi-user.target

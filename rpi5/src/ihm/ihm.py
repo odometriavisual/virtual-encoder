@@ -23,15 +23,6 @@ class IHM:
         self.oled_screen.update()
 
     def start_listening(self):
-        def read_input():
-            while True:
-                try:
-                    x = input('> ').strip()
-                    self.send_event(x)
-                except:
-                    time.sleep(1)
-                    pass
-
         def check_all_buttons():
             button1 = GpiodButton(24)
             button2 = GpiodButton(27)
@@ -49,7 +40,6 @@ class IHM:
                     time.sleep(1)
                 time.sleep(0.1)
 
-        self._threads.append(Thread(daemon=True, target=read_input))
         self._threads.append(Thread(daemon=True, target=self.flask_interface.run))
         self._threads.append(Thread(daemon=True, target=check_all_buttons))
         for t in self._threads:

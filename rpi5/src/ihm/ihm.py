@@ -33,9 +33,9 @@ class IHM:
                     pass
 
         def check_all_buttons():
-            button1 = GpiodButton(18)
+            button1 = GpiodButton(24)
             button2 = GpiodButton(27)
-            button3 = GpiodButton(24)
+            button3 = GpiodButton(18)
 
             while True:
                 if button1.checkButton() is True:

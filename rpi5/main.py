@@ -12,9 +12,9 @@ def main():
     """
     OLED: 2 (SDA)
           3 (SCL)
-    Push Button 1: 18
+    Push Button 1: 24
     Push Button 2: 27
-    Push Button 3: 24
+    Push Button 3: 18
 
                 A,  B
     Encoder 1: 19, 13
@@ -42,6 +42,13 @@ def main():
         while next_estado is None:
             while ev := ihm.poll_event():
                 match (estado, ev):
+                    case (EstadoSet(), 'botao1'):
+                        print('Transicao: Set -> Disparo')
+                        next_estado = EstadoDisparo(ihm, encoders)
+                    case (EstadoDisparo(), 'botao1'):
+                        print('Transicao: Disparo -> Set')
+                        next_estado = EstadoSet(ihm)
+
                     case (EstadoSet(), 'botao2'):
                         print('Transicao: Set -> Calibracao')
                         next_estado = EstadoCalibracao(ihm, client)

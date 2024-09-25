@@ -3,12 +3,11 @@
 import time
 from visual_odometer import VisualOdometer
 
-from src.modos.modo_tempo import ModoTempo
 from src.ihm.ihm import IHM
 from src.ihm.gpiod_button import GpiodButton
 from src.pi_zero_client import PiZeroClient
 from src.pulse_generator import PulseGenerator
-from src.estados import *
+from src.modos import *
 
 def main():
     """
@@ -60,6 +59,9 @@ def main():
         while ev := ihm.poll_event():
             match modo, ev:
                 case ModoTempo(), 'next_modo':
+                    modo = ModoAutonomo(client, ihm, encoders)
+
+                case ModoAutonomo(), 'next_modo':
                     modo = ModoTempo(client, ihm, encoders)
 
                 case _, _:

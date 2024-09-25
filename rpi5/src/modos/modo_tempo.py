@@ -26,7 +26,7 @@ class ModoTempo:
                 self.estado = EstadoReady(self.ihm)
 
             case(EstadoReady(), 'next_estado'):
-                self.estado =EstadoDisparo(self.ihm, self.encoders)
+                self.estado = EstadoDisparo(self.ihm, self.encoders)
 
             case(EstadoDisparo(), 'next_estado'):
                 self.estado = EstadoSet(self.ihm)

@@ -12,19 +12,27 @@ class IHM:
         self.flask_interface = FlaskInterfaceApp(self.send_event, get_img)
         self.oled_screen = Screen()
 
+        self.modo: str = ''
+        self.estado: str = ''
+        self.ip: str = ''
+        self.pizero_status: str  = ''
+
     def send_event(self, ev):
         self._event_queue.put(ev)
 
-    def print_message(self, message: str):
-        for line, text in enumerate(message.split('\n')):
-            self.oled_screen.drawLine(line, text)
+    def update_display(self):
+        self.oled_screen.drawLine(0, f'MODO: {self.modo}', 'center')
+        self.oled_screen.drawLine(1, f'ESTADO: {self.estado}', 'center')
+
+        self.oled_screen.drawLine(3, f'IP: {self.ip}')
+        self.oled_screen.drawLine(4, f'SONDA: {self.ip}')
+
         self.oled_screen.update()
 
     def start_listening(self, event_sources):
         for source in event_sources:
             self._threads.append(Thread(daemon=True, target=source))
             self._threads[-1].start()
-
 
     def poll_event(self):
         if self._event_queue.empty():

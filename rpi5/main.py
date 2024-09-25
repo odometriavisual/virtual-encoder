@@ -49,6 +49,10 @@ def main():
 
     time.sleep(1)
 
+    ihm.modo = 'TEMPO'
+    ihm.ip = 'NOT.IMPL.'
+    ihm.pizero_status = 'NOT.IMPL'
+
     estado = EstadoSet(ihm)
     next_estado = None
 

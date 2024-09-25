@@ -7,7 +7,7 @@ from picamera2.outputs import FileOutput
 from libcamera import controls
 
 
-class local_PiZeroClient:
+class Local_PiZeroClient:
     def __init__(self):
         # Inicializa a câmera
         self.picam2 = Picamera2()
@@ -58,7 +58,3 @@ class local_PiZeroClient:
         raise NotImplementedError
 
 
-client = local_PiZeroClient()
-while True:
-    time.sleep(1)
-    print(client.get_img())

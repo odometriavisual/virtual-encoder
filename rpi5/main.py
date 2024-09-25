@@ -36,10 +36,10 @@ def main():
     def check_all_buttons():
         while True:
             if buttons[0].checkButton() is True:
-                ihm.send_event("botao1")
+                ihm.send_event("next_modo")
                 time.sleep(1)
             if buttons[1].checkButton() is True:
-                ihm.send_event("botao2")
+                ihm.send_event("next_estado")
                 time.sleep(1)
             if buttons[2].checkButton() is True:
                 ihm.send_event("botao3")
@@ -59,7 +59,7 @@ def main():
     while True:
         while ev := ihm.poll_event():
             match modo, ev:
-                case ModoTempo(), 'botao1':
+                case ModoTempo(), 'next_modo':
                     modo = ModoTempo(client, ihm, encoders)
 
                 case _, _:

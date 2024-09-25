@@ -19,18 +19,14 @@ class ModoTempo:
 
     def handle_event(self, ev):
         match self.estado, ev:
-            case(EstadoSet(), 'botao2'):
-                print('Transicao: Set -> Calibracao')
+            case(EstadoSet(), 'next_estado'):
                 self.estado = EstadoCalibracao(self.ihm, self.client)
 
             case(EstadoCalibracao(), 'fim_calibracao'):
-                print('Transicao: Calibracao -> Ready')
                 self.estado = EstadoReady(self.ihm)
 
-            case(EstadoReady(), 'botao2'):
-                print('Transicao: Ready -> Disparo')
+            case(EstadoReady(), 'next_estado'):
                 self.estado =EstadoDisparo(self.ihm, self.encoders)
 
-            case(EstadoDisparo(), 'botao2'):
-                print('Transicao: Disparo -> Set')
+            case(EstadoDisparo(), 'next_estado'):
                 self.estado = EstadoSet(self.ihm)

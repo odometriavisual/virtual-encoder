@@ -1,4 +1,4 @@
-'''
+"""
 # Exemplo de uso
 
 display = Screen()
@@ -7,7 +7,7 @@ while True:
     display.drawLine(1, "Linha 2")
     display.update()
     time.sleep(1)
-'''
+"""
 
 import busio
 import adafruit_ssd1306
@@ -33,14 +33,14 @@ class Screen:
         # Carrega a fonte padrão
         self.font = ImageFont.load_default()
 
-    def drawLine(self, line: int, text: str):
+    def drawLine(self, line: int, text: str, align: str = 'left'):
         line_height = 12  # Altura da linha em pixels (ajustável)
         y_position = line * line_height
 
         # Limpa a linha especificada
         self.draw.rectangle((0, y_position, self.width, y_position + line_height), outline=0, fill=0)
         # Desenha o texto
-        self.draw.text((0, y_position), text, font=self.font, fill=255)
+        self.draw.text((0, y_position), text, align=align, font=self.font, fill=255)
 
     def update(self):
         self.oled.image(self.image)

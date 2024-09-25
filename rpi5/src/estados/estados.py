@@ -4,7 +4,8 @@ from ..pulse_generator import PulseGenerator
 
 class EstadoSet:
     def __init__(self, ihm):
-        ihm.print_message(f'\nEstado: SET')
+        ihm.estado = 'SET'
+        ihm.update_display()
 
     def run(self):
         time.sleep(0.001)
@@ -12,7 +13,8 @@ class EstadoSet:
 
 class EstadoReady:
     def __init__(self, ihm):
-        ihm.print_message(f'\nEstado: READY')
+        ihm.estado = 'READY'
+        ihm.update_display()
 
     def run(self):
         time.sleep(0.001)
@@ -20,10 +22,12 @@ class EstadoReady:
 
 class EstadoDisparo:
     def __init__(self, ihm, encoders: (PulseGenerator, PulseGenerator, PulseGenerator)):
-        ihm.print_message(f'\nEstado: DISPARO')
         self.period = 1
         self.next_time = time.monotonic() + self.period
         self.encoders = encoders
+
+        ihm.estado = 'DISPARO'
+        ihm.update_display()
 
     def run(self):
         current_time = time.monotonic()

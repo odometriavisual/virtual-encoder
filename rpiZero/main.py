@@ -1,4 +1,6 @@
-from estados.local_estadocalibracao import Local_EstadoCalibracao
+from modos.local_estadocalibracao import Local_EstadoCalibracao
+from modos.estadoserver import estadoserver
+
 from src.local_pizeroclient import Local_PiZeroClient
 import time
 

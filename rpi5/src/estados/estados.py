@@ -4,21 +4,19 @@ from ..pulse_generator import PulseGenerator
 
 class EstadoSet:
     def __init__(self, ihm):
-        ihm.estado = 'SET'
+        ihm.estado = 'Set'
         ihm.update_display()
 
     def run(self):
         time.sleep(0.001)
-        return None
 
 class EstadoReady:
     def __init__(self, ihm):
-        ihm.estado = 'READY'
+        ihm.estado = 'Ready'
         ihm.update_display()
 
     def run(self):
         time.sleep(0.001)
-        return None
 
 class EstadoDisparo:
     def __init__(self, ihm, encoders: (PulseGenerator, PulseGenerator, PulseGenerator)):
@@ -26,7 +24,7 @@ class EstadoDisparo:
         self.next_time = time.monotonic() + self.period
         self.encoders = encoders
 
-        ihm.estado = 'DISPARO'
+        ihm.estado = 'Disparo'
         ihm.update_display()
 
     def run(self):
@@ -38,5 +36,4 @@ class EstadoDisparo:
             self.next_time = current_time + self.period
 
         time.sleep(0.001)
-        return None
 

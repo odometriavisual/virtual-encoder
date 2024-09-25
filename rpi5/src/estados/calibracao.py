@@ -40,7 +40,7 @@ class EstadoCalibracao:
 
         self.client.set_focus(self.actual_focus)
 
-        self.ihm.estado = 'CALIBRACAO'
+        self.ihm.estado = 'Calibrando...'
         self.ihm.update_display()
 
     def run(self):
@@ -61,7 +61,4 @@ class EstadoCalibracao:
 
         else:
             self.client.set_focus(self.best_focus_value)
-            return EstadoReady(self.ihm)
-
-        return None
-
+            self.ihm.send_event('fim_calibracao')

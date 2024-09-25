@@ -32,4 +32,3 @@ class EstadoAtivado:
         deltax, deltay = self.odometer.estimate_last_displacement()
 
         print(f"Frame:  delta:[{deltax:>5.2f},{deltay:>5.2f}]")
-        return None

@@ -3,6 +3,7 @@
 import time
 from visual_odometer import VisualOdometer
 
+from src.modos.modo_tempo import ModoTempo
 from src.ihm.ihm import IHM
 from src.ihm.gpiod_button import GpiodButton
 from src.pi_zero_client import PiZeroClient
@@ -53,37 +54,18 @@ def main():
     ihm.ip = 'NOT.IMPL.'
     ihm.pizero_status = 'NOT.IMPL'
 
-    estado = EstadoSet(ihm)
-    next_estado = None
+    modo = ModoTempo(client, ihm, encoders)
 
     while True:
-        while next_estado is None:
-            while ev := ihm.poll_event():
-                match (estado, ev):
-                    case (EstadoSet(), 'botao1'):
-                        print('Transicao: Set -> Disparo')
-                        next_estado = EstadoDisparo(ihm, encoders)
-                    case (EstadoDisparo(), 'botao1'):
-                        print('Transicao: Disparo -> Set')
-                        next_estado = EstadoSet(ihm)
+        while ev := ihm.poll_event():
+            match modo, ev:
+                case ModoTempo(), 'botao1':
+                    modo = ModoTempo(client, ihm, encoders)
 
-                    case (EstadoSet(), 'botao2'):
-                        print('Transicao: Set -> Calibracao')
-                        next_estado = EstadoCalibracao(ihm, client)
-                    case (EstadoReady(), 'botao2'):
-                        print('Transicao: Ready -> Disparo')
-                        next_estado = EstadoDisparo(ihm, encoders)
-                    case (EstadoDisparo(), 'botao2'):
-                        print('Transicao: Disparo -> Set')
-                        next_estado = EstadoSet(ihm)
+                case _, _:
+                    modo.handle_event(ev)
 
-                    case (_, ('set_focus', focus)):
-                        client.set_focus(focus)
-
-            if next_estado is None:
-                next_estado = estado.run()
-
-        estado, next_estado = next_estado, None
+        modo.run()
 
 if __name__ == '__main__':
     main()

@@ -40,7 +40,7 @@ class PiZeroClient:
     def set_exposure(self, exposure: int):
         requests.get(f'{PIZERO_HOST}/exposure.html/{exposure}')
 
-    def get_orientation(self) -> [float, float, float, float]:
+    def get_orientation(self) -> [float, float, float, float, float, float]:
         return requests.get(f'{PIZERO_HOST}/imu.html').text.strip().split(',')
 
     def get_img(self) -> cv2.Mat:

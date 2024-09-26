@@ -66,11 +66,11 @@ class StreamingHandler(server.BaseHTTPRequestHandler):
             self.wfile.write(content)
         elif self.path == '/imu.html':
             if bno_enabled == True:
-                texto0 = str(sensor.quaternion)
+                quat = sensor.quaternion
             else:
-                texto0 = "0,0,0,0"
-            texto = t0 + "_" + t1 + "_" + texto0
+                quat = (0, 0, 0, 0)
             t1 = time.monotonic_ns()
+            texto = f"{t0},{t1},{quat[0]},{quat[1]},{quat[2]},{quat[3]}"
             content = texto.encode('utf-8')
             self.send_response(200)
             self.send_header('Content-Type', 'text/html')

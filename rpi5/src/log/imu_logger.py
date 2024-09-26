@@ -10,6 +10,9 @@ class IMULogger:
         self.filename = filename
         self.index = 0
 
+        self.measure_period = 0.1 * 1e9 # ns
+        self.save_period = 10 * 1e9 # ns
+
         if isfile(filename):
             self.measures = np.load(filename)
             self.measures.sort(axis=0)
@@ -25,18 +28,18 @@ class IMULogger:
 
     def listen(self, client: PiZeroClient):
         def _listen():
-            time_now = time.monotonic()
-            next_measure = time_now + 0.1
-            next_save = time_now + 10
+            time_now = time.monotonic_ns()
+            next_measure = time_now + self.measure_period
+            next_save = time_now + self.save_period
 
             while True:
-                time_now = time.monotonic()
+                time_now = time.monotonic_ns()
                 if time_now > next_measure:
-                    next_measure = time_now + 0.1
+                    next_measure = next_measure + self.measure_period
                     self.insert(client.get_orientation())
 
                 if time_now > next_save:
-                    next_save = time_now + 30
+                    next_save = next_save + self.save_period
                     self.save()
 
                 time.sleep(0.01)

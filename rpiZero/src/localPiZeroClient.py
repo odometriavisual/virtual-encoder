@@ -5,9 +5,9 @@ from picamera2 import Picamera2
 from picamera2.encoders import JpegEncoder
 from picamera2.outputs import FileOutput
 from libcamera import controls
+import cv2
 
-
-class Local_PiZeroClient:
+class LocalPiZeroClient:
     def __init__(self):
         # Inicializa a câmera
         self.picam2 = Picamera2()
@@ -17,13 +17,16 @@ class Local_PiZeroClient:
 
         self.vid_lock = threading.Lock()
         self.frame = None
+        self.frame_available = threading.Event()
 
         def update():
             while True:
                 time.sleep(0.001)
                 with self.vid_lock:
+
                     # Captura um frame da câmera
                     self.frame = self.picam2.capture_array()
+                    self.frame_available.set()
 
                     # Salva a imagem no diretório especificado
                     imgs_directory = '/home/pi/picam_imgs'
@@ -50,6 +53,12 @@ class Local_PiZeroClient:
         # Retorna o frame mais recente capturado
         with self.vid_lock:
             return self.frame
+
+    def get_encoded_img(self):
+        self.frame_available.wait()
+        npArrayImg = self.get_img()
+        _, buffer = cv2.imencode('.jpg', npArrayImg)
+        return buffer.tobytes()
 
     def download_all_images(self):
         raise NotImplementedError

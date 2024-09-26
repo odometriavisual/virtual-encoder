@@ -1,20 +1,17 @@
-from modos.local_estadocalibracao import Local_EstadoCalibracao
-from modos.estadoserver import estadoserver
 
-from src.local_pizeroclient import Local_PiZeroClient
+from src.localPiZeroClient import LocalPiZeroClient
+from src.server import Server
 import time
+from src.localCalibration import startLocalCalibration
 
 def main():
-    client = Local_PiZeroClient()
+    client = LocalPiZeroClient()
     time.sleep(1)
+    
+    #startLocalCalibration(client)
 
-    ihm = None #Apenas para não mudar a estrutura original do EstadoCalibracao
-
-    modo = Local_EstadoCalibracao(ihm,client)
-
-    while True:
-        modo.run()
-
+    server = Server(client)
+    server.run()
 
 if __name__ == '__main__':
     main()

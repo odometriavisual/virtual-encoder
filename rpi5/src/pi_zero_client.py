@@ -24,7 +24,7 @@ class PiZeroClient:
                         self.vid_lock.release()
 
                         imgs_directory = '/home/pi/picam_imgs'
-                        filename = f'{imgs_directory}/{time.time_ns()}.jpg'
+                        filename = f'{imgs_directory}/{time.monotonic_ns()}.jpg'
                         cv2.imwrite(filename, self.frame)
                 else:
                     self.vid.open(f'{PIZERO_HOST}/stream.mjpg')

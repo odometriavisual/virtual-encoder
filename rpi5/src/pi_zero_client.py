@@ -15,11 +15,13 @@ class PiZeroClient:
             while True:
                 time.sleep(0.001)
                 if self.vid.isOpened():
-                    self.vid_lock.acquire()
-                    ret, self.frame = self.vid.read()
-                    self.vid_lock.release()
+                    ret, frame = self.vid.read()
 
                     if ret:
+                        self.vid_lock.acquire()
+                        self.frame = frame
+                        self.vid_lock.release()
+
                         imgs_directory = '/home/pi/picam_imgs'
                         filename = f'{imgs_directory}/{time.time_ns()}.jpg'
                         cv2.imwrite(filename, self.frame)

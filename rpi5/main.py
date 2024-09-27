@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
 import time
+from socket import gethostname
 from visual_odometer import VisualOdometer
 
 from src.ihm.ihm import IHM
@@ -50,7 +51,7 @@ def main():
     time.sleep(1)
 
     ihm.modo = 'TEMPO'
-    ihm.ip = 'NOT.IMPL.'
+    ihm.ip = f'{gethostname()}.local'
     ihm.pizero_status = 'Ok.' if client.is_network_up() else 'Not found.'
 
     modo = ModoTempo(client, ihm, encoders)

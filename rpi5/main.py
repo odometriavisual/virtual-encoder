@@ -51,11 +51,19 @@ def main():
 
     ihm.modo = 'TEMPO'
     ihm.ip = 'NOT.IMPL.'
-    ihm.pizero_status = 'NOT.IMPL'
+    ihm.pizero_status = 'Ok.' if client.is_network_up() else 'Not found.'
 
     modo = ModoTempo(client, ihm, encoders)
+    time_now = time.monotonic_ns()
+    next_display_update = time_now + 5e9
 
     while True:
+        time_now = time.monotonic_ns()
+        if time_now > next_display_update:
+            next_display_update = next_display_update + 5e9
+            ihm.pizero_status = 'Ok.' if client.is_network_up() else 'Not found.'
+            ihm.update_display()
+
         while ev := ihm.poll_event():
             match modo, ev:
                 case ModoTempo(), 'next_modo':
@@ -64,7 +72,7 @@ def main():
                 case ModoAutonomo(), 'next_modo':
                     modo = ModoTempo(client, ihm, encoders)
 
-                case _, _:
+                case _:
                     modo.handle_event(ev)
 
         modo.run()

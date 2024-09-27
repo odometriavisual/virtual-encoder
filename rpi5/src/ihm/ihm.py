@@ -25,7 +25,7 @@ class IHM:
         self.oled_screen.drawLine(1, f'ESTADO: {self.estado}', 'center')
 
         self.oled_screen.drawLine(3, f'IP: {self.ip}')
-        self.oled_screen.drawLine(4, f'SONDA: {self.ip}')
+        self.oled_screen.drawLine(4, f'Modem USB: {self.pizero_status}')
 
         self.oled_screen.update()
 

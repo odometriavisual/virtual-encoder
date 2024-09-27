@@ -2,6 +2,7 @@ import cv2
 import requests
 import threading
 import time
+from os.path import isdir
 
 PIZERO_HOST = 'http://raspberrypi00.local:7123'
 
@@ -52,6 +53,9 @@ class PiZeroClient:
         frame = self.frame
         self.vid_lock.release()
         return frame
+
+    def is_network_up(self):
+        return isdir('/sys/class/net/usb0')
 
     def download_all_images(self):
         raise NotImplemented

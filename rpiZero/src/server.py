@@ -83,16 +83,8 @@ class Server:
                 response = "Iniciando autofoco"
                 self._send_page(response.encode('utf-8'))
                 startLocalCalibration(self.client)
-            elif self.path == '/dev/detectChessCorners':
-                img = cv2.bitwise_not(self.client.get_img())
-                gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-                cv2.imwrite("test.png", gray)
-                ret, corners = cv2.findChessboardCorners(gray, patternSize=(7, 7), corners=None)
-                print(corners.shape)
-                if ret:
-                    response = f"{corners[0][0]},{corners[6][0]}"
-                else:
-                    response = "Not detected"
+            elif self.path == '/dev/calibration':
+                response = self._find_mm_per_pixel_calibration()
                 self._send_page(response.encode('utf-8'))
             else:
                 self.send_error(404)
@@ -134,6 +126,31 @@ class Server:
             distance = np.sqrt((x2 - x1) ** 2 + (y2 - y1) ** 2)
             return distance
 
+        def _find_mm_per_pixel_calibration(self):
+            img = self.client.get_img()
+
+            ret, corners = self._find_corners(img)
+            if ret:
+                self.chessboard_detected = True
+                # cv2.drawChessboardCorners(img, (6,6), corners, ret)
+
+                pixel_distance_horizontal = self._calculate_distance(corners[0][0], corners[5][0])
+                # pixel_distance_vertical = self._calculate_distance(corners[5][0], corners[35][0])
+
+                chess_size = 50  # mm
+                chess_squares = 7
+                chess_internal_squares = 5
+
+                per_square_size = chess_size / chess_squares  # mm
+                detected_squares_total_size = chess_internal_squares * per_square_size  # mm
+
+                mm_per_pixel_calibration = detected_squares_total_size / pixel_distance_horizontal
+
+                return mm_per_pixel_calibration
+
+            else:
+                self.chessboard_detected = False
+
         def _stream_video(self):
             self.send_response(200)
             self.send_header('Age', 0)
@@ -145,30 +162,6 @@ class Server:
                 while True:
                     # Captura e processamento da imagem
                     img = self.client.get_img()
-
-                    # Detecção de cantos do chessboard
-                    ret, corners = self._find_corners(img)
-                    if ret:
-                        self.chessboard_detected = True
-                        #cv2.drawChessboardCorners(img, (6,6), corners, ret)
-
-
-                        pixel_distance_horizontal = self._calculate_distance(corners[0][0], corners[5][0])
-
-                        #pixel_distance_vertical = self._calculate_distance(corners[5][0], corners[35][0])
-
-                        chess_size = 50 #mm
-                        chess_squares = 7
-                        chess_internal_squares = 5
-
-                        per_square_size = chess_size / chess_squares #px
-                        detected_squares_total_size = chess_internal_squares * per_square_size #px
-
-                        mm_per_pixel_calibration = detected_squares_total_size/pixel_distance_horizontal
-                        print(mm_per_pixel_calibration)
-
-                    else:
-                        self.chessboard_detected = False
 
                     _ret, buffer = cv2.imencode('.jpg', img)
                     frame =  buffer.tobytes()

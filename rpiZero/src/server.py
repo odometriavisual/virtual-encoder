@@ -149,10 +149,9 @@ class Server:
                 while True:
                     # Captura e processamento da imagem
                     img = cv2.bitwise_not(self.client.get_img())
-                    gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
 
                     # Detecção de cantos do chessboard
-                    ret, corners = self._find_corners(gray)
+                    ret, corners = self._find_corners(img)
                     if ret:
                         self.chessboard_detected = True
                     else:

@@ -136,7 +136,7 @@ class Server:
                         self.chessboard_detected = True
                     else:
                         self.chessboard_detected = False
-
+                    print(self.chessboard_detected)
                     # Codifica a imagem para MJPEG
                     frame = self.client.get_encoded_img()
 

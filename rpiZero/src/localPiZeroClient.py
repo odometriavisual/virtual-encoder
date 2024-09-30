@@ -53,7 +53,7 @@ class LocalPiZeroClient:
         # Ajusta o foco da câmera
         self.picam2.set_controls({"AfMode": controls.AfModeEnum.Manual, "LensPosition": float(focus)})
 
-    def set_exposure(self, exposure: int):
+    def set_exposure(self, exposure: float):
         # Ajusta a exposição da câmera
         self.picam2.set_controls({"ExposureTime": exposure})
 

@@ -97,7 +97,7 @@ class Server:
 
         def _extract_number_from_path(self):
             try:
-                return int(self.path.split('/')[-1])
+                return float(self.path.split('/')[-1])
             except (ValueError, IndexError):
                 return 0
 

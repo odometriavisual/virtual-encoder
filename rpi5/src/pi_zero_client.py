@@ -34,10 +34,10 @@ class PiZeroClient:
         self.vid_thread = threading.Thread(daemon=True, target=update)
         self.vid_thread.start()
 
-    def set_focus(self, focus: int):
+    def set_focus(self, focus: float):
         requests.get(f'{PIZERO_HOST}/focus.html/{focus}')
 
-    def set_exposure(self, exposure: int):
+    def set_exposure(self, exposure: float):
         requests.get(f'{PIZERO_HOST}/exposure.html/{exposure}')
 
     def get_orientation(self) -> [float, float, float, float]:

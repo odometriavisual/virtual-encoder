@@ -8,22 +8,23 @@ def main():
     client = LocalPiZeroClient()
     time.sleep(1)
 
-    startLocalCalibration(client, 0, 15, 1)
-
-
-    img = client.get_img()
-    gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-    ret, corners = cv2.findChessboardCorners(gray,  patternSize=(7, 7), corners=None)
-
-    if ret:
-        point1 = corners[0][0]  # Ponto no topo à esquerda
-        point2 = corners[6][0]  # Ponto no topo à direita
-        print(point1)
-        print(point2)
-
-
+    #startLocalCalibration(client, 0, 15, 1)
     server = Server(client)
     server.run()
+
+
+    while True:
+        img = client.get_img()
+        gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+        ret, corners = cv2.findChessboardCorners(gray,  patternSize=(7, 7), corners=None)
+        print(gray)
+        if ret:
+            point1 = corners[0][0]  # Ponto no topo à esquerda
+            point2 = corners[6][0]  # Ponto no topo à direita
+            print(point1)
+            print(point2)
+
+
 
 
 if __name__ == '__main__':

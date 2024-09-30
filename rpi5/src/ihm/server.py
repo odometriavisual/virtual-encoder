@@ -1,4 +1,5 @@
 import cv2
+import time
 from flask import Flask, Response, request
 
 class FlaskInterfaceApp:
@@ -13,12 +14,21 @@ class FlaskInterfaceApp:
         self.send_event = send_event
 
     def generate_frames(self):
+        period = 1_000_000_000 // 30
+        time_now = time.monotonic_ns()
+        next_time = time_now
         while True:
-            frame = self.get_img()
-            buffer = cv2.imencode('.jpg', frame)
-            buffer_bytes = buffer[1].tobytes()
-            yield (b'--frame\r\n'
-                    b'Content-Type: image/jpeg\r\n\r\n' + buffer_bytes + b'\r\n')
+            time_now = time.monotonic_ns()
+
+            if time_now >= next_time:
+                next_time += period
+                frame = self.get_img()
+                buffer = cv2.imencode('.jpg', frame)
+                buffer_bytes = buffer[1].tobytes()
+                yield b'--frame\r\n' b'Content-Type: image/jpeg\r\n\r\n' + buffer_bytes + b'\r\n'
+
+            else:
+                time.sleep(0.005)
 
     def setup_routes(self):
         @self.app.route('/video_feed')

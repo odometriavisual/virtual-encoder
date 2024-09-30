@@ -33,6 +33,7 @@ class Server:
     def __init__(self, client:LocalPiZeroClient, port:int = 7123):
         self.client = client
         self.address = ('', port)
+        startLocalCalibration(self.client)
 
     def run(self):
         handler = lambda *args, **kwargs: self.MJPEGHandler(*args, client=self.client, **kwargs)

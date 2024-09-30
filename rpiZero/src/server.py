@@ -120,7 +120,7 @@ class Server:
                 return 0
 
         def _find_corners(self, img):
-            ret, corners = cv2.findChessboardCorners(img, (7, 7), flags=cv2.CALIB_CB_ADAPTIVE_THRESH+cv2.CALIB_CB_EXHAUSTIVE)
+            ret, corners = cv2.findChessboardCorners(img, (6, 6), flags=cv2.CALIB_CB_ADAPTIVE_THRESH+cv2.CALIB_CB_EXHAUSTIVE)
             return ret, corners
 
         def _stream_video(self):

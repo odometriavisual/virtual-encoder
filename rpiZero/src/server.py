@@ -80,7 +80,7 @@ class Server:
             elif self.path == '/dev/autofoco':
                 startLocalCalibration(self.client)
             elif self.path == '/dev/detectChessCorners':
-                img = self.client.get_img()
+                img = cv2.bitwise_not(self.client.get_img())
                 gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
                 cv2.imwrite("test.png", gray)
                 ret, corners = cv2.findChessboardCorners(gray, patternSize=(7, 7), corners=None)

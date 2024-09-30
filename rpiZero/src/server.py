@@ -64,12 +64,12 @@ class Server:
             elif self.path == '/imu.html':
                 self._send_page(self._get_timestamp_and_imu_data().encode('utf-8'))
             elif self.path.startswith('/focus.html'):
-                focus_value = self._extract_number_from_path()
+                focus_value = float(self._extract_last_path())
                 self.client.set_focus(focus_value)
                 response = f"Foco selecionado: {focus_value}"
                 self._send_page(response.encode('utf-8'))
             elif self.path.startswith('/exposure.html'):
-                exposure_value = self._extract_number_from_path()
+                exposure_value = int(self._extract_number_from_path())
                 self.client.set_exposure(exposure_value)
                 response = f"Exposição selecionada: {exposure_value}"
                 self._send_page(response.encode('utf-8'))
@@ -95,9 +95,9 @@ class Server:
             orientation = self.client.get_orientation()
             return f"{time.time_ns()}_{time.monotonic_ns()}_{orientation}"
 
-        def _extract_number_from_path(self):
+        def _extract_last_path(self):
             try:
-                return float(self.path.split('/')[-1])
+                return self.path.split('/')[-1]
             except (ValueError, IndexError):
                 return 0
 

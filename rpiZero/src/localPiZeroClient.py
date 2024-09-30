@@ -49,7 +49,7 @@ class LocalPiZeroClient:
         self.vid_thread = threading.Thread(daemon=True, target=update)
         self.vid_thread.start()
 
-    def set_focus(self, focus: int):
+    def set_focus(self, focus: float):
         # Ajusta o foco da câmera
         self.picam2.set_controls({"AfMode": controls.AfModeEnum.Manual, "LensPosition": float(focus)})
 

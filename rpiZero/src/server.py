@@ -121,7 +121,7 @@ class Server:
 
         def _find_corners(self, img):
             img_gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-            ret1, corners = cv2.findChessboardCorners(img_gray, (6, 6), flags=cv2.CALIB_CB_ADAPTIVE_THRESH | cv2.CALIB_CB_NORMALIZE_IMAGE)
+            ret1, corners = cv2.findChessboardCorners(img_gray, (5, 5), flags=cv2.CALIB_CB_ADAPTIVE_THRESH | cv2.CALIB_CB_NORMALIZE_IMAGE)
             ret2, corners = cv2.findChessboardCorners(img_gray, (7, 7), flags=cv2.CALIB_CB_ADAPTIVE_THRESH | cv2.CALIB_CB_NORMALIZE_IMAGE)
             print(corners)
             ret3, corners = cv2.findChessboardCorners(img_gray, (8, 8), flags=cv2.CALIB_CB_ADAPTIVE_THRESH | cv2.CALIB_CB_NORMALIZE_IMAGE)
@@ -140,7 +140,7 @@ class Server:
             try:
                 while True:
                     # Captura e processamento da imagem
-                    img = cv2.bitwise_not(self.client.get_img())
+                    img = self.client.get_img()
 
                     # Detecção de cantos do chessboard
                     ret, corners = self._find_corners(img)

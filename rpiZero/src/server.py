@@ -121,14 +121,9 @@ class Server:
 
         def _find_corners(self, img):
             img_gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-
             temp = cv2.GaussianBlur(img_gray, (0, 0), 105)
             img_gray = cv2.addWeighted(img_gray, 1.8, temp, -0.8, 0, img_gray)
-
             ret, corners = cv2.findChessboardCorners(img_gray, (6, 6), flags=cv2.CALIB_CB_ADAPTIVE_THRESH | cv2.CALIB_CB_NORMALIZE_IMAGE)
-            print(corners)
-
-
             return ret, corners
 
         def _stream_video(self):
@@ -149,9 +144,11 @@ class Server:
                         self.chessboard_detected = True
                     else:
                         self.chessboard_detected = False
+
+                    _ret, buffer = cv2.imencode('.jpg', img)
+                    frame =  buffer.tobytes()
+
                     print(self.chessboard_detected)
-                    # Codifica a imagem para MJPEG
-                    frame = self.client.get_encoded_img()
 
                     self.wfile.write(b'--FRAME\r\n')
                     self.send_header('Content-Type', 'image/jpeg')

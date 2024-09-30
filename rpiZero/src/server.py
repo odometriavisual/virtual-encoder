@@ -126,7 +126,20 @@ class Server:
             self.end_headers()
             try:
                 while True:
+                    # Captura e processamento da imagem
+                    img = cv2.bitwise_not(self.client.get_img())
+                    gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+
+                    # Detecção de cantos do chessboard
+                    ret, corners = cv2.findChessboardCorners(gray, patternSize=(7, 7), corners=None)
+                    if ret:
+                        self.chessboard_detected = True
+                    else:
+                        self.chessboard_detected = False
+
+                    # Codifica a imagem para MJPEG
                     frame = self.client.get_encoded_img()
+
                     self.wfile.write(b'--FRAME\r\n')
                     self.send_header('Content-Type', 'image/jpeg')
                     self.send_header('Content-Length', len(frame))
@@ -135,4 +148,3 @@ class Server:
                     self.wfile.write(b'\r\n')
             except Exception as e:
                 logging.warning(f'Removed streaming client {self.client_address}: {str(e)}')
-

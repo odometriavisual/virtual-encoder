@@ -88,6 +88,7 @@ class Server:
                 gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
                 cv2.imwrite("test.png", gray)
                 ret, corners = cv2.findChessboardCorners(gray, patternSize=(7, 7), corners=None)
+                print(corners.shape)
                 if ret:
                     response = f"{corners[0][0]},{corners[6][0]}"
                 else:

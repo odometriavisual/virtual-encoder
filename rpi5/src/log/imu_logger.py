@@ -35,11 +35,14 @@ class IMULogger:
             while True:
                 time_now = time.monotonic_ns()
                 if time_now > next_measure:
-                    next_measure = next_measure + self.measure_period
-                    self.insert(client.get_orientation())
+                    next_measure += self.measure_period
+                    try:
+                        self.insert(client.get_orientation())
+                    except:
+                        next_measure += self.measure_period * 50
 
                 if time_now > next_save:
-                    next_save = next_save + self.save_period
+                    next_save += self.save_period
                     self.save()
 
                 time.sleep(0.01)

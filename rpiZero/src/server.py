@@ -31,8 +31,6 @@ class Server:
         self.client = client
         self.address = ('', port)
 
-
-
     def run(self):
         handler = lambda *args, **kwargs: self.MJPEGHandler(*args, client=self.client, **kwargs)
         self.server = self.StreamingServer(self.address, handler)
@@ -92,10 +90,8 @@ class Server:
             self.end_headers()
 
         def _get_timestamp_and_imu_data(self):
-            if self.client.sensor:
-                orientation = self.client.get_orientation()
-                return f"{time.time()}_{time.monotonic_ns()}_{orientation}"
-            return f"{time.time()}_{time.monotonic_ns()}_0,0,0,0"
+            orientation = self.client.get_orientation()
+            return f"{time.time()}_{time.monotonic_ns()}_{orientation}"
 
         def _extract_number_from_path(self):
             try:

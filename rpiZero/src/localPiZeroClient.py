@@ -22,9 +22,11 @@ class LocalPiZeroClient:
         self.frame = None
         self.frame_available = threading.Event()
 
+        self.sensor_enabled = False
         i2c = board.I2C()
         try:
             self.sensor = adafruit_bno055.BNO055_I2C(i2c, 0x29)
+            self.sensor_enabled = True
         except:
             warnings.warn("Não foi possível iniciar o bno055, ele será desabilitado")
 
@@ -54,9 +56,10 @@ class LocalPiZeroClient:
         self.picam2.set_controls({"ExposureTime": exposure})
 
     def get_orientation(self) -> [float, float, float, float]:
-        # Simulando a orientação do sensor IMU
-        # A implementação real vai depender do sensor IMU conectado ao Pi Zero
-        return [0.0, 0.0, 0.0, 0.0]
+        if self.sensor_enabled is True:
+            return self.sensor.quaternion
+        else:
+            return [0.0, 0.0, 0.0, 0.0]
 
     def get_img(self):
         # Retorna o frame mais recente capturado

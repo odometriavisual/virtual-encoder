@@ -121,7 +121,6 @@ class Server:
 
         def _find_corners(self, img):
             img_gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-            img_gray = cv2.equalizeHist(img_gray)
             ret1, corners = cv2.findChessboardCorners(img_gray, (6, 6), flags=cv2.CALIB_CB_ADAPTIVE_THRESH+cv2.CALIB_CB_EXHAUSTIVE)
             ret2, corners = cv2.findChessboardCorners(img_gray, (7, 7), flags=cv2.CALIB_CB_ADAPTIVE_THRESH+cv2.CALIB_CB_EXHAUSTIVE)
             print(corners)

@@ -37,7 +37,7 @@ class PiZeroClient:
     def set_focus(self, focus: float):
         requests.get(f'{PIZERO_HOST}/focus.html/{focus}')
 
-    def set_exposure(self, exposure: float):
+    def set_exposure(self, exposure: int):
         requests.get(f'{PIZERO_HOST}/exposure.html/{exposure}')
 
     def get_orientation(self) -> [float, float, float, float]:

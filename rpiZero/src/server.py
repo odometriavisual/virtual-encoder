@@ -142,6 +142,7 @@ class Server:
                     ret, corners = self._find_corners(img)
                     if ret:
                         self.chessboard_detected = True
+                        cv2.drawChessboardCorners(img, (6,6), corners, ret)
                     else:
                         self.chessboard_detected = False
 

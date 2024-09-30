@@ -150,21 +150,28 @@ class Server:
                     ret, corners = self._find_corners(img)
                     if ret:
                         self.chessboard_detected = True
-                        cv2.drawChessboardCorners(img, (6,6), corners, ret)
+                        #cv2.drawChessboardCorners(img, (6,6), corners, ret)
 
 
                         pixel_distance_horizontal = self._calculate_distance(corners[0][0], corners[5][0])
-                        pixel_distance_vertical = self._calculate_distance(corners[5][0], corners[35][0])
-                        print(pixel_distance_horizontal)
-                        print(pixel_distance_vertical)
+
+                        #pixel_distance_vertical = self._calculate_distance(corners[5][0], corners[35][0])
+
+                        chess_size = 50 #mm
+                        chess_squares = 7
+                        chess_internal_squares = 5
+
+                        per_square_size = chess_size / chess_squares #px
+                        detected_squares_total_size = chess_internal_squares * per_square_size #px
+
+                        mm_per_pixel_calibration = detected_squares_total_size/pixel_distance_horizontal
+                        print(mm_per_pixel_calibration)
 
                     else:
                         self.chessboard_detected = False
 
                     _ret, buffer = cv2.imencode('.jpg', img)
                     frame =  buffer.tobytes()
-
-                    print(self.chessboard_detected)
 
                     self.wfile.write(b'--FRAME\r\n')
                     self.send_header('Content-Type', 'image/jpeg')

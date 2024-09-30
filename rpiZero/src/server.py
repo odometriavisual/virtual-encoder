@@ -65,7 +65,8 @@ class Server:
                 self._send_page(self._get_timestamp_and_imu_data().encode('utf-8'))
             elif self.path.startswith('/focus.html'):
                 focus_value = self._extract_number_from_path()
-                response = self.client.set_focus(focus_value)
+                self.client.set_focus(focus_value)
+                response = f"Foco selecionado: {focus_value}"
                 self._send_page(response.encode('utf-8'))
             elif self.path.startswith('/exposure.html'):
                 exposure_value = self._extract_number_from_path()

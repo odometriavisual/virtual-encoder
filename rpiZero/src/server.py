@@ -131,7 +131,7 @@ class Server:
                     gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
 
                     # Detecção de cantos do chessboard
-                    ret, corners = cv2.findChessboardCorners(gray, patternSize=(6, 6), corners=None)
+                    ret, corners = cv2.findChessboardCorners(gray, patternSize=(5, 5), corners=None)
                     if ret:
                         self.chessboard_detected = True
                     else:

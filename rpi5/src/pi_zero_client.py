@@ -1,4 +1,5 @@
 import cv2
+import numpy as np
 import requests
 import threading
 import time
@@ -10,7 +11,7 @@ class PiZeroClient:
     def __init__(self):
         self.vid = cv2.VideoCapture()
         self.vid_lock = threading.Lock()
-        self.frame = None
+        self.frame = cv2.Mat(np.zeros((1, 1), dtype=np.float32))
 
         def update():
             while True:

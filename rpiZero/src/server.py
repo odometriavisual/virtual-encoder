@@ -14,6 +14,7 @@ import io
 
 from src.localPiZeroClient import LocalPiZeroClient
 from src.localCalibration import startLocalCalibration
+import numpy as np
 
 import cv2
 
@@ -117,6 +118,26 @@ class Server:
             except (ValueError, IndexError):
                 return 0
 
+        def _find_corners(self, img):
+            # Color-segmentation to get binary mask
+            lwr = np.array([0, 0, 143])
+            upr = np.array([179, 61, 252])
+            hsv = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
+            msk = cv2.inRange(hsv, lwr, upr)
+
+            # Extract chess-board
+            krn = cv2.getStructuringElement(cv2.MORPH_RECT, (50, 30))
+            dlt = cv2.dilate(msk, krn, iterations=5)
+            res = 255 - cv2.bitwise_and(dlt, msk)
+
+            # Displaying chess-board features
+            res = np.uint8(res)
+            ret, corners = cv2.findChessboardCorners(res, (7, 7),
+                                                     flags=cv2.CALIB_CB_ADAPTIVE_THRESH +
+                                                           cv2.CALIB_CB_FAST_CHECK +
+                                                           cv2.CALIB_CB_NORMALIZE_IMAGE
+            return ret, corners
+
         def _stream_video(self):
             self.send_response(200)
             self.send_header('Age', 0)
@@ -131,7 +152,7 @@ class Server:
                     gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
 
                     # Detecção de cantos do chessboard
-                    ret, corners = cv2.findChessboardCorners(gray, patternSize=(5, 5), corners=None)
+                    ret, corners = self._find_corners(gray)
                     if ret:
                         self.chessboard_detected = True
                     else:

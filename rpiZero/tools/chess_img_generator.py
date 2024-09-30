@@ -2,7 +2,7 @@ import numpy as np
 import cv2
 
 # Definir o tamanho do tabuleiro de xadrez (quantidade de quadrados internos)
-pattern_size = (7, 7)  # 7x7 quadrados internos (ajustar conforme necessário)
+pattern_size = (8, 8)  # 7x7 quadrados internos (ajustar conforme necessário)
 square_size = 50  # Tamanho de cada quadrado em pixels
 
 # Gerar a imagem do tabuleiro de xadrez

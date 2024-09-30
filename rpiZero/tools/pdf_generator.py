@@ -21,7 +21,7 @@ aspect_ratio = image.height / image.width
 desired_height_px = desired_width_px * aspect_ratio
 
 # Nome do arquivo PDF de saída
-output_pdf = f'output_chessboard_{desired_width_cm}cm.pdf'
+output_pdf = f'output/output_chessboard_{desired_width_cm}cm.pdf'
 
 # Criar um canvas PDF
 c = canvas.Canvas(output_pdf, pagesize=A4)

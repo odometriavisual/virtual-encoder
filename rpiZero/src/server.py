@@ -128,7 +128,7 @@ class Server:
 
         def _find_mm_per_pixel_calibration(self):
             img = self.client.get_img()
-
+            print(img.shape)
             ret, corners = self._find_corners(img)
             if ret:
                 self.chessboard_detected = True

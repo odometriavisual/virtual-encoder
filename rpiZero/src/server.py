@@ -125,14 +125,11 @@ class Server:
             temp = cv2.GaussianBlur(img_gray, (0, 0), 105)
             img_gray = cv2.addWeighted(img_gray, 1.8, temp, -0.8, 0, img_gray)
 
-            ret1, corners = cv2.findChessboardCorners(img_gray, (6, 6), flags=cv2.CALIB_CB_ADAPTIVE_THRESH | cv2.CALIB_CB_NORMALIZE_IMAGE)
-            ret2, corners = cv2.findChessboardCorners(img_gray, (7, 7), flags=cv2.CALIB_CB_ADAPTIVE_THRESH | cv2.CALIB_CB_NORMALIZE_IMAGE)
+            ret, corners = cv2.findChessboardCorners(img_gray, (6, 6), flags=cv2.CALIB_CB_ADAPTIVE_THRESH | cv2.CALIB_CB_NORMALIZE_IMAGE)
             print(corners)
-            ret3, corners = cv2.findChessboardCorners(img_gray, (8, 8), flags=cv2.CALIB_CB_ADAPTIVE_THRESH | cv2.CALIB_CB_NORMALIZE_IMAGE)
 
-            print(ret1, ret2, ret3)
 
-            return ret1, corners
+            return ret, corners
 
         def _stream_video(self):
             self.send_response(200)

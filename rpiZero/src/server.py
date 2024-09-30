@@ -144,6 +144,7 @@ class Server:
                     if ret:
                         self.chessboard_detected = True
                         cv2.drawChessboardCorners(img, (6,6), corners, ret)
+                        print(corners.shape)
                     else:
                         self.chessboard_detected = False
 
@@ -158,5 +159,6 @@ class Server:
                     self.end_headers()
                     self.wfile.write(frame)
                     self.wfile.write(b'\r\n')
+
             except Exception as e:
                 logging.warning(f'Removed streaming client {self.client_address}: {str(e)}')

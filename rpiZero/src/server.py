@@ -84,7 +84,7 @@ class Server:
                 self._send_page(response.encode('utf-8'))
                 startLocalCalibration(self.client)
             elif self.path == '/dev/calibration':
-                response = self._find_mm_per_pixel_calibration()
+                response = f"{self._find_mm_per_pixel_calibration()}"
                 self._send_page(response.encode('utf-8'))
             else:
                 self.send_error(404)

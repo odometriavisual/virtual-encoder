@@ -70,7 +70,8 @@ class Server:
                 self._send_page(response.encode('utf-8'))
             elif self.path.startswith('/exposure.html'):
                 exposure_value = self._extract_number_from_path()
-                response = self.client.set_exposure(exposure_value)
+                self.client.set_exposure(exposure_value)
+                response = f"Exposição selecionada: {exposure_value}"
                 self._send_page(response.encode('utf-8'))
             elif self.path == '/stream.mjpg':
                 self._stream_video()

@@ -9,9 +9,7 @@ def main():
     time.sleep(1)
 
     #startLocalCalibration(client, 0, 15, 1)
-    server = Server(client)
-    server.run()
-
+    client.set_focus(9)
 
     while True:
         img = client.get_img()
@@ -23,6 +21,9 @@ def main():
             point2 = corners[6][0]  # Ponto no topo à direita
             print(point1)
             print(point2)
+
+    server = Server(client)
+    server.run()
 
 
 

@@ -9,9 +9,11 @@ def main():
     time.sleep(1)
 
     startLocalCalibration(client, 4, 6, 0.1)
+
+
     img = client.get_img()
     gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-    ret, corners = cv2.findChessboardCorners(gray)
+    ret, corners = cv2.findChessboardCorners(gray,  patternSize=(7, 7), corners=None)
 
     if ret:
         point1 = corners[0][0]  # Ponto no topo à esquerda

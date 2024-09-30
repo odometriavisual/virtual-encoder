@@ -13,7 +13,9 @@ import time
 import io
 
 from src.localPiZeroClient import LocalPiZeroClient
+from src.localCalibration import startLocalCalibration
 
+import cv2
 
 PAGE = '''\
 <html>
@@ -75,6 +77,18 @@ class Server:
                 self._send_page(response.encode('utf-8'))
             elif self.path == '/stream.mjpg':
                 self._stream_video()
+            elif self.path == '/dev/autofoco':
+                startLocalCalibration(self.client)
+            elif self.path == '/dev/detectChessCorners':
+                img = self.client.get_img()
+                gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+                ret, corners = cv2.findChessboardCorners(gray, patternSize=(7, 7), corners=None)
+                print(gray)
+                if ret:
+                    response = f"{corners[0][0]},{corners[6][0]}"
+                else:
+                    response = "Not detected"
+                self._send_page(response.encode('utf-8'))
             else:
                 self.send_error(404)
                 self.end_headers()

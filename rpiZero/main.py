@@ -8,7 +8,7 @@ def main():
     client = LocalPiZeroClient()
     time.sleep(1)
 
-    startLocalCalibration(client, 4, 6, 0.1)
+    startLocalCalibration(client, 0, 15, 1)
 
 
     img = client.get_img()

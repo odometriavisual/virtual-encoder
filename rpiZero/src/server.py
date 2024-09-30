@@ -127,6 +127,13 @@ class Server:
             ret, corners = cv2.findChessboardCorners(img_gray, (6, 6), flags=cv2.CALIB_CB_ADAPTIVE_THRESH | cv2.CALIB_CB_NORMALIZE_IMAGE)
             return ret, corners
 
+        def _calculate_distance(self, corner1, corner2):
+            x1, y1 = corner1[0], corner1[1]
+            x2, y2 = corner2[0], corner2[1]
+
+            distance = np.sqrt((x2 - x1) ** 2 + (y2 - y1) ** 2)
+            return distance
+
         def _stream_video(self):
             self.send_response(200)
             self.send_header('Age', 0)
@@ -144,8 +151,13 @@ class Server:
                     if ret:
                         self.chessboard_detected = True
                         cv2.drawChessboardCorners(img, (6,6), corners, ret)
-                        print(corners[0][0])
-                        print(corners[35][0])
+
+
+                        pixel_distance_horizontal = self._calculate_distance(corners[0][0], corners[5][0])
+                        pixel_distance_vertical = self._calculate_distance(corners[5][0], corners[35][0])
+                        print(pixel_distance_horizontal)
+                        print(pixel_distance_vertical)
+
                     else:
                         self.chessboard_detected = False
 

@@ -78,6 +78,8 @@ class Server:
             elif self.path == '/stream.mjpg':
                 self._stream_video()
             elif self.path == '/dev/autofoco':
+                response = "Iniciando autofoco"
+                self._send_page(response.encode('utf-8'))
                 startLocalCalibration(self.client)
             elif self.path == '/dev/detectChessCorners':
                 img = cv2.bitwise_not(self.client.get_img())

@@ -14,7 +14,10 @@ class LocalPiZeroClient:
     def __init__(self):
         # Inicializa a câmera
         self.picam2 = Picamera2()
+
+        self.picam2.configure(self.picam2.create_preview_configuration({'format': 'BGR888'}))
         self.picam2.configure(self.picam2.create_video_configuration(main={"size": (640, 480)}))
+
         self.picam2.controls.FrameRate = 60  # Ajusta o FPS
         self.picam2.start()
 

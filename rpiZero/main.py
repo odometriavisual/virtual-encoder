@@ -8,7 +8,7 @@ def main():
     client = LocalPiZeroClient()
     time.sleep(1)
 
-    # startLocalCalibration(client)
+    startLocalCalibration(client)
 
     server = Server(client)
     server.run()

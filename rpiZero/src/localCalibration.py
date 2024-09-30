@@ -9,7 +9,7 @@ def calculate_teng_score(frame: numpy.ndarray) -> float:
     return numpy.mean(gaussianX * gaussianX +
                       gaussianY * gaussianY)
 
-def startLocalCalibration(client: LocalPiZeroClient,calibration_start:int = 0, calibration_end:int = 15, calibration_step:int = 1):
+def startLocalCalibration(client: LocalPiZeroClient,calibration_start:float = 0, calibration_end:float = 15, calibration_step:float = 1):
     best_focus_value = None
     best_score = -float('inf')
     actual_focus = calibration_start

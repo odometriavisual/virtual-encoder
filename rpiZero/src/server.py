@@ -9,8 +9,8 @@ import logging
 from http import server
 from threading import Condition
 import socketserver
+import time
 import io
-import adafruit_bno055
 
 from src.localPiZeroClient import LocalPiZeroClient
 
@@ -31,14 +31,7 @@ class Server:
         self.client = client
         self.address = ('', port)
 
-        self.bno_enabled = False
 
-        try:
-            self.sensor = adafruit_bno055.BNO055_I2C(i2c, 0x29)
-            self.bno_enabled = True
-        except:
-            print("Erro ao inciar o BNO055, desabilitando as suas funcionalidades por enquanto")
-            self.bno_enabled = False
 
     def run(self):
         handler = lambda *args, **kwargs: self.MJPEGHandler(*args, client=self.client, **kwargs)
@@ -55,7 +48,6 @@ class Server:
         def __init__(self):
             self.frame = None
             self.condition = Condition()
-
         def write(self, buf):
             with self.condition:
                 self.frame = buf
@@ -72,7 +64,7 @@ class Server:
             elif self.path == '/index.html':
                 self._send_page(PAGE.encode('utf-8'))
             elif self.path == '/imu.html':
-                self._send_page(self.client.get_imu_data().encode('utf-8'))
+                self._send_page(self._get_timestamp_and_imu_data().encode('utf-8'))
             elif self.path.startswith('/focus.html'):
                 focus_value = self._extract_number_from_path()
                 response = self.client.set_focus(focus_value)
@@ -99,11 +91,11 @@ class Server:
             self.send_header('Location', '/index.html')
             self.end_headers()
 
-        def _get_imu_data(self):
-            if self.imu_controller:
+        def _get_timestamp_and_imu_data(self):
+            if self.client.sensor:
                 orientation = self.client.get_orientation()
-                return f"Orientation: {orientation}"
-            return "0,0,0,0"
+                return f"{time.time()}_{time.monotonic_ns()}_{orientation}"
+            return f"{time.time()}_{time.monotonic_ns()}_0,0,0,0"
 
         def _extract_number_from_path(self):
             try:

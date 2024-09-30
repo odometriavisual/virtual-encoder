@@ -5,7 +5,10 @@ from picamera2 import Picamera2
 from picamera2.encoders import JpegEncoder
 from picamera2.outputs import FileOutput
 from libcamera import controls
+import adafruit_bno055
 import cv2
+import board
+import warnings
 
 class LocalPiZeroClient:
     def __init__(self):
@@ -19,12 +22,18 @@ class LocalPiZeroClient:
         self.frame = None
         self.frame_available = threading.Event()
 
+        i2c = board.I2C()
+        try:
+            self.sensor = adafruit_bno055.BNO055_I2C(i2c, 0x29)
+        except:
+            warnings.warn("Não foi possível iniciar o bno055, ele será desabilitado")
+
         def update():
             while True:
                 time.sleep(0.001)
                 with self.vid_lock:
 
-                    # Captura um frame da câmera
+                    # Captura um frame da camera
                     self.frame = self.picam2.capture_array()
                     self.frame_available.set()
 
@@ -61,7 +70,6 @@ class LocalPiZeroClient:
         npArrayImg = self.get_img()
         _, buffer = cv2.imencode('.jpg', npArrayImg)
         return buffer.tobytes()
-
 
     def download_all_images(self):
         raise NotImplementedError

@@ -132,7 +132,7 @@ class Server:
 
             # Displaying chess-board features
             res = np.uint8(res)
-            ret, corners = cv2.findChessboardCorners(res, (7, 7),
+            ret, corners = cv2.findChessboardCorners(res, (8, 8),
                                                      flags=cv2.CALIB_CB_ADAPTIVE_THRESH +
                                                            cv2.CALIB_CB_FAST_CHECK +
                                                            cv2.CALIB_CB_NORMALIZE_IMAGE)

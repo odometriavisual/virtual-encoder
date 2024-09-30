@@ -30,6 +30,5 @@ def startLocalCalibration(client: LocalPiZeroClient, calibration_start:float = 0
             best_score = score
         print(actual_focus, score)
 
-    else:
-        client.set_focus(best_focus_value)
-        time.sleep(0.5)
+    client.set_focus(best_focus_value)
+    time.sleep(0.5)

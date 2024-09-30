@@ -145,7 +145,7 @@ class Server:
                         self.chessboard_detected = True
                         cv2.drawChessboardCorners(img, (6,6), corners, ret)
                         print(corners[0][0])
-                        print(corners[0][1])
+                        print(corners[36][0])
                     else:
                         self.chessboard_detected = False
 

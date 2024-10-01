@@ -34,10 +34,13 @@ def startLocalCalibration(client: LocalPiZeroClient, initial_focus: float, max_i
         score_minus_h = calculate_teng_score(frame_minus_h)
 
         # Calculate the derivative approximation
-        derivative = score_plus_h - score_minus_h
+        derivative = (score_plus_h - score_minus_h) / (2 * h)
 
         # Update the focus based on the derivative
-        actual_focus += h  # Aumenta o foco
+        if derivative > 0:
+            actual_focus += h  # Aumenta o foco
+        else:
+            actual_focus -= h  # Diminui o foco
 
         # Apply a limit to ensure we don't go beyond the calibration range
         actual_focus = np.clip(actual_focus, 0, 15)  # Ajuste conforme necessário
@@ -48,7 +51,7 @@ def startLocalCalibration(client: LocalPiZeroClient, initial_focus: float, max_i
         new_score = calculate_teng_score(client.get_img())
 
         print(f"Iteration {iteration}: Focus = {actual_focus:.2f}, Score = {new_score:.2f}, Derivative = {derivative:.2f}")
-        h = derivative/10000
+        h = abs(derivative)/10000
 
         # Check for convergence
         if abs(new_score - current_score) < tolerance:

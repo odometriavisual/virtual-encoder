@@ -119,7 +119,7 @@ class Server:
                 self._stream_video()
             elif self.path == '/dev/autofoco':
                 self.focus = startLocalCalibration(self.client)
-                response = f"Foco detectado: {self.focus}"
+                response = f"{self.focus}"
                 self._send_page(response.encode('utf-8'))
             elif self.path == '/dev/calibration':
                 self.mm_per_pixel = self._find_mm_per_pixel_calibration()

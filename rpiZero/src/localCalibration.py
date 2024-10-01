@@ -9,10 +9,11 @@ def calculate_teng_score(frame: np.ndarray) -> float:
     return np.mean(gaussianX * gaussianX +
                       gaussianY * gaussianY)
 
-def startLocalCalibration(client: LocalPiZeroClient, initial_focus: float, h: float = 0.1, max_iterations: int = 20, tolerance: float = 100):
+def startLocalCalibration(client: LocalPiZeroClient, initial_focus: float, max_iterations: int = 20, tolerance: float = 100):
     actual_focus = initial_focus
     client.set_focus(actual_focus)
     time.sleep(0.5)
+    h = 0.1
 
     for iteration in range(max_iterations):
         # Capture the frame and calculate the current score
@@ -24,6 +25,7 @@ def startLocalCalibration(client: LocalPiZeroClient, initial_focus: float, h: fl
         time.sleep(0.5)
         frame_plus_h = client.get_img()
         score_plus_h = calculate_teng_score(frame_plus_h)
+
 
         # Calculate score for focus - h
         client.set_focus(actual_focus - h)
@@ -49,6 +51,7 @@ def startLocalCalibration(client: LocalPiZeroClient, initial_focus: float, h: fl
         new_score = calculate_teng_score(client.get_img())
 
         print(f"Iteration {iteration}: Focus = {actual_focus:.2f}, Score = {new_score:.2f}, Derivative = {derivative:.2f}")
+        h = abs(derivative)/5000
 
         # Check for convergence
         if abs(new_score - current_score) < tolerance:

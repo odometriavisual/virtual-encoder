@@ -51,10 +51,10 @@ def startLocalCalibration(client: LocalPiZeroClient, initial_focus: float, h: fl
             break
 
         # Ajuste dinâmico de h
-        if abs(new_score - current_score) < tolerance * 10:  # Quando a mudança na pontuação é pequena, diminua h
+        if abs(new_score - current_score) < tolerance * 10:  # Quando a mudança na pontuação é pequena
             h = max(h * 0.5, 0.01)  # Reduz pela metade, mas garante que h não fique menor que 0.01
         else:
-            h = min(h * 1.1, 2.0)  # Aumenta h se a pontuação mudar significativamente
+            h = min(h * 1.1, 5.0)  # Aumenta h até um máximo razoável
 
         current_score = new_score  # Atualiza a pontuação atual
 

@@ -47,7 +47,7 @@ function calibracao() {
 <body>
 <h1>Picamera3 MJPEG Streaming Demo</h1>
 <img src="stream.mjpg" width="640" height="480" />
-<p>Valor atual do foco: <span id="focus-value">{{focus}}</span></p>
+<p>Valor atual do foco: <span id="focus-value">{focus}</span></p>
 
 <!-- Botão para acionar o autofoco -->
 <button onclick="autofoco()">Autofoco</button>

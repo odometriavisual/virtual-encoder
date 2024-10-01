@@ -34,7 +34,7 @@ def startLocalCalibration(client: LocalPiZeroClient, initial_focus: float, max_i
         score_minus_h = calculate_teng_score(frame_minus_h)
 
         # Calculate the derivative approximation
-        derivative = (score_plus_h - score_minus_h) / (2 * h)
+        derivative = score_plus_h - score_minus_h
 
         # Update the focus based on the derivative
         if derivative > 0:

@@ -118,7 +118,7 @@ class Server:
             elif self.path == '/stream.mjpg':
                 self._stream_video()
             elif self.path == '/dev/autofoco':
-                self.focus = startLocalCalibration(self.client, 4)
+                self.focus = startLocalCalibration(self.client, 10)
                 response = f"{self.focus}"
                 self._send_page(response.encode('utf-8'))
             elif self.path == '/dev/calibration':

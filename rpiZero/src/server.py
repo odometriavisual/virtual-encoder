@@ -97,7 +97,8 @@ class Server:
             super().__init__(*args, **kwargs)
 
             self.mm_per_pixel = -1
-            self.focus = -1
+            self.focus = None
+
         def do_GET(self):
             if self.path == '/':
                 self._redirect_to_index()

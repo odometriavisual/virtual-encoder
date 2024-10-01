@@ -6,30 +6,25 @@ from src.localPiZeroClient import LocalPiZeroClient
 def calculate_teng_score(frame: np.ndarray) -> float:
     gaussianX = cv2.Sobel(frame, cv2.CV_64F, 1, 0)
     gaussianY = cv2.Sobel(frame, cv2.CV_64F, 1, 0)
-    return np.mean(gaussianX * gaussianX +
-                      gaussianY * gaussianY)
+    return np.mean(gaussianX * gaussianX + gaussianY * gaussianY)
 
-def startLocalCalibration(client: LocalPiZeroClient, initial_focus: float, h: float = 0.1, max_iterations: int = 20, tolerance: float = 0.01):
+def startLocalCalibration(client: LocalPiZeroClient, initial_focus: float, h: float = 1.0, max_iterations: int = 50, tolerance: float = 0.01):
     actual_focus = initial_focus
     client.set_focus(actual_focus)
     time.sleep(0.5)
 
-    for iteration in range(max_iterations):
-        # Capture the frame and calculate the current score
-        frame = client.get_img()
-        current_score = calculate_teng_score(frame)
+    current_score = calculate_teng_score(client.get_img())
 
+    for iteration in range(max_iterations):
         # Calculate score for focus + h
         client.set_focus(actual_focus + h)
         time.sleep(0.5)
-        frame_plus_h = client.get_img()
-        score_plus_h = calculate_teng_score(frame_plus_h)
+        score_plus_h = calculate_teng_score(client.get_img())
 
         # Calculate score for focus - h
         client.set_focus(actual_focus - h)
         time.sleep(0.5)
-        frame_minus_h = client.get_img()
-        score_minus_h = calculate_teng_score(frame_minus_h)
+        score_minus_h = calculate_teng_score(client.get_img())
 
         # Calculate the derivative approximation
         derivative = (score_plus_h - score_minus_h) / (2 * h)
@@ -48,11 +43,19 @@ def startLocalCalibration(client: LocalPiZeroClient, initial_focus: float, h: fl
         time.sleep(0.5)
         new_score = calculate_teng_score(client.get_img())
 
-        print(f"Iteration {iteration}: Focus = {actual_focus:.2f}, Score = {new_score:.2f}, Derivative = {derivative:.2f}")
+        print(f"Iteration {iteration}: Focus = {actual_focus:.2f}, Score = {new_score:.2f}, Derivative = {derivative:.2f}, h = {h:.2f}")
 
         # Check for convergence
         if abs(new_score - current_score) < tolerance:
             print("Converged!")
             break
+
+        # Ajuste dinâmico de h
+        if abs(new_score - current_score) < tolerance * 10:  # Quando a mudança na pontuação é pequena, diminua h
+            h = max(h * 0.5, 0.01)  # Reduz pela metade, mas garante que h não fique menor que 0.01
+        else:
+            h = min(h * 1.1, 2.0)  # Aumenta h se a pontuação mudar significativamente
+
+        current_score = new_score  # Atualiza a pontuação atual
 
     return actual_focus

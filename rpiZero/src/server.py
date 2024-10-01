@@ -47,7 +47,6 @@ function calibracao() {
 <body>
 <h1>Picamera3 MJPEG Streaming Demo</h1>
 <img src="stream.mjpg" width="640" height="480" />
-<p>Valor atual do foco: <span id="focus-value">{focus}</span></p>
 
 <!-- Botão para acionar o autofoco -->
 <button onclick="autofoco()">Autofoco</button>
@@ -102,9 +101,7 @@ class Server:
             if self.path == '/':
                 self._redirect_to_index()
             elif self.path == '/index.html':
-                focus_value = self.focus
-                page_content = PAGE.format(focus=focus_value)
-                self._send_page(page_content.encode('utf-8'))
+                self._send_page(PAGE.encode('utf-8'))
             elif self.path == '/imu.html':
                 self._send_page(self._get_timestamp_and_imu_data().encode('utf-8'))
             elif self.path.startswith('/focus.html'):

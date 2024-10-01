@@ -25,17 +25,13 @@ PAGE = '''\
 <title>picamera3 MJPEG streaming demo</title>
 <script>
 function autofoco() {
-    document.getElementById('loading').style.display = 'block'; // Exibe o indicador de carregamento
     fetch('/dev/autofoco')
     .then(response => response.text())
     .then(data => {
         document.getElementById('focus-value').innerHTML = data;
         alert('Autofoco realizado! Foco detectado: ' + data);
     })
-    .catch(error => console.error('Erro no autofoco:', error))
-    .finally(() => {
-        document.getElementById('loading').style.display = 'none'; // Esconde o indicador de carregamento
-    });
+    .catch(error => console.error('Erro no autofoco:', error));
 }
 
 function calibracao() {

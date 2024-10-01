@@ -94,19 +94,14 @@ class Server:
     class MJPEGHandler(server.BaseHTTPRequestHandler):
         def __init__(self, *args, client=None, **kwargs):
             self.client = client
-            super().__init__(*args, **kwargs)
-
             self.mm_per_pixel = -1
             self.focus = None
+            super().__init__(*args, **kwargs)
 
         def do_GET(self):
             if self.path == '/':
                 self._redirect_to_index()
             elif self.path == '/index.html':
-                if self.focus >= 0:
-                    pass
-                else:
-                    self.focus = 0
                 focus_value = self.focus
                 page_content = PAGE.format(focus=focus_value)
                 self._send_page(page_content.encode('utf-8'))

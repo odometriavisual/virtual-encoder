@@ -103,7 +103,7 @@ class Server:
             if self.path == '/':
                 self._redirect_to_index()
             elif self.path == '/index.html':
-                focus_value = self.focus if self.focus is not None else 'N/A'
+                focus_value = self.focus
                 page_content = PAGE.format(focus=focus_value)
                 self._send_page(page_content.encode('utf-8'))
             elif self.path == '/imu.html':

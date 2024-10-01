@@ -1,6 +1,7 @@
 import time
 
 from ..pulse_generator import PulseGenerator
+from ..ihm.ihm import IHM
 
 class EstadoSet:
     def __init__(self, ihm):
@@ -37,3 +38,20 @@ class EstadoDisparo:
 
         time.sleep(0.001)
 
+class EstadoErro:
+    def __init__(self, ihm: IHM, message):
+        #Nota, a PyCamera aceita valores floats como foco, porém é necessário reformular o código do servidor para aceitar esses valores.
+        self.ihm = ihm
+
+        self.ihm.estado = message
+        self.ihm.update_display()
+
+        self.time_now = time.monotonic_ns()
+        self.time_exit = self.time_now + int(5e9)
+
+    def run(self):
+        self.time_now = time.monotonic_ns()
+        if self.time_now > self.time_exit:
+            self.ihm.send_event('next_estado')
+        else:
+            time.sleep(0.5)

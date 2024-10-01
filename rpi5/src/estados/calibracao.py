@@ -3,7 +3,6 @@ import cv2
 import numpy
 
 from ..pi_zero_client import PiZeroClient
-from . import EstadoReady
 
 #O frame do cv2 é do tipo numpy.ndarray, por isso não é necessário converter
 
@@ -38,10 +37,14 @@ class EstadoCalibracao:
         self.calibration_step = calibration_step
         self.calibration_end = calibration_end
 
-        self.client.set_focus(self.actual_focus)
+        try:
+            self.client.set_focus(self.actual_focus)
 
-        self.ihm.estado = 'Calibrando...'
-        self.ihm.update_display()
+            self.ihm.estado = 'Calibrando...'
+            self.ihm.update_display()
+
+        except:
+           self.ihm.send_event(('Erro', 'SET FOCUS ERR'))
 
     def run(self):
         if self.actual_focus < self.calibration_end:

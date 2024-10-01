@@ -19,7 +19,13 @@ class ModoTempo:
 
     def handle_event(self, ev):
         match self.estado, ev:
-            case(EstadoSet(), 'next_estado'):
+            case _, ('Erro', message):
+                self.estado = EstadoErro(self.ihm, message)
+
+            case EstadoErro(), 'next_estado':
+                self.estado = EstadoSet(self.ihm)
+
+            case EstadoSet(), 'next_estado':
                 self.estado = EstadoCalibracao(self.ihm, self.client)
 
             case(EstadoCalibracao(), 'fim_calibracao'):

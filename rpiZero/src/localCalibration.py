@@ -51,7 +51,7 @@ def startLocalCalibration(client: LocalPiZeroClient, initial_focus: float, max_i
         new_score = calculate_teng_score(client.get_img())
 
         print(f"Iteration {iteration}: Focus = {actual_focus:.2f}, Score = {new_score:.2f}, Derivative = {derivative:.2f}")
-        h = abs(derivative)/5000
+        h = abs(derivative)/10000
 
         # Check for convergence
         if abs(new_score - current_score) < tolerance:

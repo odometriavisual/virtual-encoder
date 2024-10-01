@@ -21,12 +21,12 @@ class EstadoReady:
 
 class EstadoDisparo:
     def __init__(self, ihm: IHM, encoders: (PulseGenerator, PulseGenerator, PulseGenerator)):
+        ihm.estado = 'Disparo'
+        ihm.update_display()
+
         self.period = 1
         self.next_time = time.monotonic() + self.period
         self.encoders = encoders
-
-        ihm.estado = 'Disparo'
-        ihm.update_display()
 
     def run(self):
         current_time = time.monotonic()

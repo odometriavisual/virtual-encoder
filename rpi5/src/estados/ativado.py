@@ -15,14 +15,14 @@ def grayscale(frame: cv2.Mat) -> np.ndarray:
 
 class EstadoAtivado:
     def __init__(self, ihm: IHM, client: PiZeroClient, odometer: VisualOdometer):
+        ihm.estado = 'ATIVADO'
+        ihm.update_display()
+
         self.client = client
         self.odometer = odometer
 
         img = grayscale(self.client.get_img())
         self.odometer.feed_image(img)
-
-        ihm.estado = 'ATIVADO'
-        ihm.update_display()
 
     def run(self):
         frame = self.client.get_img()

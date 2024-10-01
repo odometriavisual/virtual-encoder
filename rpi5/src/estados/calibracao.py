@@ -30,6 +30,9 @@ class EstadoCalibracao:
         self.ihm = ihm
         self.client = client
 
+        self.ihm.estado = 'Calibrando...'
+        self.ihm.update_display()
+
         self.best_focus_value = None
         self.best_score = -float('inf')
 
@@ -39,10 +42,6 @@ class EstadoCalibracao:
 
         try:
             self.client.set_focus(self.actual_focus)
-
-            self.ihm.estado = 'Calibrando...'
-            self.ihm.update_display()
-
         except:
            self.ihm.send_event(('Erro', 'SET FOCUS ERR'))
 

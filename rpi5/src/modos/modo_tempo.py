@@ -28,11 +28,11 @@ class ModoTempo:
             case EstadoSet(), 'next_estado':
                 self.estado = EstadoCalibracao(self.ihm, self.client)
 
-            case(EstadoCalibracao(), 'fim_calibracao'):
+            case EstadoCalibracao(), 'fim_calibracao':
                 self.estado = EstadoReady(self.ihm)
 
-            case(EstadoReady(), 'next_estado'):
+            case EstadoReady(), 'next_estado':
                 self.estado = EstadoDisparo(self.ihm, self.encoders)
 
-            case(EstadoDisparo(), 'next_estado'):
+            case EstadoDisparo(), 'next_estado':
                 self.estado = EstadoSet(self.ihm)

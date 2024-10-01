@@ -15,7 +15,7 @@ def startLocalCalibration(client: LocalPiZeroClient, initial_focus: float, max_i
     actual_focus = initial_focus
     client.set_focus(actual_focus)
     time.sleep(0.5)
-    h = 1
+    h = 0.5
     prev_score = calculate_teng_score(client.get_img())
 
     for iteration in range(max_iterations):

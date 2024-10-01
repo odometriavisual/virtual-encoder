@@ -103,6 +103,10 @@ class Server:
             if self.path == '/':
                 self._redirect_to_index()
             elif self.path == '/index.html':
+                if self.focus >= 0:
+                    pass
+                else:
+                    self.focus = 0
                 focus_value = self.focus
                 page_content = PAGE.format(focus=focus_value)
                 self._send_page(page_content.encode('utf-8'))

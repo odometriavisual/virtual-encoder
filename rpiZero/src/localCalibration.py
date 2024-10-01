@@ -54,8 +54,8 @@ def startLocalCalibration(client: LocalPiZeroClient, initial_focus: float, max_i
         h = abs(derivative)/10000
 
         # Check for convergence
-        if abs(new_score - current_score) < tolerance:
-            print("Converged!")
-            break
+        #if abs(new_score - current_score) < tolerance:
+        #    print("Converged!")
+        #    break
 
     return actual_focus

@@ -15,6 +15,7 @@ import io
 from src.localPiZeroClient import LocalPiZeroClient
 from src.localCalibration import startLocalCalibration
 import numpy as np
+import csv
 
 import cv2
 
@@ -22,18 +23,53 @@ PAGE = '''\
 <html>
 <head>
 <title>picamera3 MJPEG streaming demo</title>
+<script>
+function autofoco() {
+    fetch('/dev/autofoco')
+    .then(response => response.text())
+    .then(data => {
+        document.getElementById('focus-value').innerHTML = data;
+        alert('Autofoco realizado! Foco detectado: ' + data);
+    })
+    .catch(error => console.error('Erro no autofoco:', error));
+}
+
+function calibracao() {
+    fetch('/dev/calibration')
+    .then(response => response.text())
+    .then(data => {
+        alert('Calibração concluída! Calibração (mm/pixel): ' + data);
+    })
+    .catch(error => console.error('Erro na calibração:', error));
+}
+</script>
 </head>
 <body>
 <h1>Picamera3 MJPEG Streaming Demo</h1>
 <img src="stream.mjpg" width="640" height="480" />
+<p>Valor atual do foco: <span id="focus-value">{focus}</span></p>
+
+<!-- Botão para acionar o autofoco -->
+<button onclick="autofoco()">Autofoco</button>
+
+<!-- Botão para acionar a calibração -->
+<button onclick="calibracao()">Calibração</button>
+
 </body>
 </html>
 '''
+
 class Server:
     def __init__(self, client:LocalPiZeroClient, port:int = 7123):
         self.client = client
         self.address = ('', port)
-        startLocalCalibration(self.client)
+        self.data_log_file = 'focus_calibration_log.csv'
+        self.server = None
+
+    def log_calibration_data(self, distance, focus, mm_per_pixel_calibration):
+        with open(self.data_log_file, mode='a', newline='') as file:
+            writer = csv.writer(file)
+            writer.writerow([distance, focus, mm_per_pixel_calibration])
 
     def run(self):
         handler = lambda *args, **kwargs: self.MJPEGHandler(*args, client=self.client, **kwargs)
@@ -60,16 +96,21 @@ class Server:
             self.client = client
             super().__init__(*args, **kwargs)
 
+            self.mm_per_pixel = -1
+            self.focus = -1
         def do_GET(self):
             if self.path == '/':
                 self._redirect_to_index()
             elif self.path == '/index.html':
-                self._send_page(PAGE.encode('utf-8'))
+                focus_value = self.focus if self.focus is not None else 'N/A'
+                page_content = PAGE.format(focus=focus_value)
+                self._send_page(page_content.encode('utf-8'))
             elif self.path == '/imu.html':
                 self._send_page(self._get_timestamp_and_imu_data().encode('utf-8'))
             elif self.path.startswith('/focus.html'):
                 focus_value = float(self._extract_last_path())
                 self.client.set_focus(focus_value)
+                self.focus = focus_value
                 response = f"Foco selecionado: {focus_value}"
                 self._send_page(response.encode('utf-8'))
             elif self.path.startswith('/exposure.html'):
@@ -80,11 +121,12 @@ class Server:
             elif self.path == '/stream.mjpg':
                 self._stream_video()
             elif self.path == '/dev/autofoco':
-                response = "Iniciando autofoco"
+                self.focus = startLocalCalibration(self.client)
+                response = f"Foco detectado: {self.focus}"
                 self._send_page(response.encode('utf-8'))
-                startLocalCalibration(self.client)
             elif self.path == '/dev/calibration':
-                response = f"{self._find_mm_per_pixel_calibration()}"
+                self.mm_per_pixel = self._find_mm_per_pixel_calibration()
+                response = f"{self.mm_per_pixel}"
                 self._send_page(response.encode('utf-8'))
             else:
                 self.send_error(404)

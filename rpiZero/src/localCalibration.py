@@ -29,14 +29,14 @@ def startLocalCalibration(client: LocalPiZeroClient, initial_focus: float, h: fl
         # Calculate the derivative approximation
         derivative = (score_plus_h - score_minus_h) / (2 * h)
 
-        # Update the focus based on the derivative
-        if derivative > 0:
-            actual_focus += h  # Aumenta o foco
+        # Update the focus based on the derivative with reduced sensitivity
+        if abs(derivative) > 500:  # Ajuste para limitar a sensibilidade
+            actual_focus += np.sign(derivative) * h  # Aumenta ou diminui o foco
         else:
-            actual_focus -= h  # Diminui o foco
+            actual_focus += np.sign(derivative) * (h / 2)  # Mudança menor se a derivada não for grande
 
         # Apply a limit to ensure we don't go beyond the calibration range
-        actual_focus = np.clip(actual_focus, 0, 15)  # Ajuste conforme necessário
+        actual_focus = np.clip(actual_focus, 0, 15)
 
         # Set the focus to the new value and check the new score
         client.set_focus(actual_focus)
@@ -46,16 +46,16 @@ def startLocalCalibration(client: LocalPiZeroClient, initial_focus: float, h: fl
         print(f"Iteration {iteration}: Focus = {actual_focus:.2f}, Score = {new_score:.2f}, Derivative = {derivative:.2f}, h = {h:.2f}")
 
         # Check for convergence
-        if abs(new_score - current_score) < tolerance:
+        if abs(new_score - current_score) < tolerance * 5:  # Aumenta a tolerância para convergência
             print("Converged!")
             break
 
         # Ajuste dinâmico de h
-        if abs(new_score - current_score) < tolerance * 10:  # Quando a mudança na pontuação é pequena
-            h = max(h * 0.5, 0.01)  # Reduz pela metade, mas garante que h não fique menor que 0.01
+        if abs(new_score - current_score) < tolerance * 10:
+            h = max(h * 0.5, 0.01)
         else:
-            h = min(h * 1.1, 5.0)  # Aumenta h até um máximo razoável
+            h = min(h * 1.1, 5.0)
 
-        current_score = new_score  # Atualiza a pontuação atual
+        current_score = new_score
 
     return actual_focus

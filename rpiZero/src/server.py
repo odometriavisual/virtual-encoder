@@ -13,7 +13,7 @@ import time
 import io
 
 from src.localPiZeroClient import LocalPiZeroClient
-
+from src.localCalibration import startLocalCalibration
 
 PAGE = '''\
 <html>
@@ -30,6 +30,7 @@ class Server:
     def __init__(self, client:LocalPiZeroClient, port:int = 7123):
         self.client = client
         self.address = ('', port)
+        self.server = None
 
     def run(self):
         handler = lambda *args, **kwargs: self.MJPEGHandler(*args, client=self.client, **kwargs)
@@ -54,6 +55,7 @@ class Server:
     class MJPEGHandler(server.BaseHTTPRequestHandler):
         def __init__(self, *args, client=None, **kwargs):
             self.client = client
+            self.focus = None
             super().__init__(*args, **kwargs)
 
         def do_GET(self):
@@ -64,9 +66,9 @@ class Server:
             elif self.path == '/imu.html':
                 self._send_page(self._get_timestamp_and_imu_data().encode('utf-8'))
             elif self.path.startswith('/focus.html'):
-                focus_value = float(self._extract_last_path())
-                self.client.set_focus(focus_value)
-                response = f"Foco selecionado: {focus_value}"
+                self.focus = float(self._extract_last_path())
+                self.client.set_focus(self.focus)
+                response = f"Foco selecionado: {self.focus}"
                 self._send_page(response.encode('utf-8'))
             elif self.path.startswith('/exposure.html'):
                 exposure_value = int(self._extract_last_path())
@@ -75,6 +77,13 @@ class Server:
                 self._send_page(response.encode('utf-8'))
             elif self.path == '/stream.mjpg':
                 self._stream_video()
+            elif self.path == '/run_autofocus':
+                self.focus = startLocalCalibration(self.client, 1)
+                response = f"{self.focus}"
+                self._send_page(response.encode('utf-8'))
+            elif self.path == '/get_focus':
+                response = f"{self.focus}"
+                self._send_page(response.encode('utf-8'))
             else:
                 self.send_error(404)
                 self.end_headers()

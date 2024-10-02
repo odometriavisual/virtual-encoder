@@ -9,7 +9,7 @@ from src.ihm.ihm import IHM
 from src.ihm.gpiod_button import GpiodButton
 from src.pi_zero_client import PiZeroClient
 from src.pulse_generator import PulseGenerator
-from src.relay import Relay
+from src.source_controller import SourceController
 
 from src.modos import *
 
@@ -34,7 +34,6 @@ def main():
         PulseGenerator(PIN_A=5,PIN_B=6)
     )
 
-    relay = Relay(PIN=25)
     buttons = (GpiodButton(24), GpiodButton(27), GpiodButton(18))
     odometer = VisualOdometer((640, 480))
     client = PiZeroClient()

@@ -1,7 +1,6 @@
 from ..ihm.ihm import IHM
 from ..pi_zero_client import PiZeroClient
 from ..pulse_generator import PulseGenerator
-from ..relay import Relay
 
 from ..estados import *
 

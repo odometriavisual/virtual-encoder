@@ -68,14 +68,6 @@ class LocalPiZeroClient:
         with self.vid_lock:
             return self.frame
 
-    #A função get_encoded_img deve ser responsabilidade do servidor, mas deixarei aqui por enquanto
-    #para ser mais fácil de otimizar a possível piora na latência pelo self.frame_available.wait()
-    def get_encoded_img(self):
-        self.frame_available.wait()
-        npArrayImg = self.get_img()
-        _, buffer = cv2.imencode('.jpg', npArrayImg)
-        return buffer.tobytes()
-
     def download_all_images(self):
         raise NotImplementedError
 

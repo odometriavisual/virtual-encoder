@@ -11,6 +11,7 @@ from threading import Condition
 import socketserver
 import time
 import io
+import cv2
 
 from src.localPiZeroClient import LocalPiZeroClient
 from src.localCalibration import startLocalCalibration
@@ -110,6 +111,11 @@ class Server:
             except (ValueError, IndexError):
                 return 0
 
+        def _encode_img_to_bytes(self, img):
+            _ret, jpg_frame = cv2.imencode('.jpg', img)  # transformando em JPG
+            bytes_frame = jpg_frame.tobytes()
+            return bytes_frame
+
         def _stream_video(self):
             self.send_response(200)
             self.send_header('Age', 0)
@@ -119,7 +125,10 @@ class Server:
             self.end_headers()
             try:
                 while True:
-                    frame = self.client.get_encoded_img()
+                    self.client.frame_available.wait()
+                    img = self.client.get_img()
+                    frame = self._encode_img_to_bytes(img)
+
                     self.wfile.write(b'--FRAME\r\n')
                     self.send_header('Content-Type', 'image/jpeg')
                     self.send_header('Content-Length', len(frame))

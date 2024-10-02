@@ -9,6 +9,8 @@ from src.ihm.ihm import IHM
 from src.ihm.gpiod_button import GpiodButton
 from src.pi_zero_client import PiZeroClient
 from src.pulse_generator import PulseGenerator
+from src.relay import Relay
+
 from src.modos import *
 
 def main():
@@ -31,6 +33,8 @@ def main():
         PulseGenerator(PIN_A=26,PIN_B=23),
         PulseGenerator(PIN_A=5,PIN_B=6)
     )
+
+    relay = Relay(PIN=25)
     buttons = (GpiodButton(24), GpiodButton(27), GpiodButton(18))
     odometer = VisualOdometer((640, 480))
     client = PiZeroClient()
@@ -85,10 +89,10 @@ def main():
         while ev := ihm.poll_event():
             match modo, ev:
                 case ModoTempo(), 'next_modo':
-                    modo = ModoAutonomo(client, ihm, encoders)
+                    modo = ModoAutonomo(client, ihm, encoder, relay)
 
                 case ModoAutonomo(), 'next_modo':
-                    modo = ModoTempo(client, ihm, encoders)
+                    modo = ModoTempo(client, ihm, encoders, relay)
 
                 case _:
                     modo.handle_event(ev)

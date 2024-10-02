@@ -84,10 +84,10 @@ def main():
         while ev := ihm.poll_event():
             match modo, ev:
                 case ModoTempo(), 'next_modo':
-                    modo = ModoAutonomo(client, ihm, encoder, relay)
+                    modo = ModoAutonomo(client, ihm, encoders)
 
                 case ModoAutonomo(), 'next_modo':
-                    modo = ModoTempo(client, ihm, encoders, relay)
+                    modo = ModoTempo(client, ihm, encoders)
 
                 case _:
                     modo.handle_event(ev)

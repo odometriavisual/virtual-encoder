@@ -1,12 +1,11 @@
 from ..ihm.ihm import IHM
 from ..pi_zero_client import PiZeroClient
 from ..pulse_generator import PulseGenerator
-from ..relay import Relay
 
 from ..estados import *
 
 class ModoTempo:
-    def __init__(self, client: PiZeroClient, ihm: IHM, encoders: (PulseGenerator, PulseGenerator, PulseGenerator), relay: Relay):
+    def __init__(self, client: PiZeroClient, ihm: IHM, encoders: (PulseGenerator, PulseGenerator, PulseGenerator)):
         self.ihm = ihm
         self.ihm.modo = 'Tempo'
 

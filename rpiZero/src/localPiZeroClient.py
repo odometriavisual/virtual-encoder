@@ -26,11 +26,11 @@ class LocalPiZeroClient:
 
         self.focus = None
 
-        self.sensor_enabled = False
+        self.imu_enabled = False
         i2c = board.I2C()
         try:
-            self.sensor = adafruit_bno055.BNO055_I2C(i2c, 0x29)
-            self.sensor_enabled = True
+            self.imu = adafruit_bno055.BNO055_I2C(i2c, 0x29)
+            self.imu_enabled = True
         except:
             warnings.warn("Não foi possível iniciar o bno055, ele será desabilitado")
 
@@ -61,8 +61,8 @@ class LocalPiZeroClient:
         self.picam2.set_controls({"ExposureTime": exposure})
 
     def get_orientation(self) -> [float, float, float, float]:
-        if self.sensor_enabled is True:
-            return self.sensor.quaternion
+        if self.imu_enabled is True:
+            return self.imu.quaternion
         else:
             return [0.0, 0.0, 0.0, 0.0]
 

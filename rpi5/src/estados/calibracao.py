@@ -40,27 +40,29 @@ class EstadoCalibracao:
         self.calibration_step = calibration_step
         self.calibration_end = calibration_end
 
-        try:
-            self.client.set_focus(self.actual_focus)
-        except:
+        if not self.client.set_focus(self.actual_focus):
            self.ihm.send_event(('Erro', 'SET FOCUS ERR'))
 
     def run(self):
         if self.actual_focus < self.calibration_end:
-
             self.actual_focus += self.calibration_step
-            self.client.set_focus(self.actual_focus)
-            time.sleep(0.3)
 
-            frame = self.client.get_img()
+            if self.client.set_focus(self.actual_focus):
+                time.sleep(0.3)
 
-            score = calculate_teng_score(frame)
+                frame = self.client.get_img()
+                score = calculate_teng_score(frame)
 
-            if score > self.best_score:
-                self.best_focus_value = self.actual_focus
-                self.best_score = score
-            print(self.actual_focus, score)
+                if score > self.best_score:
+                    self.best_focus_value = self.actual_focus
+                    self.best_score = score
+                print(self.actual_focus, score)
+
+            else:
+                self.ihm.send_event(('Erro', 'SET FOCUS ERR'))
 
         else:
-            self.client.set_focus(self.best_focus_value)
-            self.ihm.send_event('fim_calibracao')
+            if self.client.set_focus(self.best_focus_value):
+                self.ihm.send_event('fim_calibracao')
+            else:
+                self.ihm.send_event(('Erro', 'SET FOCUS ERR'))

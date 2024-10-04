@@ -1,9 +1,11 @@
-import cv2
-import numpy as np
-import requests
 import threading
 import time
 from os.path import isdir
+
+import cv2
+import numpy as np
+import requests
+from requests.exceptions import RequestException
 
 PIZERO_HOST = 'http://raspberrypi00.local:7123'
 
@@ -36,13 +38,24 @@ class PiZeroClient:
         self.vid_thread.start()
 
     def set_focus(self, focus: float):
-        requests.get(f'{PIZERO_HOST}/focus.html/{focus}')
+        try:
+            requests.get(f'{PIZERO_HOST}/focus.html/{focus}', timeout=0.1)
+            return True
+        except RequestException:
+            return False
 
     def set_exposure(self, exposure: int):
-        requests.get(f'{PIZERO_HOST}/exposure.html/{exposure}')
+        try:
+            requests.get(f'{PIZERO_HOST}/exposure.html/{exposure}', timeout=0.1)
+            return True
+        except RequestException:
+            return False
 
     def get_orientation(self) -> [float, float, float, float, float, float]:
-        return requests.get(f'{PIZERO_HOST}/imu.html').text.strip().split(',')
+        try:
+            return requests.get(f'{PIZERO_HOST}/imu.html', timeout=0.1).text.strip().split(',')
+        except RequestException:
+            return False
 
     def get_img(self) -> cv2.Mat:
         if not self.vid.isOpened():

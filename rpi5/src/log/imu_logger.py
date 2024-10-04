@@ -36,10 +36,11 @@ class IMULogger:
                 time_now = time.monotonic_ns()
                 if time_now > next_measure:
                     next_measure += self.measure_period
-                    try:
-                        self.insert(client.get_orientation())
-                    except:
-                        next_measure += self.measure_period * 50
+
+                    if quat := client.get_orientation():
+                        self.insert(quat)
+                    else:
+                        next_measure += self.measure_period * 100
 
                 if time_now > next_save:
                     next_save += self.save_period

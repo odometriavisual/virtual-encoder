@@ -71,6 +71,15 @@ class LocalPiZeroClient:
         with self.vid_lock:
             return self.frame
 
+    def get_status(self):
+        status = {
+            'imu': self.imu_enabled,
+            'camera': len(Picamera2.global_camera_info()) > 0,
+        }
+
+        return status
+
+
     def download_all_images(self):
         raise NotImplementedError
 

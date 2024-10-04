@@ -51,9 +51,15 @@ def main():
 
     time.sleep(1)
 
+    status = client.get_status()
+
+    ihm.rpiZero_status = 'Ok.' if status['rpiZero'] else 'ERR'
+    ihm.imu_status = 'Ok.' if status['imu'] else 'ERR'
+    ihm.camera_status = 'Ok.' if status['camera'] else 'ERR'
+    ihm.update_display()
+
     ihm.modo = 'TEMPO'
     ihm.ip = f'{gethostname()}.local'
-    ihm.pizero_status = 'Ok.' if client.is_network_up() else 'Not found.'
 
     imu_logger = IMULogger('/home/pi/imu.npy')
     imu_logger.listen(client)
@@ -65,8 +71,13 @@ def main():
     while True:
         time_now = time.monotonic_ns()
         if time_now > next_display_update:
-            next_display_update = next_display_update + 5e9
-            ihm.pizero_status = 'Ok.' if client.is_network_up() else 'Not found.'
+            next_display_update = next_display_update + int(5e9)
+
+            status = client.get_status()
+
+            ihm.rpiZero_status = 'Ok.' if status['rpiZero'] else 'ERR'
+            ihm.imu_status = 'Ok.' if status['imu'] else 'ERR'
+            ihm.camera_status = 'Ok.' if status['camera'] else 'ERR'
             ihm.update_display()
 
         while ev := ihm.poll_event():

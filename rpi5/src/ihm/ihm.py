@@ -15,7 +15,10 @@ class IHM:
         self.modo: str = ''
         self.estado: str = ''
         self.ip: str = ''
-        self.pizero_status: str  = ''
+
+        self.camera_status: str  = ''
+        self.imu_status: str  = ''
+        self.rpiZero_status: str  = ''
 
     def send_event(self, ev):
         self._event_queue.put(ev)
@@ -24,8 +27,9 @@ class IHM:
         self.oled_screen.drawLine(0, f'MODO: {self.modo}', 'center')
         self.oled_screen.drawLine(1, f'ESTADO: {self.estado}', 'center')
 
-        self.oled_screen.drawLine(3, f'IP: {self.ip}')
-        self.oled_screen.drawLine(4, f'Modem USB: {self.pizero_status}')
+        self.oled_screen.drawLine(2, f'IP: {self.ip}')
+        self.oled_screen.drawLine(4, f'CAM : {self.camera_status}')
+        self.oled_screen.drawLine(5, f'piZ: {self.rpiZero_status} | IMU: {self.imu_status}')
 
         self.oled_screen.update()
 

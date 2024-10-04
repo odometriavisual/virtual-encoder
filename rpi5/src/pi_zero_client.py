@@ -68,8 +68,18 @@ class PiZeroClient:
         self.vid_lock.release()
         return frame
 
-    def is_network_up(self):
-        return isdir('/sys/class/net/usb0')
+    def get_status(self):
+        try:
+            status = requests.get(f'{PIZERO_HOST}/status', timeout=0.1).json()
+            status['rpiZero'] = True
+        except RequestException:
+            status = {
+                'rpiZero': False,
+                'imu': False,
+                'camera': False,
+            }
+
+        return status
 
     def download_all_images(self):
         raise NotImplemented

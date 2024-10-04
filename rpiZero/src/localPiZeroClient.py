@@ -24,6 +24,8 @@ class LocalPiZeroClient:
         self.frame = None
         self.frame_available = threading.Event()
 
+        self.focus = None
+
         self.sensor_enabled = False
         i2c = board.I2C()
         try:
@@ -51,6 +53,7 @@ class LocalPiZeroClient:
 
     def set_focus(self, focus: float):
         # Ajusta o foco da câmera
+        self.focus = focus
         self.picam2.set_controls({"AfMode": controls.AfModeEnum.Manual, "LensPosition": float(focus)})
 
     def set_exposure(self, exposure: int):

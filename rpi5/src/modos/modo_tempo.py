@@ -5,7 +5,7 @@ from ..pulse_generator import PulseGenerator
 from ..estados import *
 
 class ModoTempo:
-    def __init__(self, client: PiZeroClient, ihm: IHM, encoders: (PulseGenerator, PulseGenerator, PulseGenerator)):
+    def __init__(self, client: PiZeroClient, ihm: IHM, encoders: tuple[PulseGenerator, ...]):
         self.ihm = ihm
         self.ihm.modo = 'Tempo'
 

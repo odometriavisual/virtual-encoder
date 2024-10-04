@@ -20,7 +20,7 @@ class EstadoReady:
         time.sleep(0.001)
 
 class EstadoDisparo:
-    def __init__(self, ihm: IHM, encoders: (PulseGenerator, PulseGenerator, PulseGenerator)):
+    def __init__(self, ihm: IHM, encoders: tuple[PulseGenerator, ...]):
         ihm.estado = 'Disparo'
         ihm.update_display()
 
@@ -31,9 +31,9 @@ class EstadoDisparo:
     def run(self):
         current_time = time.monotonic()
         if current_time > self.next_time:
-            self.encoders[0].send_pulses(count=1)
-            self.encoders[1].send_pulses(count=2)
-            self.encoders[2].send_pulses(count=3)
+            for i, encoder in enumerate(self.encoders):
+                self.encoders[0].send_pulses(count=i+1)
+
             self.next_time = current_time + self.period
 
         time.sleep(0.001)

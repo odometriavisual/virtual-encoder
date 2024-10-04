@@ -9,7 +9,6 @@ from src.ihm.ihm import IHM
 from src.ihm.gpiod_button import GpiodButton
 from src.pi_zero_client import PiZeroClient
 from src.pulse_generator import PulseGenerator
-from src.source_controller import SourceController
 
 from src.modos import *
 

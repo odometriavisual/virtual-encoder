@@ -1,8 +1,7 @@
 import gpiod
 from gpiod.line import Direction, Value
-import time
 
-class SourceController:
+class PiZeroPowerSupplySwitch:
     def __init__(self, PIN: int = 25, chip: str = "/dev/gpiochip4"):
         self.PIN = PIN
         self.LINE = gpiod.request_lines(

@@ -22,9 +22,8 @@ class PiZeroClient:
                     ret, frame = self.vid.read()
 
                     if ret:
-                        self.vid_lock.acquire()
-                        self.frame = frame
-                        self.vid_lock.release()
+                        with self.vid_lock:
+                            self.frame = frame
 
                         imgs_directory = '/home/pi/picam_imgs'
                         filename = f'{imgs_directory}/{time.monotonic_ns()}.jpg'
@@ -63,9 +62,9 @@ class PiZeroClient:
             self.vid.set(cv2.CAP_PROP_BUFFERSIZE, 1)
             time.sleep(1)
 
-        self.vid_lock.acquire()
-        frame = self.frame
-        self.vid_lock.release()
+        with self.vid_lock:
+            frame = self.frame.copy()
+
         return frame
 
     def get_status(self):

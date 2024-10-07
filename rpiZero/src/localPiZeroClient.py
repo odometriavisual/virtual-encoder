@@ -35,9 +35,15 @@ class LocalPiZeroClient:
             warnings.warn("Não foi possível iniciar o bno055, ele será desabilitado")
 
         def update():
+            update_period = 1_000_000_000 / 60
+            time_now = time.monotonic_ns()
+            next_update = time_now
+
             while True:
                 time.sleep(0.001)
-                with self.vid_lock:
+                time_now = time.monotonic_ns()
+                if time_now > next_update:
+                    next_update += update_period
 
                     # Captura um frame da camera
                     frame = self.picam2.capture_array()

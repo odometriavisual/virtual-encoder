@@ -7,15 +7,12 @@
 
 import logging
 from http import server
-from threading import Condition
 import socketserver
-import time
-import io
 import cv2
 import json
 
-from src.localPiZeroClient import LocalPiZeroClient
-from src.localCalibration import startLocalCalibration
+from .localPiZeroClient import LocalPiZeroClient
+from .localCalibration import startLocalCalibration
 
 PAGE = '''\
 <html>
@@ -44,15 +41,6 @@ class Server:
     class StreamingServer(socketserver.ThreadingMixIn, server.HTTPServer):
         allow_reuse_address = True
         daemon_threads = True
-
-    class StreamingOutput(io.BufferedIOBase):
-        def __init__(self):
-            self.frame = None
-            self.condition = Condition()
-        def write(self, buf):
-            with self.condition:
-                self.frame = buf
-                self.condition.notify_all()
 
     class MJPEGHandler(server.BaseHTTPRequestHandler):
         def __init__(self, *args, client: LocalPiZeroClient, **kwargs):

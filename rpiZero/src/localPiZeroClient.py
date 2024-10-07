@@ -40,8 +40,11 @@ class LocalPiZeroClient:
                 with self.vid_lock:
 
                     # Captura um frame da camera
-                    self.frame = self.picam2.capture_array()
+                    frame = self.picam2.capture_array()
                     self.frame_available.set()
+
+                    with self.vid_lock:
+                        self.frame = frame
 
                     # Salva a imagem no diretório especificado
                     imgs_directory = '/home/pi/picam_imgs'
@@ -69,7 +72,8 @@ class LocalPiZeroClient:
     def get_img(self):
         # Retorna o frame mais recente capturado
         with self.vid_lock:
-            return self.frame
+            frame = self.frame.copy()
+        return frame
 
     def get_status(self):
         status = {

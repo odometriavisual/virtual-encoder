@@ -65,17 +65,17 @@ class Server:
                 self._redirect_to_index()
             elif self.path == '/index.html':
                 self._send_page(PAGE.encode('utf-8'))
-            elif self.path == '/imu.html':
+            elif self.path == '/imu':
                 self._send_page(self._get_timestamp_and_imu_data().encode('utf-8'))
             elif self.path == '/status':
                 status = self.client.get_status()
                 self._send_page(json.dumps(status), content_type='application/json')
-            elif self.path.startswith('/focus.html'):
+            elif self.path.startswith('/focus'):
                 self.focus = float(self._extract_last_path())
                 self.client.set_focus(self.focus)
                 response = f"Foco selecionado: {self.focus}"
                 self._send_page(response.encode('utf-8'))
-            elif self.path.startswith('/exposure.html'):
+            elif self.path.startswith('/exposure'):
                 exposure_value = int(self._extract_last_path())
                 self.client.set_exposure(exposure_value)
                 response = f"Exposicao selecionada: {exposure_value}"

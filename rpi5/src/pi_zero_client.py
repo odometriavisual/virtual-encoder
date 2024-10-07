@@ -38,21 +38,21 @@ class PiZeroClient:
 
     def set_focus(self, focus: float):
         try:
-            requests.get(f'{PIZERO_HOST}/focus.html/{focus}', timeout=0.1)
+            requests.get(f'{PIZERO_HOST}/focus/{focus}', timeout=0.1)
             return True
         except RequestException:
             return False
 
     def set_exposure(self, exposure: int):
         try:
-            requests.get(f'{PIZERO_HOST}/exposure.html/{exposure}', timeout=0.1)
+            requests.get(f'{PIZERO_HOST}/exposure/{exposure}', timeout=0.1)
             return True
         except RequestException:
             return False
 
     def get_orientation(self) -> [float, float, float, float, float, float]:
         try:
-            return requests.get(f'{PIZERO_HOST}/imu.html', timeout=0.1).text.strip().split(',')
+            return requests.get(f'{PIZERO_HOST}/imu', timeout=0.1).text.strip().split(',')
         except RequestException:
             return False
 

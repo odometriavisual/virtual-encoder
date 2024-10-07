@@ -60,11 +60,11 @@ class LocalPiZeroClient:
         # Ajusta a exposição da câmera
         self.picam2.set_controls({"ExposureTime": exposure})
 
-    def get_orientation(self) -> [float, float, float, float]:
+    def get_orientation(self) -> [float, float, float, float, float, float]:
         if self.imu_enabled is True:
             return self.imu.quaternion
         else:
-            return [0.0, 0.0, 0.0, 0.0]
+            return [0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
 
     def get_img(self):
         # Retorna o frame mais recente capturado

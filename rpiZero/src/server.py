@@ -102,8 +102,8 @@ class Server:
             self.end_headers()
 
         def _get_timestamp_and_imu_data(self):
-            orientation = self.client.get_orientation()
-            return f"{time.time_ns()}_{time.monotonic_ns()}_{orientation}"
+            quat = self.client.get_orientation()
+            return f"{quat[0]},{quat[1]},{quat[2]},{quat[3]},{quat[4]},{quat[5]}"
 
         def _extract_last_path(self):
             try:

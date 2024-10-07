@@ -12,6 +12,7 @@ import socketserver
 import time
 import io
 import cv2
+import json
 
 from src.localPiZeroClient import LocalPiZeroClient
 from src.localCalibration import startLocalCalibration
@@ -54,7 +55,7 @@ class Server:
                 self.condition.notify_all()
 
     class MJPEGHandler(server.BaseHTTPRequestHandler):
-        def __init__(self, *args, client=None, **kwargs):
+        def __init__(self, *args, client: LocalPiZeroClient, **kwargs):
             self.client = client
             self.focus = None
             super().__init__(*args, **kwargs)
@@ -66,6 +67,9 @@ class Server:
                 self._send_page(PAGE.encode('utf-8'))
             elif self.path == '/imu.html':
                 self._send_page(self._get_timestamp_and_imu_data().encode('utf-8'))
+            elif self.path == '/status':
+                status = self.client.get_status()
+                self._send_page(json.dumps(status), content_type='application/json')
             elif self.path.startswith('/focus.html'):
                 self.focus = float(self._extract_last_path())
                 self.client.set_focus(self.focus)

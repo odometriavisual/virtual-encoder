@@ -1,12 +1,8 @@
 import threading
 import time
-import requests
 from picamera2 import Picamera2
-from picamera2.encoders import JpegEncoder
-from picamera2.outputs import FileOutput
 from libcamera import controls
 import adafruit_bno055
-import cv2
 import board
 import warnings
 
@@ -25,6 +21,8 @@ class LocalPiZeroClient:
         self.frame_available = threading.Event()
 
         self.focus = None
+
+        self.boot_time = time.monotonic_ns()
 
         self.imu_enabled = False
         i2c = board.I2C()
@@ -71,7 +69,9 @@ class LocalPiZeroClient:
 
     def get_orientation(self) -> [float, float, float, float, float, float]:
         if self.imu_enabled is True:
-            return self.imu.quaternion
+            time_now = time.monotonic_ns()
+            quat = self.imu.quaternion
+            return [self.boot_time, time_now, quat[0], quat[1], quat[2], quat[3]]
         else:
             return [0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
 

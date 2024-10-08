@@ -57,7 +57,7 @@ class Server:
                 self._send_page(self._get_timestamp_and_imu_data().encode('utf-8'))
             elif self.path == '/status':
                 status = self.client.get_status()
-                self._send_page(json.dumps(status), content_type='application/json')
+                self._send_page(json.dumps(status).encode('utf-8'), content_type='application/json')
             elif self.path.startswith('/focus'):
                 self.focus = float(self._extract_last_path())
                 self.client.set_focus(self.focus)

@@ -11,6 +11,9 @@ from threading import Condition
 import socketserver
 import io
 import cv2
+import json
+import numpy as np
+import os
 
 from ..localPiZeroClient import LocalPiZeroClient
 from ..localCalibration import startLocalCalibration
@@ -52,12 +55,29 @@ function calibracao() {
 </body>
 </html>
 '''
+
+mmpx_calibration = None
+results = {
+    "focus": [],
+    "scale": []
+        }
+path = None
+calibration_index = 0
+
 class CalibrationServer:
     def __init__(self, client:LocalPiZeroClient, port:int = 7123):
         self.client = client
         self.address = ('', port)
         self.server = None
-        self.mmpx_calibration = None
+        
+        #
+        #self.mmpx_calibration = None
+        #self.calibration_index = 0
+        #self.folder_name = None
+       # self.results = {
+        #        "focus": list(),
+         #       "scale": list()
+          #      }
 
     def run(self):
         handler = lambda *args, **kwargs: self.MJPEGHandler(*args, client=self.client, **kwargs)
@@ -112,9 +132,33 @@ class CalibrationServer:
                 response = f"{self.client.focus}"
                 self._send_page(response.encode('utf-8'))
             elif self.path == '/run_mm_px_calibration':
-                self.mmpx_calibration = find_mm_per_pixel_calibration(self.client.get_img())
-                response = f"{self.mmpx_calibration}"
+                global path
+                global calibration_index
+                print("Starting calibration")
+                current_img = self.client.get_img()
+                mmpx_calibration = find_mm_per_pixel_calibration(current_img)
+                print(mmpx_calibration)
+                response = f"{mmpx_calibration}"
                 self._send_page(response.encode('utf-8'))
+                print(results)
+
+                # Saves the calibration result:
+                results["scale"].append(mmpx_calibration)
+                results["focus"].append(self.client.focus)
+                print(results)
+
+                print(path)
+                if path is None:
+                    path = f"calibration_results_{int(np.random.rand() * 1000)}/" # Generate up to 4 digit random number
+                    os.mkdir(path)
+
+                cv2.imwrite(path + f"calibration_{calibration_index}.png", current_img)
+                
+                with open(path + "calibration_results.json", "w") as file:
+                    json.dump(results, file)
+                
+                print("Calibration successful")
+                calibration_index += 1
 
             #elif path == save_calibraton save in a txt or csv file
 

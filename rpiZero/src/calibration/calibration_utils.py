@@ -35,4 +35,7 @@ def find_mm_per_pixel_calibration(img):
         mm_per_pixel_calibration = detected_squares_total_size / pixel_distance_horizontal
 
         return mm_per_pixel_calibration
+    else:
+        print("No chessboard detected")
+        return None
 

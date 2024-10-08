@@ -1,7 +1,7 @@
 from src.localPiZeroClient import LocalPiZeroClient
 import time
 from src.localCalibration import startLocalCalibration
-from src.calibration import CalibrationServer
+from src.calibration.calibration_server import CalibrationServer
 
 def main():
     client = LocalPiZeroClient()

@@ -12,8 +12,9 @@ import socketserver
 import io
 import cv2
 
-from src.localPiZeroClient import LocalPiZeroClient
-from rpiZero.src.calibration.calibration_utils import find_mm_per_pixel_calibration
+from ..localPiZeroClient import LocalPiZeroClient
+from ..localCalibration import startLocalCalibration
+from .calibration_utils import find_mm_per_pixel_calibration
 
 PAGE = '''\
 <html>

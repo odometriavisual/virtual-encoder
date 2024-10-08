@@ -28,8 +28,8 @@ class IHM:
         self.oled_screen.drawLine(1, f'ESTADO: {self.estado}', 'center')
 
         self.oled_screen.drawLine(2, f'IP: {self.ip}')
-        self.oled_screen.drawLine(4, f'CAM : {self.camera_status}')
-        self.oled_screen.drawLine(5, f'piZ: {self.rpiZero_status} | IMU: {self.imu_status}')
+        self.oled_screen.drawLine(3, f'CAM : {self.camera_status}')
+        self.oled_screen.drawLine(4, f'piZ: {self.rpiZero_status} | IMU: {self.imu_status}')
 
         self.oled_screen.update()
 

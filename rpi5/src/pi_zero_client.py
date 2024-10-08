@@ -38,23 +38,26 @@ class PiZeroClient:
 
     def set_focus(self, focus: float):
         try:
-            requests.get(f'{PIZERO_HOST}/focus/{focus}', timeout=0.1)
+            requests.get(f'{PIZERO_HOST}/focus/{focus}', timeout=1.0)
             return True
         except RequestException:
             return False
 
     def set_exposure(self, exposure: int):
         try:
-            requests.get(f'{PIZERO_HOST}/exposure/{exposure}', timeout=0.1)
+            requests.get(f'{PIZERO_HOST}/exposure/{exposure}', timeout=1.0)
             return True
         except RequestException:
             return False
 
     def get_orientation(self) -> [float, float, float, float, float, float]:
         try:
-            return requests.get(f'{PIZERO_HOST}/imu', timeout=0.1).text.strip().split(',')
-        except RequestException:
+            res = requests.get(f'{PIZERO_HOST}/imu', timeout=1.0)
+            if res.status_code == 200:
+                return res.text.strip().split(',')
+        except (RequestException, ValueError):
             return False
+
 
     def get_img(self) -> cv2.Mat:
         if not self.vid.isOpened():
@@ -69,7 +72,7 @@ class PiZeroClient:
 
     def get_status(self):
         try:
-            status = requests.get(f'{PIZERO_HOST}/status', timeout=0.1).json()
+            status = requests.get(f'{PIZERO_HOST}/status', timeout=1.0).json()
             status['rpiZero'] = True
         except RequestException:
             status = {

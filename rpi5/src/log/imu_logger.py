@@ -10,7 +10,7 @@ class IMULogger:
         self.filename = filename
         self.index = 0
 
-        self.measure_period = 0.1 * 1e9 # ns
+        self.measure_period = 1 * 1e9 # ns
         self.save_period = 10 * 1e9 # ns
 
         if isfile(filename):
@@ -40,7 +40,7 @@ class IMULogger:
                     if quat := client.get_orientation():
                         self.insert(quat)
                     else:
-                        next_measure += self.measure_period * 100
+                        next_measure += self.measure_period * 10
 
                 if time_now > next_save:
                     next_save += self.save_period

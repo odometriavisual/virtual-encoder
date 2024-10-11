@@ -36,6 +36,13 @@ class PiZeroClient:
         # self.vid_thread = threading.Thread(daemon=True, target=update)
         # self.vid_thread.start()
 
+    def pizero_calibration(self):
+        try:
+            requests.get(f'{PIZERO_HOST}/run_autofocus', timeout=30.0)
+            return True
+        except RequestException:
+            return False
+
     def set_focus(self, focus: float):
         try:
             requests.get(f'{PIZERO_HOST}/focus/{focus}', timeout=1.0)

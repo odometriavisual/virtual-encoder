@@ -1,0 +1,8 @@
+[Unit]
+Description=Boot Counter Service
+
+[Service]
+ExecStart=/home/pi/virtual-encoder/common/boot-counter/boot-counter.sh
+
+[Install]
+WantedBy=multi-user.target

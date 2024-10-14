@@ -5,6 +5,7 @@ from libcamera import controls
 import adafruit_bno055
 import board
 import warnings
+from cv2 import imwrite
 
 class LocalPiZeroClient:
     def __init__(self):
@@ -24,6 +25,10 @@ class LocalPiZeroClient:
 
         self.boot_time = time.monotonic_ns()
 
+        self.enable_save_img_period = 30 * 1_000_000_000
+        self.enable_save_img = False
+        self.last_status_time = self.boot_time - self.enable_save_img_period
+
         self.imu_enabled = False
         i2c = board.I2C()
         try:
@@ -33,27 +38,20 @@ class LocalPiZeroClient:
             warnings.warn("Não foi possível iniciar o bno055, ele será desabilitado")
 
         def update():
-            update_period = 1_000_000_000 / 60
-            time_now = time.monotonic_ns()
-            next_update = time_now
-
             while True:
-                time.sleep(0.001)
                 time_now = time.monotonic_ns()
-                if time_now > next_update:
-                    next_update += update_period
 
-                    # Captura um frame da camera
-                    frame = self.picam2.capture_array()
-                    self.frame_available.set()
+                # Captura um frame da camera
+                frame = self.picam2.capture_array()
+                self.frame_available.set()
 
-                    with self.vid_lock:
-                        self.frame = frame
+                with self.vid_lock:
+                    self.frame = frame.copy()
 
-                    # Salva a imagem no diretório especificado
+                if time_now > self.last_status_time + self.enable_save_img_period or self.enable_save_img:
                     imgs_directory = '/home/pi/picam_imgs'
                     filename = f'{imgs_directory}/{time.time_ns()}.jpg'
-                    self.picam2.capture_file(filename)
+                    imwrite(filename, frame)
 
         self.vid_thread = threading.Thread(daemon=True, target=update)
         self.vid_thread.start()
@@ -89,6 +87,9 @@ class LocalPiZeroClient:
 
         return status
 
+    def process_status(self, status):
+        self.last_status_time = time.monotonic_ns()
+        self.enable_save_img = status == "Disparo"
 
     def download_all_images(self):
         raise NotImplementedError

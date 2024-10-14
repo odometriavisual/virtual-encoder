@@ -4,7 +4,6 @@ import threading
 from socket import gethostname
 from visual_odometer import VisualOdometer
 
-from src.log.imu_logger import IMULogger
 from src.ihm.ihm import IHM
 from src.ihm.gpiod_button import GpiodButton
 from src.pi_zero_client import PiZeroClient
@@ -62,9 +61,6 @@ def main():
 
     ihm.modo = 'TEMPO'
     ihm.ip = f'{gethostname()}.local'
-
-    imu_logger = IMULogger('/home/pi/imu.npy')
-    imu_logger.listen(client)
 
     modo = ModoTempo(client, ihm, encoders)
 

@@ -16,9 +16,8 @@ class LocalPiZeroClient:
 
         self.boot_time = time.monotonic_ns()
 
-        self.enable_save_period = 15 * 1_000_000_000
-        self.enable_save = False
         self.last_status_time = 0
+        self.rpi5status = ''
 
         self.imu_enabled = not imu is None
         self.imu = imu
@@ -68,7 +67,7 @@ class LocalPiZeroClient:
 
     def process_status(self, status):
         self.last_status_time = time.monotonic_ns()
-        self.enable_save = status == "Disparo"
+        self.rpi5status = status
 
     def download_all_images(self):
         raise NotImplementedError

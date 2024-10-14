@@ -2,20 +2,12 @@ import threading
 import time
 from picamera2 import Picamera2
 from libcamera import controls
-import adafruit_bno055
-import board
-import warnings
 from cv2 import imwrite
 
 class LocalPiZeroClient:
-    def __init__(self):
+    def __init__(self, picam, imu):
         # Inicializa a câmera
-        self.picam2 = Picamera2()
-
-        self.picam2.configure(self.picam2.create_preview_configuration({'format': 'RGB888',"size": (640, 480)}))
-
-        self.picam2.controls.FrameRate = 60  # Ajusta o FPS
-        self.picam2.start()
+        self.picam2 = picam
 
         self.vid_lock = threading.Lock()
         self.frame = None
@@ -25,17 +17,12 @@ class LocalPiZeroClient:
 
         self.boot_time = time.monotonic_ns()
 
-        self.enable_save_img_period = 30 * 1_000_000_000
-        self.enable_save_img = False
-        self.last_status_time = self.boot_time - self.enable_save_img_period
+        self.enable_save_period = 15 * 1_000_000_000
+        self.enable_save = False
+        self.last_status_time = 0
 
-        self.imu_enabled = False
-        i2c = board.I2C()
-        try:
-            self.imu = adafruit_bno055.BNO055_I2C(i2c, 0x29)
-            self.imu_enabled = True
-        except:
-            warnings.warn("Não foi possível iniciar o bno055, ele será desabilitado")
+        self.imu_enabled = not imu is None
+        self.imu = imu
 
         def update():
             while True:

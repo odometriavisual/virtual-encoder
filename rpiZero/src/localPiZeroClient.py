@@ -2,7 +2,6 @@ import threading
 import time
 from picamera2 import Picamera2
 from libcamera import controls
-from cv2 import imwrite
 
 class LocalPiZeroClient:
     def __init__(self, picam, imu):
@@ -26,19 +25,12 @@ class LocalPiZeroClient:
 
         def update():
             while True:
-                time_now = time.monotonic_ns()
-
                 # Captura um frame da camera
                 frame = self.picam2.capture_array()
                 self.frame_available.set()
 
                 with self.vid_lock:
                     self.frame = frame.copy()
-
-                if time_now > self.last_status_time + self.enable_save_period or self.enable_save:
-                    imgs_directory = '/home/pi/picam_imgs'
-                    filename = f'{imgs_directory}/{time.time_ns()}.jpg'
-                    imwrite(filename, frame)
 
         self.vid_thread = threading.Thread(daemon=True, target=update)
         self.vid_thread.start()
@@ -52,13 +44,13 @@ class LocalPiZeroClient:
         # Ajusta a exposição da câmera
         self.picam2.set_controls({"ExposureTime": exposure})
 
-    def get_orientation(self) -> [float, float, float, float, float, float]:
+    def get_orientation(self) -> [int, float, float, float, float]:
         if self.imu_enabled is True:
             time_now = time.monotonic_ns()
             quat = self.imu.quaternion
-            return [self.boot_time, time_now, quat[0], quat[1], quat[2], quat[3]]
+            return [time_now, quat[0], quat[1], quat[2], quat[3]]
         else:
-            return [0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
+            return [0, 0.0, 0.0, 0.0, 0.0]
 
     def get_img(self):
         # Retorna o frame mais recente capturado

@@ -1,6 +1,6 @@
 #!/usr/bin/env python
-
 import time
+import threading
 from socket import gethostname
 from visual_odometer import VisualOdometer
 
@@ -55,11 +55,9 @@ def main():
 
     time.sleep(1)
 
-    status = client.get_status(ihm.estado)
-
-    ihm.rpiZero_status = 'Ok.' if status['rpiZero'] else 'ERR'
-    ihm.imu_status = 'Ok.' if status['imu'] else 'ERR'
-    ihm.camera_status = 'Ok.' if status['camera'] else 'ERR'
+    ihm.rpiZero_status = '...'
+    ihm.imu_status = '...'
+    ihm.camera_status = '...'
     ihm.update_display()
 
     ihm.modo = 'TEMPO'
@@ -69,21 +67,19 @@ def main():
     imu_logger.listen(client)
 
     modo = ModoTempo(client, ihm, encoders)
-    time_now = time.monotonic_ns()
-    next_display_update = time_now + 5e9
 
-    while True:
-        time_now = time.monotonic_ns()
-        if time_now > next_display_update:
-            next_display_update = next_display_update + int(5e9)
-
+    def _get_status():
+        while True:
+            time.sleep(1.0)
             status = client.get_status(ihm.estado)
 
             ihm.rpiZero_status = 'Ok.' if status['rpiZero'] else 'ERR'
             ihm.imu_status = 'Ok.' if status['imu'] else 'ERR'
             ihm.camera_status = 'Ok.' if status['camera'] else 'ERR'
             ihm.update_display()
+    threading.Thread(target=_get_status, daemon=True).start()
 
+    while True:
         while ev := ihm.poll_event():
             match modo, ev:
                 case ModoTempo(), 'next_modo':

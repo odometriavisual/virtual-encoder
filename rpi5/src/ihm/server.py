@@ -31,9 +31,9 @@ class FlaskInterfaceApp:
                 time.sleep(0.005)
 
     def setup_routes(self):
-        @self.app.route('/video_feed')
-        def video_feed():
-            return Response(self.generate_frames(), mimetype='multipart/x-mixed-replace; boundary=frame')
+        # @self.app.route('/video_feed')
+        # def video_feed():
+        #     return Response(self.generate_frames(), mimetype='multipart/x-mixed-replace; boundary=frame')
 
         @self.app.route('/')
         def index():

@@ -10,6 +10,7 @@ from http import server
 import socketserver
 import cv2
 import json
+from urllib.parse import urlparse, parse_qs
 
 from .localPiZeroClient import LocalPiZeroClient
 from .localCalibration import startLocalCalibration
@@ -55,8 +56,11 @@ class Server:
                 self._send_page(PAGE.encode('utf-8'))
             elif self.path == '/imu':
                 self._send_page(self._get_timestamp_and_imu_data().encode('utf-8'))
-            elif self.path == '/status':
+            elif self.path.startswith('/status'):
                 status = self.client.get_status()
+                query_params = parse_qs(urlparse(self.path).query)
+                if 'rpi5status' in query_params:
+                    self.client.process_status(query_params['rpi5status'][0])
                 self._send_page(json.dumps(status).encode('utf-8'), content_type='application/json')
             elif self.path.startswith('/focus'):
                 self.focus = float(self._extract_last_path())

@@ -55,7 +55,7 @@ def main():
 
     time.sleep(1)
 
-    status = client.get_status()
+    status = client.get_status(ihm.estado)
 
     ihm.rpiZero_status = 'Ok.' if status['rpiZero'] else 'ERR'
     ihm.imu_status = 'Ok.' if status['imu'] else 'ERR'
@@ -77,7 +77,7 @@ def main():
         if time_now > next_display_update:
             next_display_update = next_display_update + int(5e9)
 
-            status = client.get_status()
+            status = client.get_status(ihm.estado)
 
             ihm.rpiZero_status = 'Ok.' if status['rpiZero'] else 'ERR'
             ihm.imu_status = 'Ok.' if status['imu'] else 'ERR'

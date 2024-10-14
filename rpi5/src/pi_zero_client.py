@@ -58,7 +58,6 @@ class PiZeroClient:
         except (RequestException, ValueError):
             return False
 
-
     def get_img(self) -> cv2.Mat:
         if not self.vid.isOpened():
             self.vid.open(f'{PIZERO_HOST}/stream.mjpg')
@@ -70,9 +69,9 @@ class PiZeroClient:
 
         return frame
 
-    def get_status(self):
+    def get_status(self, local_status):
         try:
-            status = requests.get(f'{PIZERO_HOST}/status', timeout=1.0).json()
+            status = requests.get(f'{PIZERO_HOST}/status?rpi5status={local_status}', timeout=1.0).json()
             status['rpiZero'] = True
         except RequestException:
             status = {

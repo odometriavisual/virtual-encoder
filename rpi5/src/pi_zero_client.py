@@ -7,7 +7,7 @@ import numpy as np
 import requests
 from requests.exceptions import RequestException
 
-PIZERO_HOST = 'http://raspberrypi00.local:7123'
+PIZERO_HOST = 'http://rpi0:7123'
 
 class PiZeroClient:
     def __init__(self):

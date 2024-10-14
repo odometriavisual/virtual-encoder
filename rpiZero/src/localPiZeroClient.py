@@ -35,7 +35,7 @@ class LocalPiZeroClient:
                 with self.vid_lock:
                     self.frame = frame.copy()
 
-                if time_now > self.last_status_time + self.enable_save_img_period or self.enable_save_img:
+                if time_now > self.last_status_time + self.enable_save_period or self.enable_save:
                     imgs_directory = '/home/pi/picam_imgs'
                     filename = f'{imgs_directory}/{time.time_ns()}.jpg'
                     imwrite(filename, frame)
@@ -76,7 +76,7 @@ class LocalPiZeroClient:
 
     def process_status(self, status):
         self.last_status_time = time.monotonic_ns()
-        self.enable_save_img = status == "Disparo"
+        self.enable_save = status == "Disparo"
 
     def download_all_images(self):
         raise NotImplementedError

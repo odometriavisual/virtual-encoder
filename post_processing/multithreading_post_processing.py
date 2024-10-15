@@ -13,18 +13,19 @@ def load(filename):
 
     return img_array
 
+start_time = time.time()
+
 image_folder = 'C:/Users/Daniel Santin/PycharmProjects/virtual-encoder2/post_processing/data/picam_imgs/1_20241014_180236'
 
 image_files = sorted(glob.glob(os.path.join(image_folder, '*.jpg')))
 img_stream = [load(img_file) for img_file in image_files]
 
-odometer = VisualOdometer(img_size=(640, 480))
+odometer = VisualOdometer(img_size=(640, 480),num_threads=8)
 fps = 80
 
 try:
     odometer._start_pool()
     time.sleep(.1)
-    start_time = time.time()
     for img in img_stream:
         odometer.feed_image(img)
         time.sleep(1 / fps)

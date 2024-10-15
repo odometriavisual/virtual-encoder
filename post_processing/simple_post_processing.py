@@ -19,6 +19,9 @@ def preprocessing(img_array):
     pre_processed_img = image_preprocessing(img_array)
     return pre_processed_img
 
+
+start_time = time.time()
+
 image_folder = 'C:/Users/Daniel Santin/PycharmProjects/virtual-encoder2/post_processing/data/picam_imgs/1_20241014_180236'
 
 image_files = sorted(glob.glob(os.path.join(image_folder, '*.jpg')))
@@ -28,7 +31,6 @@ img_preprocessed_list = [preprocessing(img_array) for img_array in img_stream]
 img_size = img_stream[0].shape
 old_processed_img = img_preprocessed_list.pop(0)
 
-start_time = time.time()
 for img_preprocessed in img_preprocessed_list:
     dx,dy = svd_method(img_preprocessed, old_processed_img, img_size[1], img_size[0])
     old_processed_img = img_preprocessed

@@ -19,7 +19,7 @@ image_files = sorted(glob.glob(os.path.join(image_folder, '*.jpg')))
 img_stream = [load(img_file) for img_file in image_files]
 
 odometer = VisualOdometer(img_size=(640, 480))
-fps = 60
+fps = 80
 
 try:
     odometer._start_pool()

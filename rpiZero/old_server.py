@@ -35,7 +35,7 @@ PAGE = f'''\
 </body>
 </html>
 '''
-t0 = time.monotonic_ns()
+t0 = time.time_ns()
 
 
 class StreamingOutput(io.BufferedIOBase):
@@ -69,7 +69,7 @@ class StreamingHandler(server.BaseHTTPRequestHandler):
                 quat = sensor.quaternion
             else:
                 quat = (0, 0, 0, 0)
-            t1 = time.monotonic_ns()
+            t1 = time.time_ns()
             texto = f"{t0},{t1},{quat[0]},{quat[1]},{quat[2]},{quat[3]}"
             content = texto.encode('utf-8')
             self.send_response(200)

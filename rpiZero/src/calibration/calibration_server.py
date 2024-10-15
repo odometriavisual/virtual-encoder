@@ -180,7 +180,7 @@ class CalibrationServer:
 
         def _get_timestamp_and_imu_data(self):
             orientation = self.client.get_orientation()
-            return f"{time.time_ns()}_{time.monotonic_ns()}_{orientation}"
+            return f"{time.time_ns()}_{time.time_ns()}_{orientation}"
 
         def _extract_last_path(self):
             try:

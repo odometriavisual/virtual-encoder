@@ -28,12 +28,12 @@ class IMULogger:
 
     def listen(self, client: PiZeroClient):
         def _listen():
-            time_now = time.monotonic_ns()
+            time_now = time.time_ns()
             next_measure = time_now + self.measure_period
             next_save = time_now + self.save_period
 
             while True:
-                time_now = time.monotonic_ns()
+                time_now = time.time_ns()
                 if time_now > next_measure:
                     next_measure += self.measure_period
 

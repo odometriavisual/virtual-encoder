@@ -33,11 +33,11 @@ class IMULogger:
 
     def start_listening(self):
         def _listen():
-            time_now = time.monotonic_ns()
+            time_now = time.time_ns()
             next_measure = time_now + self.measure_period
 
             while self.listening:
-                time_now = time.monotonic_ns()
+                time_now = time.time_ns()
                 if time_now > next_measure:
                     next_measure += self.measure_period
 

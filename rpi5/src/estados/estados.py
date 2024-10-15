@@ -45,11 +45,11 @@ class EstadoErro:
         self.ihm.estado = message
         self.ihm.update_display()
 
-        self.time_now = time.monotonic_ns()
+        self.time_now = time.time_ns()
         self.time_exit = self.time_now + int(5e9)
 
     def run(self):
-        self.time_now = time.monotonic_ns()
+        self.time_now = time.time_ns()
         if self.time_now > self.time_exit:
             self.ihm.send_event('next_estado')
         else:

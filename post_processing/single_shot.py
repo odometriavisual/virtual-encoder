@@ -1,4 +1,7 @@
 from visual_odometer import VisualOdometer
+from visual_odometer.preprocessing import image_preprocessing
+from visual_odometer.displacement_estimators.svd import svd_method
+
 import glob
 import os
 import time
@@ -10,25 +13,25 @@ def load(filename):
     img_array_rgb = Image.open(filename)
     img_grayscale = ImageOps.grayscale(img_array_rgb)
     img_array = np.asarray(img_grayscale)
-
     return img_array
 
+def preprocessing(img_array):
+    pre_processed_img = image_preprocessing(img_array)
+    return pre_processed_img
 
 image_folder = 'C:/Users/Daniel Santin/PycharmProjects/virtual-encoder2/post_processing/data/picam_imgs/1_20241014_180236'
 
 image_files = sorted(glob.glob(os.path.join(image_folder, '*.jpg')))
 img_stream = [load(img_file) for img_file in image_files]
+img_preprocessed_list = [preprocessing(img_array) for img_array in img_stream]
 
-first_img = img_stream.pop(0)
-old_img = first_img
-odometer = VisualOdometer(first_img.shape)
-odometer.save_config('./')
+img_size = img_stream[0].shape
+old_processed_img = img_preprocessed_list.pop(0)
 
-odometer.calibrate(new_xres=1.0, new_yres=1.0)
 start_time = time.time()
-for img in img_stream:
-    dx, dy = odometer.estimate_displacement_between(old_img, img)
-    old_img = img
+for img_preprocessed in img_preprocessed_list:
+    dx,dy = svd_method(img_preprocessed, old_processed_img, img_size[1], img_size[0])
+    old_processed_img = img_preprocessed
     #print(f'Displacement estimate: x = {dx}, y = {dy}')
 end_time = time.time()
 execution_time = end_time - start_time

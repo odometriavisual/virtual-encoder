@@ -47,7 +47,7 @@ class Logger:
 
     def _save_orientations(self):
         while True:
-            time.sleep(1)
+            time.sleep(0.1)
 
             if self.enable_save:
                 path = f'{self.save_dir}/imu.csv'
@@ -57,9 +57,10 @@ class Logger:
                         writer.writerow(["timestamp", "boot_time", "qx", "qy", "qz", "qw"])
 
                 measure = self.client.get_orientation()
-                with open(path, mode='a', newline='') as file:
-                    writer = csv.writer(file)
-                    writer.writerow(list(measure))
+                if measure[0] > 0:
+                    with open(path, mode='a', newline='') as file:
+                        writer = csv.writer(file)
+                        writer.writerow(list(measure))
 
     def start(self):
         threading.Thread(target=self._poll_rpi5_status, daemon=True).start()

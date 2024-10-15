@@ -23,7 +23,7 @@ class Logger:
         while True:
             time.sleep(0.1)
 
-            time_now = time.monotonic_ns()
+            time_now = time.time_ns()
             if time_now > self.client.last_status_time + self.enable_save_period or self.client.rpi5status == 'Disparo':
                 if not self.enable_save:
                     datenow = datetime.fromtimestamp(time_now // 1000000000).strftime('%Y%m%d_%H%M%S')

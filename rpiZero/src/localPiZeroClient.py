@@ -14,7 +14,7 @@ class LocalPiZeroClient:
 
         self.focus = None
 
-        self.boot_time = time.monotonic_ns()
+        self.boot_time = time.time_ns()
 
         self.last_status_time = 0
         self.rpi5status = ''
@@ -45,7 +45,7 @@ class LocalPiZeroClient:
 
     def get_orientation(self) -> [int, float, float, float, float]:
         if self.imu_enabled is True:
-            time_now = time.monotonic_ns()
+            time_now = time.time_ns()
             quat = self.imu.quaternion
             return [time_now, quat[0], quat[1], quat[2], quat[3]]
         else:
@@ -66,7 +66,7 @@ class LocalPiZeroClient:
         return status
 
     def process_status(self, status):
-        self.last_status_time = time.monotonic_ns()
+        self.last_status_time = time.time_ns()
         self.rpi5status = status
 
     def download_all_images(self):

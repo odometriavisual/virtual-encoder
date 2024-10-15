@@ -4,6 +4,7 @@ import time
 import csv
 import numpy as np
 import matplotlib.pyplot as plt
+from mpl_toolkits.mplot3d import Axes3D  # Importar para visualização 3D
 from datetime import datetime
 
 from visual_odometer import VisualOdometer
@@ -45,6 +46,16 @@ def find_closest_imu_data(imu_data, img_timestamp):
     return closest_data
 
 
+def quaternion_to_rotation_matrix(q):
+    """Converte um quaternion para uma matriz de rotação 3x3."""
+    qx, qy, qz, qw = q
+    return np.array([
+        [1 - 2 * (qy ** 2 + qz ** 2), 2 * (qx * qy - qw * qz), 2 * (qx * qz + qw * qy)],
+        [2 * (qx * qy + qw * qz), 1 - 2 * (qx ** 2 + qz ** 2), 2 * (qy * qz - qw * qx)],
+        [2 * (qx * qz - qw * qy), 2 * (qy * qz + qw * qx), 1 - 2 * (qx ** 2 + qy ** 2)]
+    ])
+
+
 image_folder = 'C:/Users/Daniel Santin/PycharmProjects/virtual-encoder2/post_processing/data/picam_imgs/1_20241014_180236'
 imu_file = image_folder + "/imu.csv"
 
@@ -60,31 +71,46 @@ img_size = img_stream[0].shape
 old_processed_img = img_preprocessed_list.pop(0)
 
 # Inicializar posição
-positions = [(0, 0)]  # Começa na posição (0, 0)
-current_position = np.array([0.0, 0.0])  # Usando um array numpy para facilitar os cálculos
+positions = [(0, 0, 0)]  # Começa na posição (0, 0, 0)
+current_position = np.array([0.0, 0.0, 0.0])  # Usando um array numpy para facilitar os cálculos
 
 # Processamento de deslocamento para cada imagem
 for img_preprocessed, img_file in zip(img_preprocessed_list, image_files):
     img_timestamp = int(os.path.basename(img_file).split('.')[0])
     closest_imu_data = find_closest_imu_data(imu_data, img_timestamp)
 
+    # Obter dx e dy usando SVD
     dx, dy = svd_method(img_preprocessed, old_processed_img, img_size[1], img_size[0])
 
-    # Atualizar posição atual
-    current_position += np.array([dx, dy])
-    positions.append((current_position[0], current_position[1]))  # Adicionar nova posição à lista
+    # Extrair os dados do IMU
+    qx = closest_imu_data['qx']
+    qy = closest_imu_data['qy']
+    qz = closest_imu_data['qz']
+    qw = closest_imu_data['qw']
+
+    # Calcular a matriz de rotação a partir do quaternion
+    rotation_matrix = quaternion_to_rotation_matrix([qx, qy, qz, qw])
+
+    # Transformar dx, dy para 3D usando a matriz de rotação
+    displacement_2d = np.array([dx, dy, 0.0])  # Adiciona 0 para a dimensão Z inicialmente
+    displacement_3d = rotation_matrix @ displacement_2d  # Multiplicação de matriz para aplicar a rotação, é o mesmo que np.dot()
+
+    # Atualizar a posição atual
+    current_position += displacement_3d
+    positions.append((current_position[0], current_position[1], current_position[2]))  # Adicionar nova posição à lista
 
     old_processed_img = img_preprocessed
 
 # Converter a lista de posições para um array numpy para facilitar a plotagem
 positions = np.array(positions)
 
-# Plotar a trajetória
-plt.figure(figsize=(10, 6))
-plt.plot(positions[:, 0], positions[:, 1], marker='o')
-plt.title('Trajetória de Deslocamento')
-plt.xlabel('Deslocamento em X')
-plt.ylabel('Deslocamento em Y')
-plt.grid()
-plt.axis('equal')  # Manter a proporção
+# Plotar a trajetória em 3D
+fig = plt.figure(figsize=(10, 8))
+ax = fig.add_subplot(111, projection='3d')
+ax.plot(positions[:, 0], positions[:, 1], positions[:, 2], marker='o')
+ax.set_title('Trajetória de Deslocamento 3D')
+ax.set_xlabel('Deslocamento em X')
+ax.set_ylabel('Deslocamento em Y')
+ax.set_zlabel('Deslocamento em Z')
+ax.grid()
 plt.show()

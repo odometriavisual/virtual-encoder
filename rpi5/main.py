@@ -4,6 +4,7 @@ import threading
 from socket import gethostname
 from visual_odometer import VisualOdometer
 
+from src.webui.server import WebuiApp
 from src.ihm.ihm import IHM
 from src.ihm.gpiod_button import GpiodButton
 from src.pi_zero_client import PiZeroClient
@@ -49,8 +50,10 @@ def main():
                 ihm.send_event("botao3")
                 time.sleep(1)
             time.sleep(0.1)
+    threading.Thread(target=check_all_buttons, daemon=True).start()
 
-    ihm.start_listening([check_all_buttons, ihm.flask_interface.run])
+    webui = WebuiApp(ihm.send_event, client.get_img)
+    threading.Thread(target=webui.run, daemon=True).start()
 
     time.sleep(1)
 

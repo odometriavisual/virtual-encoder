@@ -1,0 +1,40 @@
+<html lang="pt">
+<head>
+    <style>
+        .video-frame {
+            width: 640px;
+            height: 480px;
+        }
+    </style>
+    <script>
+        async function setFocus() {
+            const focusValue = document.getElementById('focus_value').value;
+            if (focusValue) {
+                try {
+                    const response = await fetch('/set_focus', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({ focus_value: focusValue }),
+                    });
+                    const result = await response.text();
+                    document.getElementById('status').innerText = result;
+                } catch (error) {
+                    document.getElementById('status').innerText = 'Erro ao ajustar o foco.';
+                }
+            }
+        }
+    </script>
+    <title>Virtual Encoder</title>
+</head>
+<body>
+    <h1>Streaming de Vídeo</h1>
+    <img src='/video_feed' class='video-frame'/>
+    <br>
+    <label for="focus_value">Valor do Foco:</label>
+    <input type="number" id="focus_value" name="focus_value" min="0" max="100" required>
+    <button onclick="setFocus()">Definir Foco</button>
+    <p id="status"></p>
+</body>
+</html>

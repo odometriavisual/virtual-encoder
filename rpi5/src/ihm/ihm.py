@@ -1,7 +1,4 @@
 from queue import Queue
-from threading import Thread
-
-from .server import FlaskInterfaceApp
 from .display import Screen
 
 class IHM:
@@ -9,7 +6,6 @@ class IHM:
         self._event_queue = Queue(4)
         self._threads = []
 
-        self.flask_interface = FlaskInterfaceApp(self.send_event, get_img)
         self.oled_screen = Screen()
 
         self.modo: str = ''
@@ -32,11 +28,6 @@ class IHM:
         self.oled_screen.drawLine(4, f'piZ: {self.rpiZero_status} | IMU: {self.imu_status}')
 
         self.oled_screen.update()
-
-    def start_listening(self, event_sources):
-        for source in event_sources:
-            self._threads.append(Thread(daemon=True, target=source))
-            self._threads[-1].start()
 
     def poll_event(self):
         if self._event_queue.empty():

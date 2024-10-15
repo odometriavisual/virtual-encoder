@@ -1,7 +1,7 @@
 from visual_odometer import VisualOdometer
-import time
 import glob
 import os
+import time
 
 def load(filename):
     from PIL import Image, ImageOps
@@ -13,27 +13,24 @@ def load(filename):
 
     return img_array
 
+
 image_folder = 'C:/Users/Daniel Santin/PycharmProjects/virtual-encoder2/post_processing/data/picam_imgs/1_20241014_180236'
 
 image_files = sorted(glob.glob(os.path.join(image_folder, '*.jpg')))
 img_stream = [load(img_file) for img_file in image_files]
 
-odometer = VisualOdometer(img_size=(640, 480))
-fps = 60
+first_img = img_stream.pop(0)
+old_img = first_img
+odometer = VisualOdometer(first_img.shape)
+odometer.save_config('./')
 
-try:
-    odometer._start_pool()
-    time.sleep(.1)
-    start_time = time.time()
-    for img in img_stream:
-        odometer.feed_image(img)
-        time.sleep(1 / fps)
-    end_time = time.time()
-    execution_time = end_time - start_time
-    print(f"Tempo: {execution_time:.3f} segundos")
-    print(f"FPS: {len(img_stream) / execution_time}")
-
-finally:
-    print(len(odometer.displacements))
-    odometer._reset_pool()
-    exit()
+odometer.calibrate(new_xres=1.0, new_yres=1.0)
+start_time = time.time()
+for img in img_stream:
+    dx, dy = odometer.estimate_displacement_between(old_img, img)
+    old_img = img
+    #print(f'Displacement estimate: x = {dx}, y = {dy}')
+end_time = time.time()
+execution_time = end_time - start_time
+print(f"Tempo: {execution_time:.3f} segundos")
+print(f"FPS: {len(img_stream)/execution_time}")

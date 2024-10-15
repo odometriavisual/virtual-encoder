@@ -46,7 +46,7 @@ def find_closest_imu_data(imu_data, img_timestamp):
 
 
 image_folder = 'C:/Users/Daniel Santin/PycharmProjects/virtual-encoder2/post_processing/data/picam_imgs/1_20241014_180236'
-imu_file = 'C:/Users/Daniel Santin/PycharmProjects/virtual-encoder2/post_processing/data/picam_imgs/1_20241014_180236/imu.csv'
+imu_file = image_folder+"/imu.csv"
 
 # Carregar dados da IMU
 imu_data = load_imu_data(imu_file)
@@ -63,16 +63,8 @@ old_processed_img = img_preprocessed_list.pop(0)
 
 # Processamento de deslocamento para cada imagem
 for img_preprocessed, img_file in zip(img_preprocessed_list, image_files):
-    # Extrair o timestamp do nome da imagem
     img_timestamp = int(os.path.basename(img_file).split('.')[0])
-
-    # Encontrar o dado de IMU mais próximo
     closest_imu_data = find_closest_imu_data(imu_data, img_timestamp)
-
-    # Imprimir ou utilizar os dados da IMU
-    print(f"Imagem: {img_file}, IMU: {closest_imu_data}")
-
-    # Calcular deslocamento
     dx, dy = svd_method(img_preprocessed, old_processed_img, img_size[1], img_size[0])
     old_processed_img = img_preprocessed
 

@@ -1,40 +1,86 @@
 <html lang="pt">
 <head>
     <style>
-        .video-frame {
+		.wrapper {
+			display: grid;
+			grid-template-columns: 640px 48px;
+			grid-template-rows: 480px 48px;
+			grid-gap: 4px;
+			font-family: sans;
+		}
+
+		.wrapper > .video-frame {
             width: 640px;
             height: 480px;
-        }
-    </style>
-    <script>
-        async function setFocus() {
-            const focusValue = document.getElementById('focus_value').value;
-            if (focusValue) {
-                try {
-                    const response = await fetch('/set_focus', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                        },
-                        body: JSON.stringify({ focus_value: focusValue }),
-                    });
-                    const result = await response.text();
-                    document.getElementById('status').innerText = result;
-                } catch (error) {
-                    document.getElementById('status').innerText = 'Erro ao ajustar o foco.';
-                }
-            }
-        }
-    </script>
-    <title>Virtual Encoder</title>
+			grid-area: 1 / 1 / 2 / 2;
+		} 
+
+		.wrapper > .h-group { 
+			grid-row: 2;
+
+			display: grid;
+			grid-template-columns: repeat(12, 48px);
+			grid-template-rows: repeat(12, 48px);
+			grid-auto-flow: row;
+			grid-gap: 4px;
+		}
+
+		.wrapper > .v-group { 
+			grid-column: 2;
+
+			display: grid;
+			grid-template-columns: repeat(12, 144px);
+			grid-template-rows: repeat(12, 48px);
+			grid-auto-flow: column;
+			grid-gap: 4px;
+		}
+
+		button {
+			grid-column: span 2;
+		}
+
+		.ok {
+			display: flex;
+			justify-content: center;
+			align-items: center;
+			text-align: center;
+
+			background-color: #009933;
+			color: white;
+		}
+
+		.err {
+			display: flex;
+			justify-content: center;
+			align-items: center;
+			text-align: center;
+
+			background-color: #cc0000;
+			color: white;
+		}
+	</style>
+	<title>Virtual Encoder</title>
 </head>
 <body>
-    <h1>Streaming de Vídeo</h1>
-    <img src='/video_feed' class='video-frame'/>
-    <br>
-    <label for="focus_value">Valor do Foco:</label>
-    <input type="number" id="focus_value" name="focus_value" min="0" max="100" required>
-    <button onclick="setFocus()">Definir Foco</button>
-    <p id="status"></p>
+	<div class="wrapper">
+		<img src='/video_feed' class='video-frame'/>
+
+		<div class="h-group">
+			<button>Iniciar Calibracao</button>
+			<button disabled>Iniciar Disparo</button>
+			<button disabled>Parar Disparo</button>
+
+			<button>Modo Tempo</button>
+			<button disabled>Modo Autonomo</button>
+			<button disabled>Modo Estimativa</button>
+		</div>
+
+		<div class="v-group">
+			<div class="ok">RPi 5</div>
+			<div class="ok">RPi Zero</div>
+			<div class="ok">Picam</div>
+			<div class="err">IMU</div>
+		</div>
+	</div>
 </body>
 </html>

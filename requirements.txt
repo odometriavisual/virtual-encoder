@@ -1,8 +1,6 @@
 visual-odometer @ git+https://github.com/odometriavisual/visual-odometer@dev
-picamera2~=0.3.18
 numpy~=1.26.4
 opencv-python~=4.10.0.82
 pillow~=10.3.0
 requests~=2.32.3
-gpiod~=2.2.1
 adafruit-circuitpython-ssd1306~=2.12

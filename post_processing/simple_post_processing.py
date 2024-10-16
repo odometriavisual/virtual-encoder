@@ -71,8 +71,10 @@ img_size = img_stream[0].shape
 old_processed_img = img_preprocessed_list.pop(0)
 
 # Inicializar posição
-positions = [(0, 0, 0)]  # Começa na posição (0, 0, 0)
-current_position = np.array([0.0, 0.0, 0.0])  # Usando um array numpy para facilitar os cálculos
+positions2D = [(0, 0, 0)]
+positions3D = [(0, 0, 0)]  # Começa na posição (0, 0, 0)
+current_position3D = np.array([0.0, 0.0, 0.0])  # Usando um array numpy para facilitar os cálculos
+current_position2D = np.array([0.0, 0.0, 0.0])
 
 # Processamento de deslocamento para cada imagem
 for img_preprocessed, img_file in zip(img_preprocessed_list, image_files):
@@ -96,21 +98,26 @@ for img_preprocessed, img_file in zip(img_preprocessed_list, image_files):
     displacement_3d = rotation_matrix @ displacement_2d  # Multiplicação de matriz para aplicar a rotação, é o mesmo que np.dot()
 
     # Atualizar a posição atual
-    current_position += displacement_3d
-    positions.append((current_position[0], current_position[1], current_position[2]))  # Adicionar nova posição à lista
+    current_position2D += displacement_2d
+    current_position3D += displacement_3d
+
+    positions2D.append((current_position2D[0], current_position2D[1], current_position2D[2]))
+    positions3D.append((current_position3D[0], current_position3D[1], current_position3D[2]))
+
 
     old_processed_img = img_preprocessed
 
 # Converter a lista de posições para um array numpy para facilitar a plotagem
-positions = np.array(positions)
+positions3D = np.array(positions3D)
+positions2D = np.array(positions2D)
 
 # Plotar a trajetória em 3D
 fig = plt.figure(figsize=(10, 8))
 ax = fig.add_subplot(111, projection='3d')
-ax.plot(positions[:, 0], positions[:, 1], positions[:, 2], marker='o')
+ax.plot(positions3D[:, 0], positions3D[:, 1], positions3D[:, 2], marker='o')
 ax.set_title('Trajetória de Deslocamento 3D')
-ax.set_xlabel('Deslocamento em X')
-ax.set_ylabel('Deslocamento em Y')
-ax.set_zlabel('Deslocamento em Z')
+ax.set_xlabel('Deslocamento em X px')
+ax.set_ylabel('Deslocamento em Y px')
+ax.set_zlabel('Deslocamento em Z px')
 ax.grid()
 plt.show()

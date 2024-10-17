@@ -8,6 +8,7 @@ from PySide6.QtCore import Qt, QThread, Signal
 import matplotlib
 from visual_odometer.displacement_estimators.svd import svd_method
 from visual_odometer.preprocessing import image_preprocessing
+import h5py
 
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 import matplotlib.pyplot as plt
@@ -40,7 +41,7 @@ class ProcessingThread(QThread):
 
         # Processar imagens
         self.progress_signal.emit("Processando deslocamento...", 60)
-        positions3D, positions2D = self.process_displacements(img_stream, imu_data, image_files)
+        positions3D, positions2D, _, _ = self.process_displacements(img_stream, imu_data, image_files)
 
         self.progress_signal.emit("Processamento concluído!", 100)
         self.finished_signal.emit(positions3D, positions2D)
@@ -67,8 +68,14 @@ class ProcessingThread(QThread):
         return imu_data
 
     def process_displacements(self, img_stream, imu_data, image_files):
+        positions2D = [(0, 0, 0)]
         positions3D = [(0, 0, 0)]
+
+        current_position2D = np.array([0.0, 0.0, 0.0])
         current_position3D = np.array([0.0, 0.0, 0.0])
+        quaternions = []
+        timestamps = []
+
         old_processed_img = img_stream.pop(0)
 
         for idx, (img_preprocessed, img_file) in enumerate(zip(img_stream, image_files)):
@@ -76,7 +83,7 @@ class ProcessingThread(QThread):
             img_timestamp = int(os.path.basename(img_file).split('.')[0])
             closest_imu_data = self.find_closest_imu_data(imu_data, img_timestamp)
 
-            dx, dy = svd_method(img_preprocessed, old_processed_img, 640, 480)
+            dx, dy = svd_method(img_preprocessed, old_processed_img, 640, 480, use_gpu=False)
 
             # Calculando matriz de rotação e posição
             qx = closest_imu_data['qx']
@@ -88,13 +95,18 @@ class ProcessingThread(QThread):
             displacement_2d = np.array([dx, dy, 0.0])
             displacement_3d = rotation_matrix @ displacement_2d
 
+            current_position2D += displacement_2d
             current_position3D += displacement_3d
+            quaternions.append([qx, qy, qz, qw])
+            timestamps.append(img_timestamp)
+
+            positions2D.append(tuple(current_position2D))
             positions3D.append(tuple(current_position3D))
 
             old_processed_img = img_preprocessed
             self.progress_signal.emit(f"Processando imagem {idx + 1}...", 60 + int(40 * (idx + 1) / len(image_files)))
 
-        return np.array(positions3D), np.array(positions3D)
+        return np.array(positions3D), np.array(positions2D), np.array(quaternions), np.array(timestamps)
 
     def quaternion_to_rotation_matrix(self, q):
         qx, qy, qz, qw = q

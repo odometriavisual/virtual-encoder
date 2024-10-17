@@ -6,6 +6,8 @@ import numpy as np
 from PySide6.QtWidgets import QApplication, QMainWindow, QPushButton, QLabel, QVBoxLayout, QWidget, QFileDialog, QProgressBar
 from PySide6.QtCore import Qt, QThread, Signal
 import matplotlib
+from visual_odometer.displacement_estimators.svd import svd_method
+from visual_odometer.preprocessing import image_preprocessing
 
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 import matplotlib.pyplot as plt
@@ -47,7 +49,8 @@ class ProcessingThread(QThread):
         from PIL import Image, ImageOps
         img_rgb = Image.open(filename)
         img_grayscale = ImageOps.grayscale(img_rgb)
-        return np.asarray(img_grayscale)
+        img_array = np.asarray(img_grayscale)
+        return image_preprocessing(img_array)
 
     def load_imu_data(self, imu_file):
         imu_data = []
@@ -73,7 +76,7 @@ class ProcessingThread(QThread):
             img_timestamp = int(os.path.basename(img_file).split('.')[0])
             closest_imu_data = self.find_closest_imu_data(imu_data, img_timestamp)
 
-            dx, dy = self.svd_method_gpu(img_preprocessed, old_processed_img)
+            dx, dy = svd_method(img_preprocessed, old_processed_img, 640, 480)
 
             # Calculando matriz de rotação e posição
             qx = closest_imu_data['qx']
@@ -92,11 +95,6 @@ class ProcessingThread(QThread):
             self.progress_signal.emit(f"Processando imagem {idx + 1}...", 60 + int(40 * (idx + 1) / len(image_files)))
 
         return np.array(positions3D), np.array(positions3D)
-
-    def svd_method_gpu(self, img_preprocessed, old_processed_img):
-        # Função simulada para estimar dx, dy
-        dx, dy = np.random.rand(2) * 10 - 5
-        return dx, dy
 
     def quaternion_to_rotation_matrix(self, q):
         qx, qy, qz, qw = q

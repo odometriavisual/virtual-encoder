@@ -81,6 +81,17 @@
 			imu: document.querySelector('.status > .imu'),
 		};
 
+		async function next_estado(event) {
+			event.target.disabled = true;
+
+			const method = 'POST';
+			await fetch('/next_estado', { method });
+		}
+
+		btns.calibracao.addEventListener('click', next_estado);
+		btns.iniciar_disparo.addEventListener('click', next_estado);
+		btns.parar_disparo.addEventListener('click', next_estado);
+
 		function update_classname(div, stat) {
 			if (stat) div.className = div.className.replace('err', 'ok')
 			else div.className = div.className.replace('ok', 'err')
@@ -102,15 +113,13 @@
 		}
 
 		setInterval(async () => {
-			const headers = {
-				'Accept': 'application/json',
-			};
+			const headers = {'Accept': 'application/json',};
 			const method = 'GET';
-			const res = await fetch('/status', { headers, method });
+			const res = await fetch('/status', {headers, method});
 			const status = await res.json();
 
 			update_status(status)
-		}, 5 * 1000);
+		}, 1000);
 	}
 </script>
 <div class="wrapper">

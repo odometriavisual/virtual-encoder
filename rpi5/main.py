@@ -52,7 +52,7 @@ def main():
             time.sleep(0.1)
     threading.Thread(target=check_all_buttons, daemon=True).start()
 
-    webui = WebuiApp(ihm.send_event, client.get_img)
+    webui = WebuiApp(ihm)
     threading.Thread(target=webui.run, daemon=True).start()
 
     time.sleep(1)

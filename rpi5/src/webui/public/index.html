@@ -35,6 +35,10 @@
 			grid-gap: 4px;
 		}
 
+		.h-group  .spacer {
+			grid-column: span 2;
+		}
+
 		button {
 			grid-column: span 2;
 		}
@@ -93,9 +97,18 @@
 			await fetch('/next_estado', { method });
 		}
 
+		async function next_modo(event, modo) {
+			event.target.disabled = true;
+
+			const method = 'POST';
+			await fetch(`/next_modo/${modo}`, { method });
+		}
+
 		btns.calibracao.addEventListener('click', next_estado);
 		btns.iniciar_disparo.addEventListener('click', next_estado);
 		btns.parar_disparo.addEventListener('click', next_estado);
+		btns.modo_autonomo.addEventListener('click', event => next_modo(event, 'Autonomo'));
+		btns.modo_tempo.addEventListener('click', event => next_modo(event, 'Tempo'));
 
 		function update_classname(div, stat) {
 			if (stat) div.className = div.className.replace('err', 'ok')
@@ -114,13 +127,20 @@
 			status_watcher.rpi5.innerText = `RPi 5\n\n\nModo ${status.modo}\n\n\nEstado ${status.estado}`
 
 			if (status.modo === 'Tempo') {
+				btns.modo_tempo.disabled = true;
+				btns.modo_autonomo.disabled = false;
+
 				btns.calibracao.disabled = status.estado !== 'Set';
 				btns.iniciar_disparo.disabled = status.estado !== 'Ready';
 				btns.parar_disparo.disabled = status.estado !== 'Disparo';
 			}
+			else if (status.modo === 'Autonomo') {
+				btns.modo_tempo.disabled = false;
+				btns.modo_autonomo.disabled = true;
+			}
 		}
 
-		setInterval(async () => {
+		async function fetch_status() {
 			const headers = {
 				'Accept': 'application/json',
 				'Keep-Alive': 'timeout=5, max=-1'
@@ -131,7 +151,9 @@
 			const status = await res.json();
 
 			update_status(status)
-		}, 1000);
+		}
+		setInterval(fetch_status, 1000);
+		fetch_status();
 	}
 </script>
 <div class="wrapper">
@@ -142,9 +164,10 @@
 		<button class="iniciar-disparo" disabled>Iniciar Disparo</button>
 		<button class="parar-disparo" disabled>Parar Disparo</button>
 
+		<div class="spacer"></div>
+
 		<button class="modo-tempo" disabled>Modo Tempo</button>
 		<button class="modo-autonomo" disabled>Modo Autonomo</button>
-		<button class="modo-estimativa" disabled>Modo Estimativa</button>
 	</div>
 
 	<div class="status v-group">

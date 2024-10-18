@@ -66,6 +66,11 @@ class WebuiApp:
             self.ihm.send_event('next_estado')
             return 'ok'
 
+        @self.app.route('/next_modo/<modo>', methods=['POST'])
+        def next_modo_parameter(modo):
+            self.ihm.send_event(('next_modo', modo))
+            return 'ok'
+
     def run(self):
         BaseWSGIServer.protocol_version = "HTTP/1.1"
         self.app.run(host=self.host, port=self.port)

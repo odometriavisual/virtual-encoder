@@ -58,7 +58,7 @@ def main():
     time.sleep(1)
 
     modo = ModoTempo(client, ihm, encoders)
-    ihm.modo = 'TEMPO'
+    ihm.modo = 'Tempo'
     ihm.ip = f'{gethostname()}.local'
 
     def _get_status():

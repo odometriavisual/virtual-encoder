@@ -1,6 +1,6 @@
 <html lang="pt">
 <head>
-    <style>
+	<style>
 		.wrapper {
 			display: grid;
 			grid-template-columns: 640px 48px;
@@ -10,12 +10,12 @@
 		}
 
 		.wrapper > .video-frame {
-            width: 640px;
-            height: 480px;
+			width: 640px;
+			height: 480px;
 			grid-area: 1 / 1 / 2 / 2;
-		} 
+		}
 
-		.wrapper > .h-group { 
+		.wrapper > .h-group {
 			grid-row: 2;
 
 			display: grid;
@@ -25,7 +25,7 @@
 			grid-gap: 4px;
 		}
 
-		.wrapper > .v-group { 
+		.wrapper > .v-group {
 			grid-column: 2;
 
 			display: grid;
@@ -39,22 +39,23 @@
 			grid-column: span 2;
 		}
 
-		.ok {
+		.status > div {
 			display: flex;
 			justify-content: center;
 			align-items: center;
 			text-align: center;
+		}
 
+		.status > div.rpi5 {
+			grid-row: span 2;
+		}
+
+		.ok {
 			background-color: #009933;
 			color: white;
 		}
 
 		.err {
-			display: flex;
-			justify-content: center;
-			align-items: center;
-			text-align: center;
-
 			background-color: #cc0000;
 			color: white;
 		}
@@ -62,25 +63,77 @@
 	<title>Virtual Encoder</title>
 </head>
 <body>
-	<div class="wrapper">
-		<img src='/video_feed' class='video-frame'/>
+<script>
+	window.onload = () => {
+		const btns = {
+			calibracao: document.querySelector('button.calibracao'),
+			iniciar_disparo: document.querySelector('button.iniciar-disparo'),
+			parar_disparo: document.querySelector('button.parar-disparo'),
+			modo_tempo: document.querySelector('button.modo-tempo'),
+			modo_autonomo: document.querySelector('button.modo-autonomo'),
+			modo_estimativa: document.querySelector('button.modo-estimativa'),
+		};
 
-		<div class="h-group">
-			<button>Iniciar Calibracao</button>
-			<button disabled>Iniciar Disparo</button>
-			<button disabled>Parar Disparo</button>
+		const status_watcher = {
+			rpi5: document.querySelector('.status > .rpi5'),
+			rpiZero: document.querySelector('.status > .rpiZero'),
+			camera: document.querySelector('.status > .camera'),
+			imu: document.querySelector('.status > .imu'),
+		};
 
-			<button>Modo Tempo</button>
-			<button disabled>Modo Autonomo</button>
-			<button disabled>Modo Estimativa</button>
-		</div>
+		function update_classname(div, stat) {
+			if (stat) div.className = div.className.replace('err', 'ok')
+			else div.className = div.className.replace('ok', 'err')
+		}
 
-		<div class="v-group">
-			<div class="ok">RPi 5</div>
-			<div class="ok">RPi Zero</div>
-			<div class="ok">Picam</div>
-			<div class="err">IMU</div>
-		</div>
+		function update_status(status) {
+			update_classname(status_watcher.rpi5, status.rpi5);
+			update_classname(status_watcher.rpiZero, status.rpiZero);
+			update_classname(status_watcher.camera, status.camera);
+			update_classname(status_watcher.imu, status.imu);
+
+			status_watcher.rpi5.innerText = `RPi 5\n\n\nModo ${status.modo}\n\n\nEstado ${status.estado}`
+
+			if (status.modo === 'Tempo') {
+				btns.calibracao.disabled = status.estado !== 'Set';
+				btns.iniciar_disparo.disabled = status.estado !== 'Ready';
+				btns.parar_disparo.disabled = status.estado !== 'Disparo';
+			}
+		}
+
+		setInterval(async () => {
+			const headers = {
+				'Accept': 'application/json',
+			};
+			const method = 'GET';
+			const res = await fetch('/status', { headers, method });
+			const status = await res.json();
+
+			update_status(status)
+		}, 5 * 1000);
+	}
+</script>
+<div class="wrapper">
+	<img src='/video_feed' class='video-frame'/>
+
+	<div class="h-group">
+		<button class="calibracao" disabled>Iniciar Calibracao</button>
+		<button class="iniciar-disparo" disabled>Iniciar Disparo</button>
+		<button class="parar-disparo" disabled>Parar Disparo</button>
+
+		<button class="modo-tempo" disabled>Modo Tempo</button>
+		<button class="modo-autonomo" disabled>Modo Autonomo</button>
+		<button class="modo-estimativa" disabled>Modo Estimativa</button>
 	</div>
+
+	<div class="status v-group">
+		<div class="rpi5 err">
+			RPi 5
+		</div>
+		<div class="rpiZero err">RPi Zero</div>
+		<div class="camera err">Picam</div>
+		<div class="imu err">IMU</div>
+	</div>
+</div>
 </body>
 </html>

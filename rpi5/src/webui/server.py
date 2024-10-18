@@ -3,17 +3,16 @@ import time
 from flask import Flask, Response, request
 
 class WebuiApp:
-    def __init__(self, send_event, get_img, host='0.0.0.0', port=5000):
+    def __init__(self, ihm, host='0.0.0.0', port=5000):
         self.app = Flask(__name__)
         self.setup_routes()
 
         self.host = host
         self.port = port
 
-        self.get_img = get_img
-        self.send_event = send_event
+        self.ihm = ihm
 
-        with open('./public/index.html', 'r') as file:
+        with open('src/webui/public/index.html', 'r') as file:
             self.html = file.read()
 
     def generate_frames(self):
@@ -25,7 +24,7 @@ class WebuiApp:
 
             if time_now >= next_time:
                 next_time += period
-                frame = self.get_img()
+                frame = self.ihm.get_img()
                 buffer = cv2.imencode('.jpg', frame)
                 buffer_bytes = buffer[1].tobytes()
                 yield b'--frame\r\n' b'Content-Type: image/jpeg\r\n\r\n' + buffer_bytes + b'\r\n'
@@ -42,11 +41,29 @@ class WebuiApp:
         def index():
             return self.html
 
+        @self.app.route('/status', methods=['GET'])
+        def status():
+            res = self.ihm.status
+            res['rpi5'] = True
+            res['estado'] = self.ihm.estado
+            res['modo'] = self.ihm.modo
+            return res
+
         @self.app.route('/set_focus', methods=['POST'])
         def set_focus():
             data = request.get_json()
-            self.send_event(('set_focus', data.get('focus_value')))
+            self.ihm.send_event(('set_focus', data.get('focus_value')))
             return "Nenhum valor de foco fornecido."
+
+        @self.app.route('/next_estado', methods=['POST'])
+        def next_estado():
+            self.ihm.send_event('next_estado')
+            return 'ok'
+
+        @self.app.route('/next_modo', methods=['POST'])
+        def next_modo():
+            self.ihm.send_event('next_estado')
+            return 'ok'
 
     def run(self):
         self.app.run(host=self.host, port=self.port)

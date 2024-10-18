@@ -7,6 +7,7 @@ class IHM:
         self._threads = []
 
         self.oled_screen = Screen()
+        self.get_img = get_img
 
         self.modo: str = ''
         self.estado: str = ''

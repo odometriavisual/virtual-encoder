@@ -1,6 +1,7 @@
 import cv2
 import time
 from flask import Flask, Response, request
+from werkzeug.serving import BaseWSGIServer
 
 class WebuiApp:
     def __init__(self, ihm, host='0.0.0.0', port=5000):
@@ -66,5 +67,6 @@ class WebuiApp:
             return 'ok'
 
     def run(self):
+        BaseWSGIServer.protocol_version = "HTTP/1.1"
         self.app.run(host=self.host, port=self.port)
 

@@ -113,9 +113,13 @@
 		}
 
 		setInterval(async () => {
-			const headers = {'Accept': 'application/json',};
+			const headers = {
+				'Accept': 'application/json',
+				'Keep-Alive': 'timeout=5, max=-1'
+			};
 			const method = 'GET';
-			const res = await fetch('/status', {headers, method});
+			const keepalive = true;
+			const res = await fetch('/status', {headers, keepalive, method});
 			const status = await res.json();
 
 			update_status(status)

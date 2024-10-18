@@ -55,6 +55,11 @@
 			color: white;
 		}
 
+		.ok.warn {
+			background-color: #d3cc2a;
+			color: #353150;
+		}
+
 		.err {
 			background-color: #cc0000;
 			color: white;
@@ -99,6 +104,9 @@
 
 		function update_status(status) {
 			update_classname(status_watcher.rpi5, status.rpi5);
+			if (status.estado === 'Calibrando...') status_watcher.rpi5.classList.add('warn');
+			else status_watcher.rpi5.classList.remove('warn');
+
 			update_classname(status_watcher.rpiZero, status.rpiZero);
 			update_classname(status_watcher.camera, status.camera);
 			update_classname(status_watcher.imu, status.imu);

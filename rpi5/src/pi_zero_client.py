@@ -1,6 +1,5 @@
 import threading
 import time
-from os.path import isdir
 
 import cv2
 import numpy as np
@@ -15,26 +14,22 @@ class PiZeroClient:
         self.vid_lock = threading.Lock()
         self.frame = cv2.Mat(np.zeros((1, 1), dtype=np.float32))
 
-        # def update():
-        #     while True:
-        #         time.sleep(0.001)
-        #         if self.vid.isOpened():
-        #             ret, frame = self.vid.read()
+        def update():
+            while True:
+                time.sleep(0.001)
+                if self.vid.isOpened():
+                    ret, frame = self.vid.read()
 
-        #             if ret:
-        #                 with self.vid_lock:
-        #                     self.frame = frame
+                    if ret:
+                        with self.vid_lock:
+                            self.frame = frame
+                else:
+                    self.vid.open(f'{PIZERO_HOST}/stream.mjpg')
+                    self.vid.set(cv2.CAP_PROP_BUFFERSIZE, 1)
+                    time.sleep(1)
 
-        #                 imgs_directory = '/home/pi/picam_imgs'
-        #                 filename = f'{imgs_directory}/{time.time_ns()}.jpg'
-        #                 cv2.imwrite(filename, self.frame)
-        #         else:
-        #             self.vid.open(f'{PIZERO_HOST}/stream.mjpg')
-        #             self.vid.set(cv2.CAP_PROP_BUFFERSIZE, 1)
-        #             time.sleep(1)
-
-        # self.vid_thread = threading.Thread(daemon=True, target=update)
-        # self.vid_thread.start()
+        self.vid_thread = threading.Thread(daemon=True, target=update)
+        self.vid_thread.start()
 
     def pizero_calibration(self):
         try:
@@ -66,10 +61,10 @@ class PiZeroClient:
             return False
 
     def get_img(self) -> cv2.Mat:
-        # if not self.vid.isOpened():
-        #     self.vid.open(f'{PIZERO_HOST}/stream.mjpg')
-        #     self.vid.set(cv2.CAP_PROP_BUFFERSIZE, 1)
-        #     time.sleep(1)
+        if not self.vid.isOpened():
+            self.vid.open(f'{PIZERO_HOST}/stream.mjpg')
+            self.vid.set(cv2.CAP_PROP_BUFFERSIZE, 1)
+            time.sleep(1)
 
         with self.vid_lock:
             frame = self.frame.copy()

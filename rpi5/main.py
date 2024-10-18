@@ -57,24 +57,14 @@ def main():
 
     time.sleep(1)
 
-    ihm.rpiZero_status = '...'
-    ihm.imu_status = '...'
-    ihm.camera_status = '...'
-    ihm.update_display()
-
+    modo = ModoTempo(client, ihm, encoders)
     ihm.modo = 'TEMPO'
     ihm.ip = f'{gethostname()}.local'
-
-    modo = ModoTempo(client, ihm, encoders)
 
     def _get_status():
         while True:
             time.sleep(1.0)
-            status = client.get_status(ihm.estado)
-
-            ihm.rpiZero_status = 'Ok.' if status['rpiZero'] else 'ERR'
-            ihm.imu_status = 'Ok.' if status['imu'] else 'ERR'
-            ihm.camera_status = 'Ok.' if status['camera'] else 'ERR'
+            ihm.status = client.get_status(ihm.estado)
             ihm.update_display()
     threading.Thread(target=_get_status, daemon=True).start()
 

@@ -3,15 +3,17 @@
 """
 Picam's garbage collector
 
-If filesystem usage is > UPPER_THRESHOLD:
-  Delete picam images until filesystem usage is <= LOWER_THRESHOLD
+While filesystem usage is > UPPER_THRESHOLD:
+  Delete directories until only one is remaining
+While filesystem usage still is > UPPER_THRESHOLD:
+  Delete files from the last directory
 """
 
-UPPER_THRESHOLD = .6
-LOWER_THRESHOLD = .5
+UPPER_THRESHOLD = .8
+LOWER_THRESHOLD = .7
 
 import os
-from shutil import disk_usage
+from shutil import disk_usage, rmtree
 from os import scandir, mkdir, remove
 from os.path import isdir
 
@@ -33,9 +35,24 @@ if not isdir(imgs_directory):
 percent = used / total
 
 if percent > UPPER_THRESHOLD:
-    files = list_sorted_directory(imgs_directory)
+    directories = list_sorted_directory(imgs_directory)
 
-    while percent > LOWER_THRESHOLD and len(files) > 0:
-        remove(f'{imgs_directory}/{files.pop(0)}')
+    # first remove full directories
+    while percent > LOWER_THRESHOLD and len(directories) > 1:
+        rmtree(f'{imgs_directory}/{directories.pop(0)}')
+        # print(f'would remove {imgs_directory}/{directories.pop(0)}')
+
         (total, used, _) = disk_usage(imgs_directory)
         percent = used / total
+
+    # remove files from last directory
+    if percent > LOWER_THRESHOLD:
+        last_directory = f'{imgs_directory}/{directories[0]}'
+        files = list_sorted_directory(last_directory)
+
+        while percent > LOWER_THRESHOLD:
+            remove(f'{last_directory}/{files.pop(0)}')
+            # print(f'  would remove {last_directory}/{files.pop(0)}')
+
+            (total, used, _) = disk_usage(imgs_directory)
+            percent = used / total

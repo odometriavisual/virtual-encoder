@@ -24,15 +24,15 @@ class EstadoDisparo:
         ihm.estado = 'Disparo'
         ihm.update_display()
 
-        self.period = 1
-        self.next_time = time.monotonic() + self.period
+        self.period = 1_000_000_000 // 10
+        self.next_time = time.time_ns() + self.period
         self.encoders = encoders
 
     def run(self):
-        current_time = time.monotonic()
+        current_time = time.time_ns()
         if current_time > self.next_time:
-            for i, encoder in enumerate(self.encoders):
-                self.encoders[0].send_pulses(count=i+1)
+            for encoder in self.encoders:
+                encoder.send_pulses(count=1)
 
             self.next_time = current_time + self.period
 

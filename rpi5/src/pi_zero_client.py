@@ -74,10 +74,10 @@ class PiZeroClient:
     def get_status(self, local_status):
         try:
             status = requests.get(f'{PIZERO_HOST}/status?rpi5status={local_status}', timeout=1.0).json()
-            status['rpiZero'] = True
+            status['rpi0'] = True
         except RequestException:
             status = {
-                'rpiZero': False,
+                'rpi0': False,
                 'imu': False,
                 'camera': False,
             }

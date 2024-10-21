@@ -14,7 +14,7 @@ class IHM:
         self.ip: str = ''
 
         self.status: dict = {
-            'rpiZero': False,
+            'rpi0': False,
             'imu': False,
             'camera': False,
         }
@@ -24,7 +24,7 @@ class IHM:
 
     def update_display(self):
         camera = 'Ok' if self.status['camera'] else 'Err.'
-        rpi_zero = 'Ok' if self.status['rpiZero'] else 'Err.'
+        rpi_zero = 'Ok' if self.status['rpi0'] else 'Err.'
         imu = 'Ok' if self.status['imu'] else 'Err.'
 
         self.oled_screen.drawLine(0, f'MODO: {self.modo}', 'center')

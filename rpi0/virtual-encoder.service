@@ -7,7 +7,7 @@ Type=exec
 Restart=always
 User=pi
 Group=pi
-WorkingDirectory=/home/pi/virtual-encoder/rpiZero
+WorkingDirectory=/home/pi/virtual-encoder/rpi0
 ExecStart=/usr/bin/python3 main.py
 
 [Install]

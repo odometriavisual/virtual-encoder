@@ -85,7 +85,7 @@
 
 		const status_watcher = {
 			rpi5: document.querySelector('.status > .rpi5'),
-			rpiZero: document.querySelector('.status > .rpiZero'),
+			rpi0: document.querySelector('.status > .rpi0'),
 			camera: document.querySelector('.status > .camera'),
 			imu: document.querySelector('.status > .imu'),
 		};
@@ -120,7 +120,7 @@
 			if (status.estado === 'Calibrando...') status_watcher.rpi5.classList.add('warn');
 			else status_watcher.rpi5.classList.remove('warn');
 
-			update_classname(status_watcher.rpiZero, status.rpiZero);
+			update_classname(status_watcher.rpi0, status.rpi0);
 			update_classname(status_watcher.camera, status.camera);
 			update_classname(status_watcher.imu, status.imu);
 
@@ -174,7 +174,7 @@
 		<div class="rpi5 err">
 			RPi 5
 		</div>
-		<div class="rpiZero err">RPi Zero</div>
+		<div class="rpi0 err">RPi Zero</div>
 		<div class="camera err">Picam</div>
 		<div class="imu err">IMU</div>
 	</div>

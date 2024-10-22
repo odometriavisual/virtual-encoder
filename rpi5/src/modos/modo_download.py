@@ -1,10 +1,9 @@
+import time
+
 from ..ihm.ihm import IHM
-from ..pi_zero_client import PiZeroClient
 from ..ihm.download import Downloader
 
-from ..estados import *
-
-class ModoTransferencia:
+class ModoDownload:
     def __init__(self, ihm: IHM):
         self.ihm = ihm
         self.dowloader = Downloader()
@@ -12,22 +11,25 @@ class ModoTransferencia:
         self.ihm.modo = 'Tranferencia'
         self.ihm.estado = '0 arquivos transferidos'
 
-        self.dowloader.iniciar_download()
+        self.dowloader.start()
 
     def run(self):
-        match self.dowloader.poll_process():
+        match self.dowloader.get_status():
             case False:
-                self.dowloader.finish_download()
+                self.dowloader.stop()
                 self.ihm.estado = 'Concluida'
                 self.ihm.send_event(('next_modo', 'Tempo'))
+                time.sleep(5)
 
             case True:
-                self.dowloader.finish_download()
+                self.dowloader.stop()
                 self.ihm.estado = 'Erro'
                 self.ihm.send_event(('next_modo', 'Tempo'))
+                time.sleep(5)
 
             case lines:
                 self.ihm.estado = f'{lines} arquivos transferidos'
+                time.sleep(0.1)
 
     def handle_event(self, ev):
         pass

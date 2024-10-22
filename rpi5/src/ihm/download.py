@@ -41,7 +41,7 @@ class Downloader:
             runlist = self.generate_runlist()
         try:
             # Inicializa a thread:
-            subprocess.run(["sudo", "mount", "-a"])
+            subprocess.run(["udiskctl", "mount", "-b", "/dev/sda1"])
             time.sleep(.5)
             self.process = subprocess.Popen(
                 runlist,
@@ -56,7 +56,7 @@ class Downloader:
         self.process = None
         try:
             time.sleep(.5)
-            subprocess.run(["sudo", "umount", mount_point])
+            subprocess.run(["udiskctl", "umount", "-b", mount_point])
             return True
 
         except:

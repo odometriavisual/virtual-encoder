@@ -11,7 +11,10 @@ class ModoDownload:
         self.ihm.modo = 'Tranferencia'
         self.ihm.estado = '0 arquivos transferidos'
 
-        self.dowloader.start()
+        if not self.dowloader.start():
+            self.ihm.estado = 'Erro'
+            self.ihm.send_event(('next_modo', 'Tempo'))
+            time.sleep(5)
 
     def run(self):
         match self.dowloader.get_status():

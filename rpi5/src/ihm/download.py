@@ -1,14 +1,12 @@
 import time
 import subprocess
-import os
-
 
 # No fstab adicionar :
-# /dev/sda1  /media/usb-ssd      auto rw,user,exec,umask=000  0       0 
+# /dev/sda1  /media/usb-ssd      auto  nofail,rw,user,exec,umask=000  0       0
 
 class Downloader:
     def __init__(self):
-        self.process = None
+        self.process: subprocess.Popen = None
         self.status_buffer = list()
 
         self.devices = {
@@ -70,7 +68,7 @@ class Downloader:
                 return line  # still running
 
             else:
-                return True  # has finished
+                return self.process.returncode == 0  # has finished
 
         except:
             return False

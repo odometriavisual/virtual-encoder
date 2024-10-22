@@ -25,7 +25,8 @@ class Downloader:
                     "path": "/home/pi/picam_imgs"
                 },
             "ssd":
-                {"path": "/media/usb-ssd"}
+                {
+                    "path": "/media/usb-ssd"}
         }
 
     def generate_runlist(self, src_name="rpi0", dest_name="ssd"):
@@ -33,28 +34,51 @@ class Downloader:
         dest = f"""{self.devices[dest_name]["path"]}"""
         return ["sshpass", "-p", self.devices["rpi0"]["password"], "rsync", "-r", "-v", "--bwlimit=5000",
                 "--info=progress2", src, dest]
+    
+    def __mount(self, runlist=None) -> bool:
+        try:
+            subprocess.run(["udisksctl", "mount", "-b", "/dev/sda1"])
+            time.sleep(.5)
+            return True
+        except:
+            return False
+
+
+    def __unmount(self) -> bool:
+        try:
+            time.sleep(.5)
+            subprocess.run(["sudo", "udisksctl", "unmount", "-b", "/dev/sda1"])
+            return True
+        except:
+            return False
+ 
+
 
     def start(self, runlist=None):
-        if runlist is None:
-            runlist = self.generate_runlist()
+        if not self.__mount(runlist):
+            return False
         try:
+            if runlist is None:
+                runlist = self.generate_runlist()
             # Inicializa a thread:
-            subprocess.run(["udiskctl", "mount", "-b", "/dev/sda1"])
-            time.sleep(.5)
+            
             self.process = subprocess.Popen(
                 runlist,
                 stdout=subprocess.PIPE
             )
+            
+            if not self.__umount():
+                return False
+
             return True
 
         except:
             return False
 
-    def stop(self, mount_point="/media/usb-ssd") -> bool:
+    def stop(self) -> bool:
         self.process = None
         try:
-            time.sleep(.5)
-            subprocess.run(["udiskctl", "umount", "-b", mount_point])
+            self.__unmount()
             return True
 
         except:
@@ -93,6 +117,15 @@ class Downloader:
         # If all run perfectly, then return true:
         return True
 
+    def delete_ssdfiles(self):
+        if not self.__mount():
+            return False
+        try: 
+            subprocess.run(["rm", "-r", "/media/usb-ssd/picam_imgs/"])
+        finally:
+            if not self.__unmount():
+                return False
+
 
 if __name__ == "__main__":
     d = Downloader()
@@ -102,9 +135,12 @@ if __name__ == "__main__":
 
     # Alternativa 2 (sem tratamento de erro):
     d.start()  # Pode retornar True | False
-
-    while d.process.poll is None:
+    while d.process.poll() is None:
         output = d.get_status() # Pode ser: "STRING" | True | False
+        if isinstance(output, str):
+            print(output)
         # (True = Finalizou execução perfeitamente, False = contrario)
-
     d.stop()  # Pode retornar True | False
+    
+    # Uso do removedor:
+    #d.delete_ssdfiles()

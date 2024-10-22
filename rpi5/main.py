@@ -75,6 +75,8 @@ def main():
                     modo = ModoAutonomo(client, ihm, encoders)
                 case _, ('next_modo', 'Tempo'):
                     modo = ModoTempo(client, ihm, encoders)
+                case _, ('next_modo', 'Download'):
+                    modo = ModoDownload(ihm)
 
                 case ModoTempo(), 'next_modo':
                     modo = ModoAutonomo(client, ihm, encoders)

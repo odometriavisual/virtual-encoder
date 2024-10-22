@@ -17,9 +17,10 @@
 
 		.wrapper > .h-group {
 			grid-row: 2;
+			grid-column: span 2;
 
 			display: grid;
-			grid-template-columns: repeat(12, 1fr);
+			grid-template-columns: repeat(13, 1fr);
 			grid-auto-flow: row;
 			grid-gap: 4px;
 		}
@@ -36,7 +37,7 @@
 		}
 
 		.h-group > .spacer {
-			grid-column: span 2;
+			grid-column: span 1;
 		}
 
 		button {
@@ -87,6 +88,7 @@
 			calibracao: document.querySelector('button.calibracao'),
 			iniciar_disparo: document.querySelector('button.iniciar-disparo'),
 			parar_disparo: document.querySelector('button.parar-disparo'),
+			iniciar_download: document.querySelector('button.iniciar-download'),
 			modo_tempo: document.querySelector('button.modo-tempo'),
 			modo_autonomo: document.querySelector('button.modo-autonomo'),
 			modo_estimativa: document.querySelector('button.modo-estimativa'),
@@ -98,8 +100,6 @@
 			camera: document.querySelector('.status.camera'),
 			imu: document.querySelector('.status.imu'),
 		};
-
-		console.log(btns, status_watcher);
 
 		async function next_estado(event) {
 			event.target.disabled = true;
@@ -118,6 +118,8 @@
 		btns.calibracao.addEventListener('click', next_estado);
 		btns.iniciar_disparo.addEventListener('click', next_estado);
 		btns.parar_disparo.addEventListener('click', next_estado);
+
+		btns.iniciar_download.addEventListener('click', event => next_modo(event, 'Download'));
 		btns.modo_autonomo.addEventListener('click', event => next_modo(event, 'Autonomo'));
 		btns.modo_tempo.addEventListener('click', event => next_modo(event, 'Tempo'));
 
@@ -128,8 +130,12 @@
 
 		function update_status(status) {
 			update_classname(status_watcher.rpi5, status.rpi5);
-			if (status.estado === 'Calibrando...') status_watcher.rpi5.classList.add('warn');
-			else status_watcher.rpi5.classList.remove('warn');
+			if (status.estado === 'Calibrando...' || status.modo === 'Download') {
+				status_watcher.rpi5.classList.add('warn');
+			}
+			else {
+				status_watcher.rpi5.classList.remove('warn');
+			}
 
 			update_classname(status_watcher.rpi0, status.rpi0);
 			update_classname(status_watcher.camera, status.camera);
@@ -138,6 +144,7 @@
 			status_watcher.rpi5.innerText = `RPi 5\n\n\nModo ${status.modo}\n\n\nEstado ${status.estado}`
 
 			if (status.modo === 'Tempo') {
+				btns.iniciar_download.disabled = false;
 				btns.modo_tempo.disabled = true;
 				btns.modo_autonomo.disabled = false;
 
@@ -146,7 +153,13 @@
 				btns.parar_disparo.disabled = status.estado !== 'Disparo';
 			}
 			else if (status.modo === 'Autonomo') {
+				btns.iniciar_download.disabled = false;
 				btns.modo_tempo.disabled = false;
+				btns.modo_autonomo.disabled = true;
+			}
+			else if (status.modo === 'Download') {
+				btns.iniciar_download.disabled = true;
+				btns.modo_tempo.disabled = true;
 				btns.modo_autonomo.disabled = true;
 			}
 		}
@@ -177,6 +190,7 @@
 
 		<div class="spacer"></div>
 
+		<button class="iniciar-download" disabled>Iniciar Download</button>
 		<button class="modo-tempo" disabled>Modo Tempo</button>
 		<button class="modo-autonomo" disabled>Modo Autonomo</button>
 	</div>

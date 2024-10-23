@@ -1,32 +1,32 @@
 import time
 import subprocess
+from subprocess import SubprocessError
+
 
 # No fstab adicionar :
 # /dev/sda1  /media/usb-ssd      auto  nofail,rw,user,exec,umask=000  0       0
 
 class Downloader:
     def __init__(self):
-        self.process: subprocess.Popen = None
+        self.process: subprocess.Popen | None = None
         self.status_buffer = list()
 
         self.devices = {
-            "rpi0":
-                {
-                    "ip": "192.168.0.3",
-                    "username": "pi",
-                    "password": "pi",
-                    "path": "/home/pi/picam_imgs"
-                },
-            "rpi5":
-                {
-                    "ip": "192.168.0.2",
-                    "username": "pi",
-                    "password": "pi",
-                    "path": "/home/pi/picam_imgs"
-                },
-            "ssd":
-                {
-                    "path": "/media/usb-ssd"}
+            "rpi0": {
+                "ip": "192.168.0.3",
+                "username": "pi",
+                "password": "pi",
+                "path": "/home/pi/picam_imgs"
+            },
+            "rpi5": {
+                "ip": "192.168.0.2",
+                "username": "pi",
+                "password": "pi",
+                "path": "/home/pi/picam_imgs"
+            },
+            "ssd": {
+                "path": "/media/usb-ssd"
+            }
         }
 
     def generate_runlist(self, src_name="rpi0", dest_name="ssd"):
@@ -40,7 +40,7 @@ class Downloader:
             subprocess.run(["udisksctl", "mount", "-b", "/dev/sda1"])
             time.sleep(.5)
             return True
-        except:
+        except SubprocessError:
             return False
 
 
@@ -49,7 +49,7 @@ class Downloader:
             time.sleep(.5)
             subprocess.run(["sudo", "udisksctl", "unmount", "-b", "/dev/sda1"])
             return True
-        except:
+        except SubprocessError:
             return False
  
 
@@ -72,7 +72,7 @@ class Downloader:
 
             return True
 
-        except:
+        except SubprocessError:
             return False
 
     def stop(self) -> bool:
@@ -81,7 +81,7 @@ class Downloader:
             self.__unmount()
             return True
 
-        except:
+        except SubprocessError:
             return False
 
     def get_status(self):
@@ -94,7 +94,7 @@ class Downloader:
             else:
                 return self.process.returncode == 0  # has finished
 
-        except:
+        except SubprocessError:
             return False
 
     def download(self, src="rpi0", dest="ssd") -> bool:

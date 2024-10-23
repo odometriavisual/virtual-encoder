@@ -18,13 +18,13 @@ class ModoDownload:
 
     def run(self):
         match self.dowloader.get_status():
-            case False:
+            case True:
                 self.dowloader.stop()
                 self.ihm.estado = 'Concluida'
                 self.ihm.send_event(('next_modo', 'Tempo'))
                 time.sleep(5)
 
-            case True:
+            case False:
                 self.dowloader.stop()
                 self.ihm.estado = 'Erro'
                 self.ihm.send_event(('next_modo', 'Tempo'))

@@ -9,7 +9,6 @@ from subprocess import SubprocessError
 class Downloader:
     def __init__(self):
         self.process: subprocess.Popen | None = None
-        self.status_buffer = list()
 
         self.devices = {
             "rpi0": {
@@ -32,12 +31,11 @@ class Downloader:
     def generate_runlist(self, src_name="rpi0", dest_name="ssd"):
         src = f"""{self.devices[src_name]["username"]}@{self.devices[src_name]["ip"]}:{self.devices[src_name]["path"]}"""
         dest = f"""{self.devices[dest_name]["path"]}"""
-        return ["sshpass", "-p", self.devices["rpi0"]["password"], "rsync", "-r", "-v", "--bwlimit=5000",
-                "--info=progress2", src, dest]
+        return ["sshpass", "-p", self.devices["rpi0"]["password"], "rsync", "-r", "-v", "--bwlimit=5000", src, dest]
     
     def __mount(self, runlist=None) -> bool:
         try:
-            subprocess.run(["udisksctl", "mount", "-b", "/dev/sda1"])
+            subprocess.run(["sudo", "mount", "-o", "remount", "/dev/sda1"])
             time.sleep(.5)
             return True
         except SubprocessError:
@@ -46,7 +44,7 @@ class Downloader:
     def __unmount(self) -> bool:
         try:
             time.sleep(.5)
-            subprocess.run(["sudo", "udisksctl", "unmount", "-b", "/dev/sda1"])
+            subprocess.run(["sudo", "unmount", "/dev/sda1"])
             return True
         except SubprocessError:
             return False
@@ -82,7 +80,6 @@ class Downloader:
         try:
             if self.process.poll() is None:
                 line = self.process.stdout.readline().decode()
-                self.status_buffer.append(line)
                 return line  # still running
 
             else:

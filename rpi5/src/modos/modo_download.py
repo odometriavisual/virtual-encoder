@@ -11,6 +11,8 @@ class ModoDownload:
         self.ihm.modo = 'Download'
         self.ihm.estado = 'Inicializando...'
 
+        self.transfered_files = 0
+
         if not self.dowloader.start():
             self.ihm.estado = 'Erro'
             self.ihm.send_event(('next_modo', 'Tempo'))
@@ -30,8 +32,9 @@ class ModoDownload:
                 self.ihm.send_event(('next_modo', 'Tempo'))
                 time.sleep(5)
 
-            case lines:
-                self.ihm.estado = f'{lines}'
+            case line:
+                self.transfered_files += 1
+                self.ihm.estado = f'{self.transfered_files} arquivos baixados'
                 time.sleep(0.1)
 
     def handle_event(self, ev):

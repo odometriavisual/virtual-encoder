@@ -43,7 +43,6 @@ class Downloader:
         except SubprocessError:
             return False
 
-
     def __unmount(self) -> bool:
         try:
             time.sleep(.5)
@@ -52,8 +51,6 @@ class Downloader:
         except SubprocessError:
             return False
  
-
-
     def start(self, runlist=None):
         if not self.__mount(runlist):
             return False
@@ -67,9 +64,6 @@ class Downloader:
                 stdout=subprocess.PIPE
             )
             
-            if not self.__umount():
-                return False
-
             return True
 
         except SubprocessError:

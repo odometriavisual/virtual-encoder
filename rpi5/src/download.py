@@ -2,7 +2,6 @@ import time
 import subprocess
 from subprocess import SubprocessError
 
-
 # No fstab adicionar :
 # /dev/sda1  /media/usb-ssd      auto  nofail,rw,user,exec,umask=000  0       0
 
@@ -32,30 +31,8 @@ class Downloader:
         src = f"""{self.devices[src_name]["username"]}@{self.devices[src_name]["ip"]}:{self.devices[src_name]["path"]}"""
         dest = f"""{self.devices[dest_name]["path"]}"""
         return ["sshpass", "-p", self.devices["rpi0"]["password"], "rsync", "-r", "-v", "--bwlimit=5000", src, dest]
-    
-    def __mount(self, runlist=None) -> bool:
-        try:
-            is_mounted = subprocess.run(["findmnt", "-S", "/dev/sda1", "-T", "/media/usb-ssd"]).returncode == 0
 
-            if not is_mounted:
-                subprocess.run(["sudo", "mount", "/dev/sda1"])
-
-            time.sleep(.5)
-            return True
-        except SubprocessError:
-            return False
-
-    def __unmount(self) -> bool:
-        try:
-            time.sleep(.5)
-            subprocess.run(["sudo", "unmount", "/dev/sda1"])
-            return True
-        except SubprocessError:
-            return False
- 
     def start(self, runlist=None):
-        if not self.__mount(runlist):
-            return False
         try:
             if runlist is None:
                 runlist = self.generate_runlist()
@@ -72,11 +49,10 @@ class Downloader:
             return False
 
     def stop(self) -> bool:
-        self.process = None
         try:
-            self.__unmount()
+            self.process.kill()
+            self.process = None
             return True
-
         except SubprocessError:
             return False
 
@@ -111,16 +87,6 @@ class Downloader:
 
         # If all run perfectly, then return true:
         return True
-
-    def delete_ssdfiles(self):
-        if not self.__mount():
-            return False
-        try: 
-            subprocess.run(["rm", "-r", "/media/usb-ssd/picam_imgs/"])
-        finally:
-            if not self.__unmount():
-                return False
-
 
 if __name__ == "__main__":
     d = Downloader()

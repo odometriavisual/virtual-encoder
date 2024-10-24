@@ -1,7 +1,8 @@
 import time
 
 from ..ihm.ihm import IHM
-from ..ihm.download import Downloader
+from ..download import Downloader
+from ..mount_device_manager import MountDeviceManager
 from ..pi_zero_client import PiZeroClient
 
 class ModoDownload:
@@ -9,6 +10,8 @@ class ModoDownload:
         self.client = client
 
         self.ihm = ihm
+
+        self.mount_manager = MountDeviceManager()
         self.dowloader = Downloader()
 
         self.ihm.modo = 'Download'
@@ -16,18 +19,22 @@ class ModoDownload:
 
         self.transfered_files = 0
 
-        if not self.dowloader.start():
+        self.client.disable_streaming()
+        is_mounted = self.mount_manager.mount()
+        is_downloading = self.dowloader.start()
+
+        if not is_mounted or not is_downloading:
             self.ihm.estado = 'Erro'
             self.ihm.send_event(('next_modo', 'Tempo'))
             time.sleep(5)
-        else:
-            self.client.disable_streaming()
+            self.client.enable_streaming()
 
     def run(self):
         status = self.dowloader.get_status()
         match status:
             case True | False:
                 self.dowloader.stop()
+                self.mount_manager.unmount()
                 self.ihm.estado = 'Concluida' if status else 'Erro'
                 self.ihm.send_event(('next_modo', 'Tempo'))
                 self.client.enable_streaming()

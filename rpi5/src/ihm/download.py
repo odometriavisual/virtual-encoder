@@ -35,7 +35,11 @@ class Downloader:
     
     def __mount(self, runlist=None) -> bool:
         try:
-            subprocess.run(["sudo", "mount", "-o", "remount", "/dev/sda1"])
+            is_mounted = subprocess.run(["findmnt", "-S", "/dev/sda1", "-T", "/media/usb-ssd"]).returncode == 0
+
+            if not is_mounted:
+                subprocess.run(["sudo", "mount", "/dev/sda1"])
+
             time.sleep(.5)
             return True
         except SubprocessError:

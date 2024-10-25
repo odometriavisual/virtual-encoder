@@ -4,6 +4,7 @@ import board
 import time
 
 from src.localPiZeroClient import LocalPiZeroClient
+from src.localCalibration import load_or_recalibrate
 from src.server import Server
 from src.log import Logger
 
@@ -26,6 +27,8 @@ def main():
 
     server = Server(client)
     server.run()
+
+    load_or_recalibrate(client)
 
 if __name__ == '__main__':
     main()

@@ -171,7 +171,8 @@
 			};
 			const method = 'GET';
 			const keepalive = true;
-			const res = await fetch('/status', {headers, keepalive, method});
+			const signal = AbortSignal.timeout(3000);
+			const res = await fetch('/status', {headers, keepalive, method, signal});
 			const status = await res.json();
 
 			update_status(status)

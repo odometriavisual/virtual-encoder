@@ -4,8 +4,6 @@ import numpy
 from src.localPiZeroClient import LocalPiZeroClient
 import json
 
-
-
 def calculate_teng_score(frame: numpy.ndarray) -> float:
     gaussianX = cv2.Sobel(frame, cv2.CV_64F, 1, 0)
     gaussianY = cv2.Sobel(frame, cv2.CV_64F, 1, 0)

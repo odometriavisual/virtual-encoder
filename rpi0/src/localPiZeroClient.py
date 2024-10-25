@@ -13,6 +13,7 @@ class LocalPiZeroClient:
         self.frame_available = threading.Event()
 
         self.focus = None
+        self.exposure = None
 
         self.boot_time = time.time_ns()
 
@@ -41,6 +42,7 @@ class LocalPiZeroClient:
 
     def set_exposure(self, exposure: int):
         # Ajusta a exposição da câmera
+        self.exposure = exposure
         self.picam2.set_controls({"ExposureTime": exposure})
 
     def get_orientation(self) -> [int, float, float, float, float]:

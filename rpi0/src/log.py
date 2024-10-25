@@ -4,7 +4,6 @@ from os.path import isfile, isdir
 from cv2 import imwrite
 
 import threading, csv, time
-from rpi0.src.localPiZeroClient import LocalPiZeroClient
 
 class Logger:
     def __init__(self, client):

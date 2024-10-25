@@ -2,9 +2,12 @@ import time
 
 from ..ihm.ihm import IHM
 from ..ihm.download import Downloader
+from ..pi_zero_client import PiZeroClient
 
 class ModoDownload:
-    def __init__(self, ihm: IHM):
+    def __init__(self, client: PiZeroClient, ihm: IHM):
+        self.client = client
+
         self.ihm = ihm
         self.dowloader = Downloader()
 
@@ -17,19 +20,17 @@ class ModoDownload:
             self.ihm.estado = 'Erro'
             self.ihm.send_event(('next_modo', 'Tempo'))
             time.sleep(5)
+        else:
+            self.client.disable_streaming()
 
     def run(self):
-        match self.dowloader.get_status():
-            case True:
+        status = self.dowloader.get_status()
+        match status:
+            case True | False:
                 self.dowloader.stop()
-                self.ihm.estado = 'Concluida'
+                self.ihm.estado = 'Concluida' if status else 'Erro'
                 self.ihm.send_event(('next_modo', 'Tempo'))
-                time.sleep(5)
-
-            case False:
-                self.dowloader.stop()
-                self.ihm.estado = 'Erro'
-                self.ihm.send_event(('next_modo', 'Tempo'))
+                self.client.enable_streaming()
                 time.sleep(5)
 
             case line:

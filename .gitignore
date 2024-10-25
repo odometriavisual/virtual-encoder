@@ -67,3 +67,5 @@ output/
 build/
 dist/
 ui_processing.spec
+
+venv/

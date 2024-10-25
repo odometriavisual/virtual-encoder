@@ -35,7 +35,10 @@ class ModoDownload:
 
             case line:
                 self.transfered_files += 1
-                self.ihm.estado = f'{self.transfered_files} arquivos baixados'
+                if self.transfered_files == 1:
+                    self.ihm.estado = f'{self.transfered_files} arquivo baixado'
+                else:
+                    self.ihm.estado = f'{self.transfered_files} arquivos baixados'
                 time.sleep(0.1)
 
     def handle_event(self, ev):

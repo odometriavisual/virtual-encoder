@@ -1,7 +1,7 @@
 import time
 import cv2
 import numpy
-from src.localPiZeroClient import LocalPiZeroClient
+from .localPiZeroClient import LocalPiZeroClient
 import json
 import os
 
@@ -34,8 +34,8 @@ def load_or_recalibrate(client: LocalPiZeroClient, recalibration_interval=3600):
         if (current_time - last_calibration_time) < recalibration_interval * 1e9:
             #Não precisa ser feita a calibração
             print("load_or_recalibrate() -> Calibração não necessária carregando dados da última calibração")
-            client.set_exposure(data["exposure"])
-            client.set_focus(data["focus"])
+            client.set_exposure(data["exposure"] or 0)
+            client.set_focus(data["focus"] or 0)
         else:
             #Precisa ser feita a calibração
             print("load_or_recalibrate() -> Calibração ncessária iniciando processo de calibração")

@@ -12,8 +12,8 @@ class LocalPiZeroClient:
         self.frame = None
         self.frame_available = threading.Event()
 
-        self.focus = None
-        self.exposure = None
+        self.focus = 0
+        self.exposure = 0
 
         self.boot_time = time.time_ns()
 

@@ -17,7 +17,6 @@ from datetime import datetime
 
 matplotlib.use('Qt5Agg')
 
-
 class ProcessingThread(QThread):
     progress_signal = Signal(str, int)  # Signals to update the progress label and bar
     finished_signal = Signal(np.ndarray, np.ndarray)  # Signal to send final 3D positions
@@ -41,7 +40,8 @@ class ProcessingThread(QThread):
 
         # Processar imagens
         self.progress_signal.emit("Processando deslocamento...", 60)
-        positions3D, positions2D, _, _ = self.process_displacements(img_stream, imu_data, image_files)
+        positions3D, positions2D, quaternions, timestamps = self.process_displacements(img_stream, imu_data, image_files)
+        self.save_data_to_csv(positions3D, positions2D, quaternions, timestamps)
 
         self.progress_signal.emit("Processamento concluído!", 100)
         self.finished_signal.emit(positions3D, positions2D)
@@ -66,6 +66,7 @@ class ProcessingThread(QThread):
                     'qw': float(row['qw']) if row['qw'] else 0.0
                 })
         return imu_data
+
 
     def process_displacements(self, img_stream, imu_data, image_files):
         positions2D = [(0, 0, 0)]
@@ -107,6 +108,34 @@ class ProcessingThread(QThread):
             self.progress_signal.emit(f"Processando imagem {idx + 1}...", 60 + int(40 * (idx + 1) / len(image_files)))
 
         return np.array(positions3D), np.array(positions2D), np.array(quaternions), np.array(timestamps)
+
+    def save_data_to_csv(self, positions3D, positions2D, quaternions, timestamps):
+        processed_data_path = os.path.join(self.folder_path, "processed_data.csv")
+
+        # Define o cabeçalho do CSV
+        header = [
+            "positions3D_x", "positions3D_y", "positions3D_z",
+            "positions2D_x", "positions2D_y",
+            "quaternion_w", "quaternion_x", "quaternion_y", "quaternion_z",
+            "timestamp"
+        ]
+
+        # Abra o arquivo CSV e escreva os dados
+        with open(processed_data_path, mode='w', newline='') as file:
+            writer = csv.writer(file)
+
+            # Escreva o cabeçalho
+            writer.writerow(header)
+
+            # Escreva cada linha de dados
+            for i in range(len(timestamps)):
+                row = [
+                    positions3D[i][0], positions3D[i][1], positions3D[i][2],
+                    positions2D[i][0], positions2D[i][1],
+                    quaternions[i][0], quaternions[i][1], quaternions[i][2], quaternions[i][3],
+                    timestamps[i]
+                ]
+                writer.writerow(row)
 
     def quaternion_to_rotation_matrix(self, q):
         qx, qy, qz, qw = q

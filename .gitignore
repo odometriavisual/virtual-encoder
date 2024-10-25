@@ -64,6 +64,6 @@ plots/
 output/
 
 #Pyinstaller ignore:
-build
-dist
+build/
+dist/
 ui_processing.spec

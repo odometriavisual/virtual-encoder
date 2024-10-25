@@ -39,11 +39,11 @@ def load_or_recalibrate(client: LocalPiZeroClient, recalibration_interval=3600):
         else:
             #Precisa ser feita a calibração
             print("load_or_recalibrate() -> Calibração ncessária iniciando processo de calibração")
-            startLocalCalibration(LocalPiZeroClient)
+            startLocalCalibration(client)
     else:
         #Precisa ser feita a calibração
         print("load_or_recalibrate() -> Calibração ncessária iniciando processo de calibração")
-        startLocalCalibration(LocalPiZeroClient)
+        startLocalCalibration(client)
 
 def startLocalCalibration(client: LocalPiZeroClient,calibration_start:int = 0, calibration_end:int = 15, calibration_step:int = 1):
     best_focus_value = None

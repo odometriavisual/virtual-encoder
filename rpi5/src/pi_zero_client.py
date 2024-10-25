@@ -16,7 +16,7 @@ class PiZeroClient:
         self.vid = cv2.VideoCapture()
 
         self.frame_lock = threading.Lock()
-        self.frame = cv2.Mat(np.zeros((1, 1), dtype=np.float32))
+        self.frame = cv2.Mat(np.array(0x000000AA, dtype=np.float32))
 
         def update():
             while True:
@@ -29,6 +29,10 @@ class PiZeroClient:
                         if ret:
                             with self.frame_lock:
                                 self.frame = frame
+                        else:
+                            self.frame = cv2.Mat(np.array(0x000000AA, dtype=np.float32))
+                            self.vid.release()
+
                     elif self.streaming_enabled:
                         self.vid.open(f'{PIZERO_HOST}/stream.mjpg')
                         self.vid.set(cv2.CAP_PROP_BUFFERSIZE, 1)

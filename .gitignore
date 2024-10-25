@@ -62,3 +62,8 @@ scripts/server/data/
 # modules.xml
 plots/
 output/
+
+#Pyinstaller ignore:
+build
+dist
+ui_processing.spec

@@ -107,6 +107,9 @@
 			imu: document.querySelector('.status.imu'),
 		};
 
+		const video_frame = document.querySelector('.video-frame');
+		video_frame.src = '/video_feed';
+
 		async function next_estado(event) {
 			event.target.disabled = true;
 
@@ -196,7 +199,7 @@
 	}
 </script>
 <div class="wrapper">
-	<img src='/video_feed' class='video-frame'/>
+	<img class='video-frame'/>
 
 	<div class="h-group">
 		<button class="calibracao" disabled>Iniciar Calibracao</button>

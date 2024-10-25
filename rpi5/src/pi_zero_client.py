@@ -100,4 +100,4 @@ class PiZeroClient:
 
     def enable_streaming(self):
         with self.vid_lock:
-            self.streaming_enabled = False
+            self.streaming_enabled = True

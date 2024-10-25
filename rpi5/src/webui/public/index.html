@@ -91,8 +91,14 @@
 			iniciar_download: document.querySelector('button.iniciar-download'),
 			modo_tempo: document.querySelector('button.modo-tempo'),
 			modo_autonomo: document.querySelector('button.modo-autonomo'),
-			modo_estimativa: document.querySelector('button.modo-estimativa'),
 		};
+
+		btns.calibracao.disabled = true;
+		btns.iniciar_disparo.disabled = true;
+		btns.parar_disparo.disabled = true;
+		btns.iniciar_download.disabled = true;
+		btns.modo_tempo.disabled = true;
+		btns.modo_autonomo.disabled = true;
 
 		const status_watcher = {
 			rpi5: document.querySelector('.status.rpi5'),
@@ -156,11 +162,19 @@
 				btns.iniciar_download.disabled = false;
 				btns.modo_tempo.disabled = false;
 				btns.modo_autonomo.disabled = true;
+
+				btns.calibracao.disabled = true;
+				btns.iniciar_disparo.disabled = true;
+				btns.parar_disparo.disabled = true;
 			}
 			else if (status.modo === 'Download') {
 				btns.iniciar_download.disabled = true;
 				btns.modo_tempo.disabled = true;
 				btns.modo_autonomo.disabled = true;
+
+				btns.calibracao.disabled = true;
+				btns.iniciar_disparo.disabled = true;
+				btns.parar_disparo.disabled = true;
 			}
 		}
 

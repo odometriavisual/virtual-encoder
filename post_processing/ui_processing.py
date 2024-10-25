@@ -3,7 +3,7 @@ import os
 import glob
 import csv
 import numpy as np
-from PySide6.QtWidgets import QApplication, QMainWindow, QPushButton, QLabel, QVBoxLayout, QWidget, QFileDialog, QProgressBar
+from PySide6.QtWidgets import QApplication, QMainWindow, QPushButton, QLabel, QVBoxLayout, QWidget, QFileDialog, QProgressBar, QMessageBox
 from PySide6.QtCore import Qt, QThread, Signal
 import matplotlib
 from visual_odometer.displacement_estimators.svd import svd_method
@@ -20,6 +20,7 @@ matplotlib.use('Qt5Agg')
 class ProcessingThread(QThread):
     progress_signal = Signal(str, int)  # Signals to update the progress label and bar
     finished_signal = Signal(np.ndarray, np.ndarray)  # Signal to send final 3D positions
+    error_signal = Signal(str)  # Signal to show an error message
 
     def __init__(self, folder_path):
         super().__init__()
@@ -29,6 +30,13 @@ class ProcessingThread(QThread):
         # Carregar dados da IMU e imagens
         imu_file = os.path.join(self.folder_path, "imu.csv")
         image_files = sorted(glob.glob(os.path.join(self.folder_path, '*.jpg')))
+
+        if not image_files or len(image_files) <= 0:
+            self.error_signal.emit("ERRO: Não há nenhuma imagem na pasta selecionada.")
+            return
+        if not os.path.exists(imu_file):
+            self.error_signal.emit("ERRO: Arquivo imu.csv não encontrado na pasta selecionada.")
+            return
 
         # Indicar que estamos carregando as imagens
         self.progress_signal.emit("Carregando imagens...", 20)
@@ -45,6 +53,7 @@ class ProcessingThread(QThread):
 
         self.progress_signal.emit("Processamento concluído!", 100)
         self.finished_signal.emit(positions3D, positions2D)
+        #self.thread.error_signal.connect(self.show_error)  # Connect the error signal to a handler
 
     def load_image(self, filename):
         from PIL import Image, ImageOps
@@ -195,6 +204,7 @@ class TrajectoryApp(QMainWindow):
         self.thread = ProcessingThread(folder)
         self.thread.progress_signal.connect(self.update_progress)
         self.thread.finished_signal.connect(self.plot_trajectory)
+        self.thread.error_signal.connect(self.show_error)  # Connect the error signal to a handler
         self.thread.start()
 
     def update_progress(self, message, progress_value):
@@ -212,6 +222,12 @@ class TrajectoryApp(QMainWindow):
         ax.set_zlabel('Deslocamento em Z')
         self.canvas.draw()
 
+    def show_error(self, message):
+        error_dialog = QMessageBox()
+        error_dialog.setWindowTitle("Erro")
+        error_dialog.setText(message)
+        error_dialog.setIcon(QMessageBox.Critical)
+        error_dialog.exec()
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)

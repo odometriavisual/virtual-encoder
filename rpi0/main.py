@@ -25,10 +25,11 @@ def main():
     logger = Logger(client)
     logger.start()
 
+    load_or_recalibrate(client)
+
     server = Server(client)
     server.run()
 
-    load_or_recalibrate(client)
 
 if __name__ == '__main__':
     main()

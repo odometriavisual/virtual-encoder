@@ -12,7 +12,7 @@ def calculate_teng_score(frame: numpy.ndarray) -> float:
                       gaussianY * gaussianY)
 
 def save_calibration_data(client: LocalPiZeroClient):
-    filename = 'calibration_data.txt'
+    filename = 'home/pi/calibration_data.txt'
     with open(filename, "w") as f:
         # Salva os dados de calibração como um JSON no arquivo
         json.dump({
@@ -44,7 +44,6 @@ def load_or_recalibrate(client: LocalPiZeroClient, recalibration_interval=3600):
         #Precisa ser feita a calibração
         print("load_or_recalibrate() -> Calibração ncessária iniciando processo de calibração")
         startLocalCalibration(LocalPiZeroClient)
-
 
 def startLocalCalibration(client: LocalPiZeroClient,calibration_start:int = 0, calibration_end:int = 15, calibration_step:int = 1):
     best_focus_value = None

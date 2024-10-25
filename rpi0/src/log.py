@@ -4,6 +4,7 @@ from os.path import isfile, isdir
 from cv2 import imwrite
 
 import threading, csv, time
+from rpi0.src.localPiZeroClient import LocalPiZeroClient
 
 class Logger:
     def __init__(self, client):
@@ -22,7 +23,6 @@ class Logger:
         time.sleep(10)
         while True:
             time.sleep(0.1)
-
             time_now = time.time_ns()
             if time_now > self.client.last_status_time + self.enable_save_period or self.client.rpi5status == 'Disparo':
                 if not self.enable_save:
@@ -30,6 +30,7 @@ class Logger:
                     self.save_dir = f'/home/pi/picam_imgs/{self.boot_num}_{datenow}'
                     if not isdir(self.save_dir):
                         makedirs(self.save_dir)
+                        self._save_calibration_data()
 
                     self.enable_save = True
             elif self.enable_save:
@@ -61,6 +62,14 @@ class Logger:
                     with open(path, mode='a', newline='') as file:
                         writer = csv.writer(file)
                         writer.writerow(list(measure))
+
+    def _save_calibration_data(self):
+        path = f'{self.save_dir}/calibration_data.csv'
+        time_now = time.time_ns()
+        with open(path, mode='w', newline='') as file:
+            writer = csv.writer(file)
+            writer.writerow(["timestamp", "exposure", "focus"])
+            writer.writerow([time_now, self.client.exposure, self.client.focus])
 
     def start(self):
         threading.Thread(target=self._poll_rpi5_status, daemon=True).start()

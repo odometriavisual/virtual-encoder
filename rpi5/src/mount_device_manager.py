@@ -23,7 +23,7 @@ class MountDeviceManager:
     def unmount(self) -> bool:
         try:
             time.sleep(.5)
-            subprocess.run(["sudo", "unmount", self.device])
+            subprocess.run(["sudo", "umount", self.device])
             return True
         except SubprocessError:
             return False

@@ -1,5 +1,6 @@
-from usb_manager import *
+from ihm.usb_manager import *
 import time
+import ipaddress
 
 class NetworkManager:
     def __init__(self):
@@ -11,7 +12,7 @@ class NetworkManager:
             "network": None
                 }
     
-    def update_address(self, device="eth0", config_path="/media/usb-ssd/") -> bool:
+    def update_address(self, device="eth1", config_path="/media/usb-ssd/") -> bool:
         try:
             if self.get_ip_from_file(config_path):
                 self.__update_interface(device)
@@ -32,12 +33,28 @@ class NetworkManager:
                 lines = file.readlines()
                 for line in lines:
                     keywords = line[:-1].split(" ")
-                    self.info[keywords[0]] = keywords[1]
+                    key = keywords[0]
+                    ipv4 = ipaddress.ip_address(keywords[1])
+                    if key in self.info.keys():
+                        self.info[keywords[0]] = keywords[1]
+                    else:
+                        raise TypeError("The entry must be ", self.info.keys())
+                if None in self.info.values():
+                    raise AttributeError("One network configuration was not set.")
             time.sleep(.5)
             return True
-        
+       
         except FileNotFoundError:
-           return False
+            return False # When there is no available ipconfig.txt
+
+        except ValueError:
+            return False # When the IPV4 is invalid
+
+        except TypeError:
+            return False # When the entry is not valid (not address, nor netmask, ...)
+
+        except AttributeError:
+            return False # When one attribute is missing on ipconfig.txt
 
         finally:
             self.usb.unmount()
@@ -57,4 +74,4 @@ class NetworkManager:
 
 if __name__ == "__main__":
     n = NetworkManager()
-    n.update_address(device="eth0")
+    n.update_address(device="eth1")

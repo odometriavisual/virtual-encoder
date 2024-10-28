@@ -1,10 +1,11 @@
-from ihm.usb_manager import *
+from mount_device_manager import MountDeviceManager
+import subprocess
 import time
 import ipaddress
 
 class NetworkManager:
-    def __init__(self):
-        self.usb = UsbManager()
+    def __init__(self, usb_device):
+        self.usb_device = usb_device
         self.info = {
             "address": None,
             "netmask": None,
@@ -12,23 +13,23 @@ class NetworkManager:
             "network": None
                 }
     
-    def update_address(self, device="eth1", config_path="/media/usb-ssd/") -> bool:
+    def update_address(self, interface_name="eth1", config_path="/media/usb-ssd/") -> bool:
         try:
             if self.get_ip_from_file(config_path):
-                self.__update_interface(device)
+                self.__update_static_ip(interface_name)
             else:
-                self.__set_dhcp_interface(device)
-
-            subprocess.run(["sudo", "mv", "new_interface", "/etc/network/interfaces.d"])
-            subprocess.run(["sudo", "systemctl", "restart", "networking.service"])
-            return False
+                self.__set_dhcp(interface_name)
+            
+            subprocess.run(["sudo", "mv", "new_interface", "/etc/network/interfaces.d"]) # update the configuration file
+            subprocess.run(["sudo", "systemctl", "restart", "networking.service"]) # restart service
+            return True
         
         except:
             return False
 
     def get_ip_from_file(self, config_path):
         try:
-            self.usb.mount()
+            self.usb_device.mount()
             with open(config_path + "ip-config.txt") as file:
                 lines = file.readlines()
                 for line in lines:
@@ -57,21 +58,22 @@ class NetworkManager:
             return False # When one attribute is missing on ipconfig.txt
 
         finally:
-            self.usb.unmount()
+            self.usb_device.unmount()
 
-    def __update_interface(self, device):
+    def __update_static_ip(self, interface_name):
         with open("new_interface", "w+") as file:
-            file.write(f"auto {device}\n")
-            file.write(f"iface {device} inet static\n")
+            file.write(f"auto {interface_name}\n")
+            file.write(f"iface {interface_name} inet static\n")
             for key in self.info.keys():
                 file.write(key + " " + self.info[key] + "\n")
 
-    def __set_dhcp_interface(self, device):
+    def __set_dhcp(self, intarface_name):
         with open("new_interface", "w+") as file:
-            file.write(f"auto {device}\n")
-            file.write(f"iface {device} inet dhcp\n")
-            file.write(f"allow-hotplug {device}")
+            file.write(f"auto {interface_name}\n")
+            file.write(f"iface {interface_name} inet dhcp\n")
+            file.write(f"allow-hotplug {interface_name}")
 
 if __name__ == "__main__":
-    n = NetworkManager()
-    n.update_address(device="eth1")
+    usb_device = MountDeviceManager(device="/dev/sda1", mount_point="/media/usb-ssd")
+    network_manager = NetworkManager(usb_device)
+    network_manager.update_address(interface_name="eth1")

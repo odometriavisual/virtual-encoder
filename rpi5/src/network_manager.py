@@ -1,17 +1,16 @@
-from mount_device_manager import MountDeviceManager
+from .mount_device_manager import MountDeviceManager
 import subprocess, re
 import time
 import ipaddress
 
 class NetworkManager:
-    def __init__(self, usb_device):
-        self.usb_device = usb_device
+    def __init__(self):
         self.info = {
             "address": None,
             "netmask": None,
             "broadcast": None,
             "network": None
-                }
+        }
     
     def update_address(self, interface_name="eth1", config_path="/media/usb-ssd/") -> bool:
         try:
@@ -29,7 +28,6 @@ class NetworkManager:
 
     def get_ip_from_file(self, config_path):
         try:
-            self.usb_device.mount()
             with open(config_path + "ip-config.txt") as file:
                 lines = file.readlines()
                 for line in lines:
@@ -57,9 +55,6 @@ class NetworkManager:
         except AttributeError:
             return False # When one attribute is missing on ipconfig.txt
 
-        finally:
-            self.usb_device.unmount()
-
     def __update_static_ip(self, interface_name):
         with open("new_interface", "w+") as file:
             file.write(f"auto {interface_name}\n")
@@ -86,5 +81,7 @@ class NetworkManager:
 
 if __name__ == "__main__":
     usb_device = MountDeviceManager(device="/dev/sda1", mount_point="/media/usb-ssd")
-    network_manager = NetworkManager(usb_device)
+    usb_device.mount()
+    network_manager = NetworkManager()
     network_manager.update_address(interface_name="eth1")
+    usb_device.unmount()

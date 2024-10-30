@@ -19,20 +19,21 @@ class ModoDownload:
 
         self.transfered_files = 0
 
+        self.file_count = client.get_file_count()
+
+        if self.file_count == 0:
+            self.ihm.estado = 'Nenhum ensaio salvo'
+            time.sleep(5)
+            self.ihm.send_event(('next_modo', 'Tempo'))
+            self.client.enable_streaming()
+            return
+
         self.client.disable_streaming()
         is_mounted = self.mount_manager.mount()
         is_downloading = self.dowloader.start()
 
-        self.file_count = client.get_file_count()
-
         if not is_mounted or not is_downloading:
             self.ihm.estado = 'Erro'
-            time.sleep(5)
-            self.ihm.send_event(('next_modo', 'Tempo'))
-            self.client.enable_streaming()
-
-        if self.file_count == 0:
-            self.ihm.estado = 'Nenhum ensaio salvo'
             time.sleep(5)
             self.ihm.send_event(('next_modo', 'Tempo'))
             self.client.enable_streaming()

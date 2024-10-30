@@ -37,7 +37,7 @@ def main():
     odometer = VisualOdometer((640, 480))
     client = PiZeroClient()
     ihm = IHM(client.get_img)
-    net_manager = NetworkManager(None)
+    net_manager = NetworkManager()
 
     def check_all_buttons():
         while True:

@@ -1,5 +1,5 @@
 from mount_device_manager import MountDeviceManager
-import subprocess
+import subprocess, re
 import time
 import ipaddress
 
@@ -72,6 +72,17 @@ class NetworkManager:
             file.write(f"auto {interface_name}\n")
             file.write(f"iface {interface_name} inet dhcp\n")
             file.write(f"allow-hotplug {interface_name}")
+
+    def get_ip(self, interface: str):
+        cmdline = f'ip a show {interface}'
+        output = subprocess.check_output(cmdline, shell=True).decode()
+        matches = re.search(r'inet\s+(\d+\.\d+\.\d+\.\d+)', output)
+
+        if matches:
+            return matches.group(1)
+        else:
+            return 'ERRO'
+
 
 if __name__ == "__main__":
     usb_device = MountDeviceManager(device="/dev/sda1", mount_point="/media/usb-ssd")

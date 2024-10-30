@@ -4,6 +4,7 @@ import threading
 from socket import gethostname
 from visual_odometer import VisualOdometer
 
+from src.network_manager import NetworkManager
 from src.webui.server import WebuiApp
 from src.ihm.ihm import IHM
 from src.ihm.gpiod_button import GpiodButton
@@ -37,6 +38,7 @@ def main():
     odometer = VisualOdometer((640, 480))
     client = PiZeroClient()
     ihm = IHM(client.get_img)
+    net_manager = NetworkManager(None)
 
     def check_all_buttons():
         while True:
@@ -59,7 +61,7 @@ def main():
 
     modo = ModoTempo(client, ihm, encoders)
     ihm.modo = 'Tempo'
-    ihm.ip = f'{gethostname()}.local'
+    ihm.ip = net_manager.get_ip('eth1')
 
     def _get_status():
         while True:

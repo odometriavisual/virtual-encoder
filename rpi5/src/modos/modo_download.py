@@ -23,10 +23,18 @@ class ModoDownload:
         is_mounted = self.mount_manager.mount()
         is_downloading = self.dowloader.start()
 
+        self.file_count = client.get_file_count()
+
         if not is_mounted or not is_downloading:
             self.ihm.estado = 'Erro'
-            self.ihm.send_event(('next_modo', 'Tempo'))
             time.sleep(5)
+            self.ihm.send_event(('next_modo', 'Tempo'))
+            self.client.enable_streaming()
+
+        if self.file_count == 0:
+            self.ihm.estado = 'Nenhum ensaio salvo'
+            time.sleep(5)
+            self.ihm.send_event(('next_modo', 'Tempo'))
             self.client.enable_streaming()
 
     def run(self):
@@ -42,10 +50,8 @@ class ModoDownload:
 
             case line:
                 self.transfered_files += 1
-                if self.transfered_files == 1:
-                    self.ihm.estado = f'{self.transfered_files} arquivo baixado'
-                else:
-                    self.ihm.estado = f'{self.transfered_files} arquivos baixados'
+                percent = min((100 * self.transfered_files) // self.file_count, 99)
+                self.ihm.estado = f'{percent} %'
                 time.sleep(0.1)
 
     def handle_event(self, ev):

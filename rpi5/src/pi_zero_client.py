@@ -96,7 +96,7 @@ class PiZeroClient:
 
     def get_file_count(self) -> int:
         try:
-            file_count = requests.get(f'{PIZERO_HOST}/get_file_count', timeout=15.0).text.strip()
+            file_count = requests.get(f'{PIZERO_HOST}/file_count', timeout=15.0).text.strip()
             return int(file_count)
         except (RequestException, ValueError):
             return 0

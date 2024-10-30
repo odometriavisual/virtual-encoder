@@ -25,15 +25,22 @@ class ModoDownload:
             self.ihm.estado = 'Nenhum ensaio salvo'
             time.sleep(5)
             self.ihm.send_event(('next_modo', 'Tempo'))
-            self.client.enable_streaming()
             return
 
         self.client.disable_streaming()
+
         is_mounted = self.mount_manager.mount()
+
+        if not is_mounted:
+            self.ihm.estado = 'Erro SSD não encontrado'
+            time.sleep(5)
+            self.ihm.send_event(('next_modo', 'Tempo'))
+            self.client.enable_streaming()
+
         is_downloading = self.dowloader.start()
 
-        if not is_mounted or not is_downloading:
-            self.ihm.estado = 'Erro'
+        if not is_downloading:
+            self.ihm.estado = 'Erro no download'
             time.sleep(5)
             self.ihm.send_event(('next_modo', 'Tempo'))
             self.client.enable_streaming()

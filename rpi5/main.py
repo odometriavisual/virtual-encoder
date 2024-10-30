@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 import time
 import threading
-from socket import gethostname
 from visual_odometer import VisualOdometer
 
 from src.network_manager import NetworkManager

@@ -11,8 +11,8 @@ class Logger:
             self.boot_num = file.read().strip()
 
         time_now = time.time_ns()
-        date = datetime.fromtimestamp(time_now // 1_000_000_000).strftime('%Y%m%d_%H%M%S')
-        self.save_dir = f'/home/pi/picam_imgs/{self.boot_num}_{date}'
+        datenow = datetime.fromtimestamp(time_now // 1_000_000_000).strftime('%Y%m%dT%H%M%S')
+        self.save_dir = f'/home/pi/picam_imgs/{self.boot_num}_{datenow}'
         self.client = client
 
         self.enable_save_period = 15 * 1_000_000_000
@@ -25,7 +25,7 @@ class Logger:
             time_now = time.time_ns()
             if time_now > self.client.last_status_time + self.enable_save_period or self.client.rpi5status == 'Disparo':
                 if not self.enable_save:
-                    datenow = datetime.fromtimestamp(time_now // 1000000000).strftime('%Y-%m-%dT%H:%M:%S-03:00')
+                    datenow = datetime.fromtimestamp(time_now // 1_000_000_000).strftime('%Y%m%dT%H%M%S')
                     self.save_dir = f'/home/pi/picam_imgs/{self.boot_num}_{datenow}'
                     if not isdir(self.save_dir):
                         makedirs(self.save_dir)

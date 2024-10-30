@@ -39,6 +39,8 @@ def main():
     ihm = IHM(client.get_img)
     net_manager = NetworkManager()
 
+    net_manager.update_address()
+
     def check_all_buttons():
         while True:
             if buttons[0].checkButton() is True:

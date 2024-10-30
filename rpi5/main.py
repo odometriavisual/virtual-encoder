@@ -48,7 +48,7 @@ def main():
                 ihm.send_event("next_estado")
                 time.sleep(1)
             if buttons[2].checkButton() is True:
-                ihm.send_event("botao3")
+                ihm.send_event(('next_modo', 'Download'))
                 time.sleep(1)
             time.sleep(0.1)
     threading.Thread(target=check_all_buttons, daemon=True).start()

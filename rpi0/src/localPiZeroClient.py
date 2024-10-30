@@ -1,5 +1,6 @@
 import threading
 import time
+import os
 from picamera2 import Picamera2
 from libcamera import controls
 
@@ -66,6 +67,16 @@ class LocalPiZeroClient:
         }
 
         return status
+
+    def get_file_count(self) -> int:
+        """
+        Returns number of files in picam_imgs directory tree
+        """
+        total = 0
+        for root, dir, files in os.walk('/home/pi/picam_imgs'):
+            total += len(files)
+
+        return total
 
     def process_status(self, status):
         self.last_status_time = time.time_ns()

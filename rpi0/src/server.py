@@ -56,6 +56,8 @@ class Server:
                 self._send_page(PAGE.encode('utf-8'))
             elif self.path == '/imu':
                 self._send_page(self._get_timestamp_and_imu_data().encode('utf-8'))
+            elif self.path == '/file_count':
+                self._send_page(f'{self.client.get_file_count()}'.encode('utf-8'))
             elif self.path.startswith('/status'):
                 status = self.client.get_status()
                 query_params = parse_qs(urlparse(self.path).query)

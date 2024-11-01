@@ -5,11 +5,13 @@ from .localPiZeroClient import LocalPiZeroClient
 import json
 import os
 
+
 def calculate_teng_score(frame: numpy.ndarray) -> float:
     gaussianX = cv2.Sobel(frame, cv2.CV_64F, 1, 0)
     gaussianY = cv2.Sobel(frame, cv2.CV_64F, 1, 0)
     return numpy.mean(gaussianX * gaussianX +
                       gaussianY * gaussianY)
+
 
 def save_calibration_data(client: LocalPiZeroClient):
     filename = '/home/pi/calibration_data.txt'
@@ -20,6 +22,7 @@ def save_calibration_data(client: LocalPiZeroClient):
             "exposure": client.exposure,
             "focus": client.focus
         }, f)
+
 
 def load_or_recalibrate(client: LocalPiZeroClient, recalibration_interval=3600):
     filename = '/home/pi/calibration_data.txt'
@@ -45,28 +48,45 @@ def load_or_recalibrate(client: LocalPiZeroClient, recalibration_interval=3600):
         print("load_or_recalibrate() -> Calibração ncessária iniciando processo de calibração")
         startLocalCalibration(client)
 
-def startLocalCalibration(client: LocalPiZeroClient,calibration_start:int = 0, calibration_end:int = 15, calibration_step:int = 1):
-    best_focus_value = None
-    best_score = -float('inf')
+
+def startLocalCalibration(client: LocalPiZeroClient,
+                          calibration_start: int = 0, calibration_end: int = 30, calibration_step: int = .5,
+                          exposure_start: int = 50, exposure_end: int = 150, exposure_step: int = 25):
     actual_focus = calibration_start
+    actual_exposure = exposure_start
 
-    client.set_focus(actual_focus)
-    time.sleep(1)
+    focus_sum = 0
+    num_exposures = (exposure_end - exposure_start) / calibration_step
+    while actual_exposure <= exposure_end:
+        # Resets the best values:
+        best_focus_value = best_score = 0
 
-    while actual_focus < calibration_end:
-        actual_focus += calibration_step
-        client.set_focus(actual_focus)
-        time.sleep(0.3)
+        # Sets the exposure:
+        client.set_exposure(actual_exposure)
+        actual_exposure += exposure_step
 
-        frame = client.get_img()
-        score = calculate_teng_score(frame)
+        while actual_focus <= calibration_end:
+            # Sets the focus:
+            client.set_focus(actual_focus)
+            actual_focus += calibration_step
 
-        if score > best_score:
-            best_focus_value = actual_focus
-            best_score = score
-        print(actual_focus, score)
+            # Takes a frame:
+            time.sleep(0.3)  # Wait so changes take effect
+            frame = client.get_img()
 
+            # Compute how good is the focus:
+            score = calculate_teng_score(frame)
+
+            if score > best_score:
+                best_focus_value = actual_focus
+                best_score = score
+            print(actual_focus, score)
+        focus_sum += best_focus_value
     else:
-        client.set_focus(best_focus_value)
+        focus_mean = focus_sum / num_exposures
+
+        # Set the focus for the mean of best values, and reset the exposure:
+        client.set_focus(focus_mean)
+        client.reset_exposure()
         save_calibration_data(client)
         time.sleep(0.5)

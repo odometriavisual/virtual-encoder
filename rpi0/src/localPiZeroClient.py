@@ -16,7 +16,7 @@ class LocalPiZeroClient:
         self.focus = 0
         self.exposure = 0
         self.default_exposure = 75
-        self.set_exposure(self.default_exposure)
+        self.reset_exposure()
 
         self.boot_time = time.time_ns()
 

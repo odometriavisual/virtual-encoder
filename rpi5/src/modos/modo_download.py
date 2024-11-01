@@ -58,8 +58,9 @@ class ModoDownload:
 
             case line:
                 self.transfered_files += 1
-                percent = min((100 * self.transfered_files) // self.file_count, 99)
-                self.ihm.estado = f'{percent} %'
+                percent = self.transfered_files / self.file_count
+                percent = 99.99 if percent >= 100. else percent
+                self.ihm.estado = f'{percent:.2f} %'
                 time.sleep(0.1)
 
     def handle_event(self, ev):

@@ -150,7 +150,7 @@
 			update_classname(status_watcher.camera, status.camera);
 			update_classname(status_watcher.imu, status.imu);
 
-			let estado_info = status.modo === 'Download'? 'Progresso:': 'Estado';
+			let estado_info = status.modo === 'Download'? '': 'Estado';
 			status_watcher.rpi5.innerText = `RPi 5\n\n\nModo ${status.modo}\n\n\n${estado_info} ${status.estado}`
 
 			if (status.modo === 'Tempo') {

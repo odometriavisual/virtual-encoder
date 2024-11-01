@@ -84,7 +84,7 @@ def startLocalCalibration(client: LocalPiZeroClient,
         time.sleep(1)
         focus_sum += best_focus_value
     else:
-        focus_mean = focus_sum / num_exposures
+        focus_mean = round(focus_sum / num_exposures)
 
         # Set the focus for the mean of best values, and reset the exposure:
         client.set_focus(focus_mean)

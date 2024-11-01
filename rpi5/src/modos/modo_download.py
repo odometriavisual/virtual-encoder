@@ -6,12 +6,12 @@ from ..mount_device_manager import MountDeviceManager
 from ..pi_zero_client import PiZeroClient
 
 class ModoDownload:
-    def __init__(self, client: PiZeroClient, ihm: IHM):
+    def __init__(self, client: PiZeroClient, ihm: IHM, mount_manager: MountDeviceManager):
         self.client = client
 
         self.ihm = ihm
 
-        self.mount_manager = MountDeviceManager()
+        self.ssd_manager = mount_manager
         self.dowloader = Downloader()
 
         self.ihm.modo = 'Download'
@@ -29,7 +29,7 @@ class ModoDownload:
 
         self.client.disable_streaming()
 
-        is_mounted = self.mount_manager.mount()
+        is_mounted = self.ssd_manager.mount()
 
         if not is_mounted:
             self.ihm.estado = 'Erro SSD não encontrado'
@@ -50,7 +50,7 @@ class ModoDownload:
         match status:
             case True | False:
                 self.dowloader.stop()
-                self.mount_manager.unmount()
+                self.ssd_manager.unmount()
                 self.ihm.estado = 'Concluida' if status else 'Erro'
                 self.ihm.send_event(('next_modo', 'Tempo'))
                 self.client.enable_streaming()

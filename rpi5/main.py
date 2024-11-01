@@ -9,6 +9,7 @@ from src.ihm.ihm import IHM
 from src.ihm.gpiod_button import GpiodButton
 from src.pi_zero_client import PiZeroClient
 from src.pulse_generator import PulseGenerator
+from src.mount_device_manager import MountDeviceManager
 
 from src.modos import *
 
@@ -38,8 +39,11 @@ def main():
     client = PiZeroClient()
     ihm = IHM(client.get_img)
     net_manager = NetworkManager()
+    ssd_manager = MountDeviceManager(device="/dev/sda1", mount_point="/media/usb-ssd")
 
+    ssd_manager.mount()
     net_manager.update_address()
+    ssd_manager.unmount()
 
     def check_all_buttons():
         while True:
@@ -79,7 +83,7 @@ def main():
                 case _, ('next_modo', 'Tempo'):
                     modo = ModoTempo(client, ihm, encoders)
                 case _, ('next_modo', 'Download'):
-                    modo = ModoDownload(client, ihm)
+                    modo = ModoDownload(client, ihm, ssd_manager)
 
                 case ModoTempo(), 'next_modo':
                     modo = ModoAutonomo(client, ihm, encoders)

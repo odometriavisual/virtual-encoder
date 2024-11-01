@@ -23,20 +23,23 @@ class PiZeroClient:
                 time.sleep(0.001)
 
                 with self.vid_lock:
-                    if self.vid.isOpened():
-                        ret, frame = self.vid.read()
+                    if self.streaming_enabled:
+                        if self.vid.isOpened():
+                            ret, frame = self.vid.read()
 
-                        if ret:
-                            with self.frame_lock:
-                                self.frame = frame
+                            if ret:
+                                with self.frame_lock:
+                                    self.frame = frame
+                            else:
+                                self.frame = cv2.Mat(np.array(0x000000AA, dtype=np.float32))
+                                self.vid.release()
+
                         else:
-                            self.frame = cv2.Mat(np.array(0x000000AA, dtype=np.float32))
-                            self.vid.release()
-
-                    elif self.streaming_enabled:
-                        self.vid.open(f'{PIZERO_HOST}/stream.mjpg')
-                        self.vid.set(cv2.CAP_PROP_BUFFERSIZE, 1)
-                        time.sleep(1)
+                            self.vid.open(f'{PIZERO_HOST}/stream.mjpg')
+                            self.vid.set(cv2.CAP_PROP_BUFFERSIZE, 1)
+                            time.sleep(1)
+                    else:
+                        time.sleep(0.01)
 
         self.vid_thread = threading.Thread(daemon=True, target=update)
         self.vid_thread.start()
@@ -71,10 +74,11 @@ class PiZeroClient:
             return False
 
     def get_img(self) -> cv2.Mat:
-        if self.streaming_enabled and not self.vid.isOpened():
-            self.vid.open(f'{PIZERO_HOST}/stream.mjpg')
-            self.vid.set(cv2.CAP_PROP_BUFFERSIZE, 1)
-            time.sleep(1)
+        with self.vid_lock:
+            if self.streaming_enabled and not self.vid.isOpened():
+                self.vid.open(f'{PIZERO_HOST}/stream.mjpg')
+                self.vid.set(cv2.CAP_PROP_BUFFERSIZE, 1)
+                time.sleep(1)
 
         with self.frame_lock:
             frame = self.frame.copy()

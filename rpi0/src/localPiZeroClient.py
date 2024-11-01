@@ -15,6 +15,8 @@ class LocalPiZeroClient:
 
         self.focus = 0
         self.exposure = 0
+        self.default_exposure = 75
+        self.set_exposure(self.default_exposure)
 
         self.boot_time = time.time_ns()
 
@@ -45,6 +47,9 @@ class LocalPiZeroClient:
         # Ajusta a exposição da câmera
         self.exposure = exposure
         self.picam2.set_controls({"ExposureTime": exposure})
+
+    def reset_exposure(self):
+        self.set_exposure(self.default_exposure)
 
     def get_orientation(self) -> [int, float, float, float, float]:
         if self.imu_enabled is True:

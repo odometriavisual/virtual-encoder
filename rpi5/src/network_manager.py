@@ -69,13 +69,14 @@ class NetworkManager:
             file.write(f"allow-hotplug {interface_name}")
 
     def get_ip(self, interface: str):
-        cmdline = f'ip a show {interface}'
-        output = subprocess.check_output(cmdline, shell=True).decode()
-        matches = re.search(r'inet\s+(\d+\.\d+\.\d+\.\d+)', output)
+        try:
+            cmdline = f'ip a show {interface}'
+            output = subprocess.check_output(cmdline, shell=True).decode()
+            matches = re.search(r'inet\s+(\d+\.\d+\.\d+\.\d+)', output)
 
-        if matches:
-            return matches.group(1)
-        else:
+            if matches:
+                return matches.group(1)
+        finally:
             return 'ERRO'
 
 

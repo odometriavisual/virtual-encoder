@@ -1,5 +1,6 @@
 from .mount_device_manager import MountDeviceManager
 import subprocess, re
+from subprocess import SubprocessError
 import time
 import ipaddress
 
@@ -76,8 +77,9 @@ class NetworkManager:
 
             if matches:
                 return matches.group(1)
-        finally:
+        except SubprocessError:
             return 'ERRO'
+
 
 
 if __name__ == "__main__":

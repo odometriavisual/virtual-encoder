@@ -59,7 +59,7 @@ class ModoDownload:
             case line:
                 self.transfered_files += 1
                 percent = self.transfered_files / self.file_count
-                percent = 99.99 if percent >= 100. else percent
+                percent = 99.99 if percent >= 100. else 100. * percent
                 self.ihm.estado = f'{percent:.2f} %'
                 time.sleep(0.1)
 

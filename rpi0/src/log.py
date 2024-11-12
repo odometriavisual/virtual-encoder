@@ -23,7 +23,7 @@ class Logger:
         while True:
             time.sleep(0.1)
             time_now = time.time_ns()
-            if time_now > self.client.last_status_time + self.enable_save_period or self.client.rpi5status == 'Disparo':
+            if time_now > self.client.last_status_time + self.enable_save_period or self.client.rpi5status == 'Aquisicao':
                 if not self.enable_save:
                     datenow = datetime.fromtimestamp(time_now // 1_000_000_000).strftime('%Y%m%dT%H%M%S')
                     self.save_dir = f'/home/pi/picam_imgs/{self.boot_num}_{datenow}'

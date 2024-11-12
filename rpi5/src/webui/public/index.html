@@ -86,16 +86,16 @@
 	window.onload = () => {
 		const btns = {
 			calibracao: document.querySelector('button.calibracao'),
-			iniciar_disparo: document.querySelector('button.iniciar-disparo'),
-			parar_disparo: document.querySelector('button.parar-disparo'),
+			iniciar_aquisicao: document.querySelector('button.iniciar-aquisicao'),
+			parar_aquisicao: document.querySelector('button.parar-aquisicao'),
 			iniciar_download: document.querySelector('button.iniciar-download'),
 			modo_tempo: document.querySelector('button.modo-tempo'),
 			modo_autonomo: document.querySelector('button.modo-autonomo'),
 		};
 
 		btns.calibracao.disabled = true;
-		btns.iniciar_disparo.disabled = true;
-		btns.parar_disparo.disabled = true;
+		btns.iniciar_aquisicao.disabled = true;
+		btns.parar_aquisicao.disabled = true;
 		btns.iniciar_download.disabled = true;
 		btns.modo_tempo.disabled = true;
 		btns.modo_autonomo.disabled = true;
@@ -125,8 +125,8 @@
 		}
 
 		btns.calibracao.addEventListener('click', next_estado);
-		btns.iniciar_disparo.addEventListener('click', next_estado);
-		btns.parar_disparo.addEventListener('click', next_estado);
+		btns.iniciar_aquisicao.addEventListener('click', next_estado);
+		btns.parar_aquisicao.addEventListener('click', next_estado);
 
 		btns.iniciar_download.addEventListener('click', event => next_modo(event, 'Download'));
 		btns.modo_autonomo.addEventListener('click', event => next_modo(event, 'Autonomo'));
@@ -159,8 +159,8 @@
 				btns.modo_autonomo.disabled = false;
 
 				btns.calibracao.disabled = status.estado !== 'Set';
-				btns.iniciar_disparo.disabled = status.estado !== 'Ready';
-				btns.parar_disparo.disabled = status.estado !== 'Disparo';
+				btns.iniciar_aquisicao.disabled = status.estado !== 'Ready';
+				btns.parar_aquisicao.disabled = status.estado !== 'Aquisicao';
 			}
 			else if (status.modo === 'Autonomo') {
 				btns.iniciar_download.disabled = false;
@@ -168,8 +168,8 @@
 				btns.modo_autonomo.disabled = true;
 
 				btns.calibracao.disabled = true;
-				btns.iniciar_disparo.disabled = true;
-				btns.parar_disparo.disabled = true;
+				btns.iniciar_aquisicao.disabled = true;
+				btns.parar_aquisicao.disabled = true;
 			}
 			else if (status.modo === 'Download') {
 				btns.iniciar_download.disabled = true;
@@ -177,8 +177,8 @@
 				btns.modo_autonomo.disabled = true;
 
 				btns.calibracao.disabled = true;
-				btns.iniciar_disparo.disabled = true;
-				btns.parar_disparo.disabled = true;
+				btns.iniciar_aquisicao.disabled = true;
+				btns.parar_aquisicao.disabled = true;
 			}
 		}
 
@@ -204,8 +204,8 @@
 
 	<div class="h-group">
 		<button class="calibracao" disabled>Iniciar Calibracao</button>
-		<button class="iniciar-disparo" disabled>Iniciar Disparo</button>
-		<button class="parar-disparo" disabled>Parar Disparo</button>
+		<button class="iniciar-aquisicao" disabled>Iniciar Aquisição</button>
+		<button class="parar-aquisicao" disabled>Parar Aquisição</button>
 
 		<div class="spacer"></div>
 

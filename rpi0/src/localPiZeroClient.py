@@ -1,6 +1,7 @@
 import threading
 import time
 import os
+import subprocess
 from picamera2 import Picamera2
 from libcamera import controls
 
@@ -83,9 +84,11 @@ class LocalPiZeroClient:
 
         return total
 
-    def process_status(self, status):
-        self.last_status_time = time.time_ns()
-        self.rpi5status = status
+    def poweroff(self):
+        subprocess.run(['sudo', 'poweroff'])
+
+    def reboot(self):
+        subprocess.run(['sudo', 'reboot'])
 
     def download_all_images(self):
         raise NotImplementedError

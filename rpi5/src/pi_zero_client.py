@@ -1,5 +1,6 @@
 import threading
 import time
+import subprocess
 
 import cv2
 import numpy as np
@@ -104,6 +105,20 @@ class PiZeroClient:
             return int(file_count)
         except (RequestException, ValueError):
             return 0
+
+    def poweroff(self):
+        try:
+            requests.get(f'{PIZERO_HOST}/poweroff', timeout=1.0)
+            subprocess.run(['sudo', 'poweroff'])
+        except RequestException:
+            return
+
+    def reboot(self):
+        try:
+            requests.get(f'{PIZERO_HOST}/reboot', timeout=1.0)
+            subprocess.run(['sudo', 'reboot'])
+        except RequestException:
+            return
 
     def disable_streaming(self):
         with self.vid_lock:

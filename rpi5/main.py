@@ -85,6 +85,11 @@ def main():
                 case _, ('next_modo', 'Download'):
                     modo = ModoDownload(client, ihm, ssd_manager)
 
+                case _, ('next_modo', 'poweroff'):
+                    client.poweroff()
+                case _, ('next_modo', 'reboot'):
+                    client.reboot()
+
                 case ModoTempo(), 'next_modo':
                     modo = ModoAutonomo(client, ihm, encoders)
                 case ModoAutonomo(), 'next_modo':

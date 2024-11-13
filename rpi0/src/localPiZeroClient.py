@@ -67,12 +67,21 @@ class LocalPiZeroClient:
         return frame
 
     def get_status(self):
+        with open('/sys/class/thermal/thermal_zone0/temp', 'r') as file:
+            temp = file.read()
+            temp = int(temp) / 1000
+
         status = {
             'imu': self.imu_enabled,
             'camera': len(Picamera2.global_camera_info()) > 0,
+            'rpi0': { 'temp': temp }
         }
 
         return status
+
+    def process_status(self, status):
+        self.last_status_time = time.time_ns()
+        self.rpi5status = status
 
     def get_file_count(self) -> int:
         """

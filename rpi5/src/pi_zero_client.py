@@ -88,10 +88,15 @@ class PiZeroClient:
 
     def get_status(self, local_status):
         try:
+            with open('/sys/class/thermal/thermal_zone0/temp', 'r') as file:
+                temp = file.read()
+                temp = int(temp) / 1000
+
             status = requests.get(f'{PIZERO_HOST}/status?rpi5status={local_status}', timeout=1.0).json()
-            status['rpi0'] = True
+            status['rpi5'] = { 'temp': temp }
         except RequestException:
             status = {
+                'rpi5': False,
                 'rpi0': False,
                 'imu': False,
                 'camera': False,

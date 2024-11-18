@@ -8,12 +8,15 @@ from PySide6.QtCore import Qt, QThread, Signal
 import matplotlib
 from visual_odometer.displacement_estimators.svd import svd_method
 from visual_odometer.preprocessing import image_preprocessing
-import h5py
+from PySide6.QtCore import QTimer
 
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 import matplotlib.pyplot as plt
+from concurrent.futures import ThreadPoolExecutor
+
 from mpl_toolkits.mplot3d import Axes3D
 from datetime import datetime
+from post_processing.tools.gpu_tools import gpu_svd_method
 
 matplotlib.use('Qt5Agg')
 
@@ -67,13 +70,14 @@ class ProcessingThread(QThread):
         with open(imu_file, newline='') as csvfile:
             reader = csv.DictReader(csvfile)
             for row in reader:
-                imu_data.append({
-                    'timestamp': int(row['timestamp']),
+                data = {
+                    'timestamp': int(float(row['timestamp'])),
                     'qx': float(row['qx']) if row['qx'] else 0.0,
                     'qy': float(row['qy']) if row['qy'] else 0.0,
                     'qz': float(row['qz']) if row['qz'] else 0.0,
                     'qw': float(row['qw']) if row['qw'] else 0.0
-                })
+                }
+                imu_data.append(data)
         return imu_data
 
 
@@ -93,7 +97,7 @@ class ProcessingThread(QThread):
             img_timestamp = int(os.path.basename(img_file).split('.')[0])
             closest_imu_data = self.find_closest_imu_data(imu_data, img_timestamp)
 
-            dx, dy = svd_method(img_preprocessed, old_processed_img, 640, 480, use_gpu=False)
+            dx, dy = svd_method(img_preprocessed, old_processed_img, 640, 480)
 
             # Calculando matriz de rotação e posição
             qx = closest_imu_data['qx']
@@ -173,6 +177,12 @@ class TrajectoryApp(QMainWindow):
         self.select_button.clicked.connect(self.open_folder_dialog)
         self.layout.addWidget(self.select_button)
 
+        # Botão Play/Pause
+        self.play_pause_button = QPushButton("Iniciar", self)
+        self.play_pause_button.setEnabled(False)  # Desativado até o processamento ser concluído
+        self.play_pause_button.clicked.connect(self.toggle_play_pause)
+        self.layout.addWidget(self.play_pause_button)
+
         # Label para progresso
         self.progress_label = QLabel("Progresso: Aguardando seleção da pasta", self)
         self.layout.addWidget(self.progress_label)
@@ -185,6 +195,19 @@ class TrajectoryApp(QMainWindow):
         self.figure = plt.figure()
         self.canvas = FigureCanvas(self.figure)
         self.layout.addWidget(self.canvas)
+
+        # Timer para atualizar o gráfico
+        self.timer = QTimer()
+        self.timer.timeout.connect(self.update_trajectory)
+
+        # Controle de estado
+        self.playing = False
+        self.current_index = 0
+        self.positions3D = None  # Inicialmente vazio
+
+        # Variáveis para preservar a posição da câmera
+        self.elev = None
+        self.azim = None
 
         # Definir layout
         container = QWidget()
@@ -203,23 +226,73 @@ class TrajectoryApp(QMainWindow):
         # Iniciar o thread de processamento
         self.thread = ProcessingThread(folder)
         self.thread.progress_signal.connect(self.update_progress)
-        self.thread.finished_signal.connect(self.plot_trajectory)
-        self.thread.error_signal.connect(self.show_error)  # Connect the error signal to a handler
+        self.thread.finished_signal.connect(self.on_processing_finished)
+        self.thread.error_signal.connect(self.show_error)
         self.thread.start()
 
     def update_progress(self, message, progress_value):
         self.progress_label.setText(message)
         self.progress_bar.setValue(progress_value)
 
-    def plot_trajectory(self, positions3D, positions2D):
-        # Plotar a trajetória em 3D no canvas
+    def on_processing_finished(self, positions3D_1, positions2D):
+        self.positions3D = positions3D_1
+        self.current_index = 0
+        self.play_pause_button.setEnabled(True)  # Ativar botão Play/Pause
+        self.progress_label.setText("Processamento concluído! Clique em 'Iniciar' para visualizar a trajetória.")
+
+    def toggle_play_pause(self):
+        if self.playing:
+            self.timer.stop()
+            self.playing = False
+            self.play_pause_button.setText("Continuar")
+        else:
+            self.timer.start(100)  # Atualizar o gráfico a cada 100ms
+            self.playing = True
+            self.play_pause_button.setText("Pausar")
+
+    def update_trajectory(self):
+        if self.positions3D is not None:
+            if self.current_index < len(self.positions3D):
+                self.plot_partial_trajectory(self.positions3D[:self.current_index + 1])
+                self.current_index += 1
+            else:
+                self.timer.stop()  # Parar o timer ao final da trajetória
+                self.playing = False
+                self.play_pause_button.setText("Iniciar")
+
+    def plot_partial_trajectory(self, partial_positions3D):
+        # Preservar a posição da câmera atual antes de limpar a figura
+        if self.figure.axes:
+            self.elev = self.figure.gca().elev
+            self.azim = self.figure.gca().azim
+
+        # Plotar a trajetória parcial em 3D
         self.figure.clear()
         ax = self.figure.add_subplot(111, projection='3d')
-        ax.plot(positions3D[:, 0], positions3D[:, 1], positions3D[:, 2], marker='o')
-        ax.set_title('Trajetória de Deslocamento 3D')
-        ax.set_xlabel('Deslocamento em X')
-        ax.set_ylabel('Deslocamento em Y')
-        ax.set_zlabel('Deslocamento em Z')
+
+        # Restaurar a posição da câmera
+        if self.elev is not None and self.azim is not None:
+            ax.view_init(elev=self.elev, azim=self.azim)
+
+        # Extrair coordenadas parciais
+        x, y, z = zip(*partial_positions3D)
+
+        # Plotar as trajetórias
+        ax.plot(x, y, z, color='blue', marker='o', label='Trajetória Parcial')
+
+        # Configurar limites e título
+        max_value = max(max(x), max(y), max(z))
+        min_value = min(min(x), min(y), min(z))
+        ax.set_xlim(min_value, max_value)
+        ax.set_ylim(min_value, max_value)
+        ax.set_zlim(min_value, max_value)
+
+        ax.set_title('Trajetória Parcial')
+        ax.set_xlabel('X')
+        ax.set_ylabel('Y')
+        ax.set_zlabel('Z')
+
+        # Atualizar o canvas
         self.canvas.draw()
 
     def show_error(self, message):

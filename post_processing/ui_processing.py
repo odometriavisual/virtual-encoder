@@ -5,6 +5,9 @@ import csv
 import numpy as np
 from PySide6.QtWidgets import QApplication, QMainWindow, QPushButton, QLabel, QVBoxLayout, QWidget, QFileDialog, QProgressBar, QMessageBox
 from PySide6.QtCore import Qt, QThread, Signal
+from PySide6.QtGui import QPixmap,QImage
+
+
 import matplotlib
 from visual_odometer.displacement_estimators.svd import svd_method
 from visual_odometer.preprocessing import image_preprocessing
@@ -17,6 +20,9 @@ from concurrent.futures import ThreadPoolExecutor
 from mpl_toolkits.mplot3d import Axes3D
 from datetime import datetime
 from post_processing.tools.gpu_tools import gpu_svd_method
+from PIL import Image, ImageOps, ImageEnhance
+import io
+
 
 matplotlib.use('Qt5Agg')
 
@@ -28,13 +34,14 @@ class ProcessingThread(QThread):
     def __init__(self, folder_path):
         super().__init__()
         self.folder_path = folder_path
+        self.image_files = []  # Inicializar o atributo
 
     def run(self):
         # Carregar dados da IMU e imagens
         imu_file = os.path.join(self.folder_path, "imu.csv")
-        image_files = sorted(glob.glob(os.path.join(self.folder_path, '*.jpg')))
+        self.image_files = sorted(glob.glob(os.path.join(self.folder_path, '*.jpg')))  # Salvar aqui
 
-        if not image_files or len(image_files) <= 0:
+        if not self.image_files or len(self.image_files) <= 0:
             self.error_signal.emit("ERRO: Não há nenhuma imagem na pasta selecionada.")
             return
         if not os.path.exists(imu_file):
@@ -43,7 +50,7 @@ class ProcessingThread(QThread):
 
         # Indicar que estamos carregando as imagens
         self.progress_signal.emit("Carregando imagens...", 20)
-        img_stream = [self.load_image(img_file) for img_file in image_files]
+        img_stream = [self.load_image(img_file) for img_file in self.image_files]
 
         # Indicar que estamos carregando os dados da IMU
         self.progress_signal.emit("Carregando dados da IMU...", 40)
@@ -51,7 +58,7 @@ class ProcessingThread(QThread):
 
         # Processar imagens
         self.progress_signal.emit("Processando deslocamento...", 60)
-        positions3D, positions2D, quaternions, timestamps = self.process_displacements(img_stream, imu_data, image_files)
+        positions3D, positions2D, quaternions, timestamps = self.process_displacements(img_stream, imu_data, self.image_files)
         self.save_data_to_csv(positions3D, positions2D, quaternions, timestamps)
 
         self.progress_signal.emit("Processamento concluído!", 100)
@@ -59,10 +66,25 @@ class ProcessingThread(QThread):
         #self.thread.error_signal.connect(self.show_error)  # Connect the error signal to a handler
 
     def load_image(self, filename):
-        from PIL import Image, ImageOps
+        # Abrir imagem em RGB
         img_rgb = Image.open(filename)
+
+        # Melhorar o brilho e o contraste
+        enhancer_brightness = ImageEnhance.Brightness(img_rgb)
+        img_rgb = enhancer_brightness.enhance(1.5)  # Ajuste o valor para mais brilho (1.0 é padrão)
+
+        enhancer_contrast = ImageEnhance.Contrast(img_rgb)
+        img_rgb = enhancer_contrast.enhance(1.5)  # Ajuste o valor para mais contraste
+
+        # Converter para escala de cinza
         img_grayscale = ImageOps.grayscale(img_rgb)
+
+        # Converter para matriz NumPy
         img_array = np.asarray(img_grayscale)
+
+        # Normalizar os valores de pixel para 0-1
+        img_array = img_array / 255.0
+
         return image_preprocessing(img_array)
 
     def load_imu_data(self, imu_file):
@@ -196,6 +218,11 @@ class TrajectoryApp(QMainWindow):
         self.canvas = FigureCanvas(self.figure)
         self.layout.addWidget(self.canvas)
 
+        # Adicionar QLabel para exibir a imagem
+        self.image_label = QLabel("Imagem do deslocamento atual", self)
+        self.image_label.setAlignment(Qt.AlignCenter)
+        self.layout.addWidget(self.image_label)
+
         # Timer para atualizar o gráfico
         self.timer = QTimer()
         self.timer.timeout.connect(self.update_trajectory)
@@ -204,6 +231,7 @@ class TrajectoryApp(QMainWindow):
         self.playing = False
         self.current_index = 0
         self.positions3D = None  # Inicialmente vazio
+        self.image_files = None  # Lista de arquivos de imagem
 
         # Variáveis para preservar a posição da câmera
         self.elev = None
@@ -237,6 +265,7 @@ class TrajectoryApp(QMainWindow):
     def on_processing_finished(self, positions3D_1, positions2D):
         self.positions3D = positions3D_1
         self.current_index = 0
+        self.image_files = self.thread.image_files  # Agora está disponível
         self.play_pause_button.setEnabled(True)  # Ativar botão Play/Pause
         self.progress_label.setText("Processamento concluído! Clique em 'Iniciar' para visualizar a trajetória.")
 
@@ -254,6 +283,7 @@ class TrajectoryApp(QMainWindow):
         if self.positions3D is not None:
             if self.current_index < len(self.positions3D):
                 self.plot_partial_trajectory(self.positions3D[:self.current_index + 1])
+                self.update_image(self.image_files[self.current_index])  # Atualizar a imagem exibida
                 self.current_index += 1
             else:
                 self.timer.stop()  # Parar o timer ao final da trajetória
@@ -295,12 +325,27 @@ class TrajectoryApp(QMainWindow):
         # Atualizar o canvas
         self.canvas.draw()
 
+    def update_image(self, image_file):
+        img = Image.open(image_file)
+        img = img.resize((400, 300), Image.Resampling.LANCZOS)  # Redimensionar a imagem
+        img = ImageOps.exif_transpose(img)  # Manter a orientação correta
+
+        # Converter imagem para array NumPy
+        img_array = np.array(img)
+
+        # Criar QImage para exibir no QLabel
+        qimage = QImage(img_array.data, img_array.shape[1], img_array.shape[0], QImage.Format_RGB888)
+        pixmap = QPixmap.fromImage(qimage)
+        self.image_label.setPixmap(pixmap)
+        self.image_label.setAlignment(Qt.AlignCenter)  # Centralizar no QLabel
+
     def show_error(self, message):
         error_dialog = QMessageBox()
         error_dialog.setWindowTitle("Erro")
         error_dialog.setText(message)
         error_dialog.setIcon(QMessageBox.Critical)
         error_dialog.exec()
+
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)

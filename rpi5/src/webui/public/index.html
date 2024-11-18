@@ -3,19 +3,23 @@
 	<style>
 		.wrapper {
 			display: grid;
+			grid-gap: 4px;
+			font-family: 'sans-serif';
+
 			grid-template-columns: 640px 168px;
 			grid-template-rows: 480px calc(48px * 3 + 4px  * 2);
-			grid-gap: 4px;
-			font-family: sans;
+			grid-template-areas:
+				"img     v-group"
+				"h-group h-group";
 		}
 
 		.wrapper > .video-frame {
 			width: 640px;
 			height: 480px;
-			grid-area: 1 / 1 / 2 / 2;
 		}
+
 		.wrapper > .v-group {
-			grid-column: 2;
+			grid-area: v-group;
 
 			display: grid;
 			grid-template-rows: 0.3fr 2fr 1fr 0.6fr 0.6fr;
@@ -26,45 +30,33 @@
 		}
 
 		.wrapper > .h-group {
-			grid-column: span 2;
-			grid-row: 2;
+			grid-area: h-group;
 
 			display: grid;
+			grid-gap: 4px;
+
 			grid-template-columns: repeat(13, 1fr);
 			grid-template-rows: 0.3fr 0.3fr 1fr 1fr;
-			grid-auto-flow: row;
-			grid-gap: 4px;
+			grid-template-areas:
+				"brilho brilho brilho brilho brilho brilho brilho brilho brilho brilho brilho brilho brilho"
+				".      .      .      .      .      .      .      .      .      .      .      .      .     "
+			    "calib  calib  calib  init-a init-a init-a stop-a stop-a stop-a .      reboot reboot reboot"
+				"init-d init-d init-d modo-t modo-t modo-t modo-a modo-a modo-a .      shutd  shutd  shutd"
 		}
 
-		.h-group > .brightness-slider {
-			grid-row: 1;
-			grid-column: span 13;
-		}
+		.brilho { grid-area: brilho; }
+		.calibracao { grid-area: calib; }
+		.iniciar-aquisicao { grid-area: init-a; }
+		.parar-aquisicao { grid-area: stop-a; }
+		.iniciar-download { grid-area: init-d; }
+		.modo-tempo { grid-area: modo-t; }
+		.modo-autonomo { grid-area: modo-a; }
+		.reiniciar { grid-area: reboot; }
+		.desligar { grid-area: shutd; }
 
-		.h-group > .hue-slider {
-			display: none;
-			grid-column: span 13;
-		}
-
-		.calibracao, .iniciar-aquisicao, .parar-aquisicao {
-			grid-row: 3;
-			grid-column: span 3;
-		}
-
-		.iniciar-download, .modo-tempo, .modo-autonomo {
-			grid-row: 4;
-			grid-column: span 3;
-		}
-
-		.reiniciar {
-			grid-row: 3;
-			grid-column: 12/span 2;
-		}
-
-		.desligar {
-			grid-row: 4;
-			grid-column: 12/span 2;
-		}
+		label { display: flex; gap: 8px; }
+		label > div { align-self: center; }
+		label > input { flex-grow: 1; min-width: 1px;}
 
 		.v-group > div {
 			display: flex;
@@ -131,17 +123,12 @@
 
 		const video_frame = document.querySelector('.video-frame');
 		video_frame.src = '/video_feed';
-		video_frame.style = 'filter: brightness(1.0) hue-rotate(0deg)';
+		video_frame.style = 'filter: brightness(1.0)';
 
-		const brightness_slider = document.querySelector('input.brightness-slider');
+		const brightness_slider = document.querySelector('.brilho > input');
 		brightness_slider.value = 1;
 		brightness_slider.oninput = () => {
-			video_frame.style.filter = video_frame.style.filter.replace(/brightness(.*) /, `brightness(${brightness_slider.value})`);
-		}
-		const hue_slider = document.querySelector('input.hue-slider');
-		hue_slider.value = 0;
-		hue_slider.oninput = () => {
-			video_frame.style.filter = video_frame.style.filter.replace(/hue-rotate(.*)/, `hue-rotate(${hue_slider.value}deg)`);
+			video_frame.style.filter = video_frame.style.filter.replace(/brightness(.*)/, `brightness(${brightness_slider.value})`);
 		}
 
 		async function next_estado(event) {
@@ -263,8 +250,10 @@
 	<img class='video-frame'/>
 
 	<div class="h-group">
-		<input type="range" min="0" max="5" step="0.05" value="1" class="brightness-slider">
-		<input type="range" min="0" max="360" step="1" value="0" class="hue-slider">
+		<label class="brilho">
+			<div>Brilho:</div>
+			<input type="range" min="0" max="5" step="0.05" value="1" />
+		</label>
 
 		<button class="calibracao" disabled>Iniciar Calibracao</button>
 		<button class="iniciar-aquisicao" disabled>Iniciar Aquisição</button>

@@ -30,7 +30,7 @@ class EstadoCalibracao:
         self.ihm = ihm
         self.client = client
 
-        self.ihm.estado = 'Calibrando...'
+        self.ihm.estado = 'Calibrando'
         self.ihm.update_display()
 
     def run(self):

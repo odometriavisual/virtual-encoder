@@ -176,7 +176,7 @@
 
 		function update_status(status) {
 			update_classname(status_watcher.rpi5, status.rpi5);
-			if (status.estado === 'Calibrando...' || status.modo === 'Download') {
+			if (status.estado === 'Calibrando' || status.modo === 'Download') {
 				status_watcher.rpi5.classList.add('warn');
 			}
 			else {
@@ -189,7 +189,9 @@
 
 			status_watcher.rpi5.innerText = `RPi 5
 			Modo ${status.modo}
-			${status.rpi5 === false || status.modo === 'Download'? '': 'Estado' + status.estado}
+			${status.rpi5 === false || status.modo === 'Download'? '':
+					(status.estado === 'Calibrando'? `Calibrando ${status.rpi0.progress}%`: 'Estado' + status.estado)
+			}
 			${status.rpi5 ? `IP: ${status.rpi5.ip}` : ''}
 			${status.rpi5? `Temp: ${status.rpi5.temp} ℃`: ''}`
 

@@ -17,6 +17,7 @@ class LocalPiZeroClient:
         self.focus = 0
         self.exposure = 0
         self.default_exposure = 75
+        self.calibration_progress = 0
         self.reset_exposure()
 
         self.boot_time = time.time_ns()
@@ -74,7 +75,7 @@ class LocalPiZeroClient:
         status = {
             'imu': self.imu_enabled,
             'camera': len(Picamera2.global_camera_info()) > 0,
-            'rpi0': { 'temp': temp }
+            'rpi0': { 'temp': temp, 'progress': self.calibration_progress }
         }
 
         return status

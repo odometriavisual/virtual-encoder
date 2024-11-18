@@ -52,11 +52,15 @@ def load_or_recalibrate(client: LocalPiZeroClient, recalibration_interval=3600):
 def startLocalCalibration(client: LocalPiZeroClient,
                           calibration_start: int = 0, calibration_end: int = 30, calibration_step: int = .5,
                           exposure_start: int = 50, exposure_end: int = 150, exposure_step: int = 25):
-    actual_focus = calibration_start
     actual_exposure = exposure_start
 
     focus_sum = 0
-    num_exposures = (exposure_end - exposure_start) / calibration_step
+    num_exposures = (exposure_end - exposure_start) / exposure_step
+    num_focuses = (calibration_end - calibration_start) / calibration_step
+    total_progress = num_focuses * num_exposures
+    progress = 0
+    client.calibration_progress = progress // total_progress
+
     while actual_exposure <= exposure_end:
         # Resets the best values:
         best_focus_value = best_score = 0
@@ -65,6 +69,7 @@ def startLocalCalibration(client: LocalPiZeroClient,
         client.set_exposure(actual_exposure)
         actual_exposure += exposure_step
 
+        actual_focus = calibration_start
         while actual_focus <= calibration_end:
             # Sets the focus:
             client.set_focus(actual_focus)
@@ -80,7 +85,11 @@ def startLocalCalibration(client: LocalPiZeroClient,
             if score > best_score:
                 best_focus_value = actual_focus
                 best_score = score
+
             print(actual_focus, score)
+            progress += 100
+            client.calibration_progress = progress // total_progress
+
         time.sleep(1)
         focus_sum += best_focus_value
     else:

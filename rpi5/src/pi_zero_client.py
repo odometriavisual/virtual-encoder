@@ -1,6 +1,7 @@
 import threading
 import time
 import subprocess
+from subprocess import SubprocessError
 
 import cv2
 import numpy as np
@@ -34,6 +35,7 @@ class PiZeroClient:
                             else:
                                 self.frame = cv2.Mat(np.array(0x000000AA, dtype=np.float32))
                                 self.vid.release()
+                                cv2.destroyAllWindows()
 
                         else:
                             self.vid.open(f'{PIZERO_HOST}/stream.mjpg')
@@ -47,7 +49,7 @@ class PiZeroClient:
 
     def pizero_calibration(self):
         try:
-            requests.get(f'{PIZERO_HOST}/run_autofocus', timeout=30.0)
+            requests.get(f'{PIZERO_HOST}/run_autofocus', timeout=300.0)
             return True
         except RequestException:
             return False
@@ -93,10 +95,10 @@ class PiZeroClient:
                 temp = int(temp) / 1000
 
             status = requests.get(f'{PIZERO_HOST}/status?rpi5status={local_status}', timeout=1.0).json()
-            status['rpi5'] = { 'temp': temp }
+            status['rpi5'] = { 'temp': temp, 'ip': None }
         except RequestException:
             status = {
-                'rpi5': False,
+                'rpi5': {'temp': temp, 'ip': None},
                 'rpi0': False,
                 'imu': False,
                 'camera': False,
@@ -114,21 +116,30 @@ class PiZeroClient:
     def poweroff(self):
         try:
             requests.get(f'{PIZERO_HOST}/poweroff', timeout=1.0)
-            subprocess.run(['sudo', 'poweroff'])
         except RequestException:
             return
+
+        try:
+            subprocess.run(['sudo', 'poweroff'])
+        except SubprocessError:
+            pass
 
     def reboot(self):
         try:
             requests.get(f'{PIZERO_HOST}/reboot', timeout=1.0)
-            subprocess.run(['sudo', 'reboot'])
         except RequestException:
             return
+
+        try:
+            subprocess.run(['sudo', 'reboot'])
+        except SubprocessError:
+            pass
 
     def disable_streaming(self):
         with self.vid_lock:
             self.streaming_enabled = False
             self.vid.release()
+            cv2.destroyAllWindows()
 
         with self.frame_lock:
             self.frame = cv2.Mat(np.array(0x000000AA, dtype=np.float32))

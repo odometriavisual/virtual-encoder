@@ -180,10 +180,10 @@
 					(status.estado === 'Calibrando'? `Calibrando ${status.rpi0.progress}%`: 'Estado' + status.estado)
 			}
 			${status.rpi5 ? `IP: ${status.rpi5.ip}` : ''}
-			${status.rpi5? `Temp: ${status.rpi5.temp} ℃`: ''}`
+			${status.rpi5? `Temp: ${status.rpi5.temp?.toFixed(2)} ℃`: ''}`
 
 			status_watcher.rpi0.innerText = `RPi Zero
-			${status.rpi5 ? `Temp: ${status.rpi0.temp} ℃` : ''}`
+			${status.rpi5 ? `Temp: ${status.rpi0.temp?.toFixed(2)} ℃` : ''}`
 
 			if (status.modo === 'Tempo') {
 				btns.iniciar_download.disabled = false;
@@ -252,7 +252,7 @@
 	<div class="h-group">
 		<label class="brilho">
 			<div>Brilho:</div>
-			<input type="range" min="0" max="5" step="0.05" value="1" />
+			<input type="range" min="0" max="10" step="0.05" value="1" />
 		</label>
 
 		<button class="calibracao" disabled>Iniciar Calibracao</button>

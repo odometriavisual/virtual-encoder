@@ -45,7 +45,6 @@ class WebuiApp:
         @self.app.route('/status', methods=['GET'])
         def status():
             res = self.ihm.status
-            res['rpi5'] = True
             res['estado'] = self.ihm.estado
             res['modo'] = self.ihm.modo
             return res

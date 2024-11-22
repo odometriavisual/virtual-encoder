@@ -55,8 +55,8 @@ def startLocalCalibration(client: LocalPiZeroClient,
     actual_exposure = exposure_start
 
     focus_sum = 0
-    num_exposures = (exposure_end - exposure_start) / exposure_step
-    num_focuses = (calibration_end - calibration_start) / calibration_step
+    num_exposures = (exposure_end - exposure_start) / exposure_step + 1
+    num_focuses = (calibration_end - calibration_start) / calibration_step + 1
     total_progress = num_focuses * num_exposures
     progress = 0
     client.calibration_progress = progress // total_progress

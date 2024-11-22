@@ -14,6 +14,7 @@ class IHM:
         self.ip: str = ''
 
         self.status: dict = {
+            'rpi5': False,
             'rpi0': False,
             'imu': False,
             'camera': False,

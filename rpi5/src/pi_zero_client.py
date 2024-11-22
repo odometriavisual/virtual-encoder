@@ -12,6 +12,7 @@ PIZERO_HOST = 'http://rpi0:7123'
 
 class PiZeroClient:
     def __init__(self):
+        self.ip = None
         self.streaming_enabled = True
 
         self.vid_lock = threading.Lock()
@@ -95,10 +96,10 @@ class PiZeroClient:
                 temp = int(temp) / 1000
 
             status = requests.get(f'{PIZERO_HOST}/status?rpi5status={local_status}', timeout=1.0).json()
-            status['rpi5'] = { 'temp': temp, 'ip': None }
+            status['rpi5'] = { 'temp': temp, 'ip': self.ip }
         except RequestException:
             status = {
-                'rpi5': {'temp': temp, 'ip': None},
+                'rpi5': {'temp': temp, 'ip': self.ip },
                 'rpi0': False,
                 'imu': False,
                 'camera': False,

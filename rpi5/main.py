@@ -66,7 +66,13 @@ def main():
 
     modo = ModoTempo(client, ihm, encoders)
     ihm.modo = 'Tempo'
-    ihm.ip = net_manager.get_ip('eth1')
+
+    def _get_ip():
+        while True:
+            ihm.ip = net_manager.get_ip('eth1')
+            client.ip = ihm.ip
+            time.sleep(30)
+    threading.Thread(target=_get_ip, daemon=True).start()
 
     def _get_status():
         while True:

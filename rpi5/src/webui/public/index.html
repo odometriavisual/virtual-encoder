@@ -36,12 +36,12 @@
 			grid-gap: 4px;
 
 			grid-template-columns: repeat(13, 1fr);
-			grid-template-rows: 0.3fr 0.3fr 1fr 1fr;
+			grid-template-rows: 0.3fr 1fr 1fr 1fr;
 			grid-template-areas:
 				"brilho brilho brilho brilho brilho brilho brilho brilho brilho brilho brilho brilho brilho"
-				".      .      .      .      .      .      .      .      .      .      .      .      .     "
+				".      .      .      .      .      .      .      .      .      .      init-d init-d init-d"
 			    "calib  calib  calib  init-a init-a init-a stop-a stop-a stop-a .      reboot reboot reboot"
-				"init-d init-d init-d modo-t modo-t modo-t modo-a modo-a modo-a .      shutd  shutd  shutd"
+				"modo-o modo-o modo-o modo-t modo-t modo-t modo-a modo-a modo-a .      shutd  shutd  shutd"
 		}
 
 		.brilho { grid-area: brilho; }
@@ -50,6 +50,7 @@
 		.parar-aquisicao { grid-area: stop-a; }
 		.iniciar-download { grid-area: init-d; }
 		.modo-tempo { grid-area: modo-t; }
+		.modo-odometro { grid-area: modo-o; }
 		.modo-autonomo { grid-area: modo-a; }
 		.reiniciar { grid-area: reboot; }
 		.desligar { grid-area: shutd; }
@@ -98,9 +99,10 @@
 			calibracao: document.querySelector('button.calibracao'),
 			iniciar_aquisicao: document.querySelector('button.iniciar-aquisicao'),
 			parar_aquisicao: document.querySelector('button.parar-aquisicao'),
-			iniciar_download: document.querySelector('button.iniciar-download'),
+			modo_odometro: document.querySelector('button.modo-odometro'),
 			modo_tempo: document.querySelector('button.modo-tempo'),
 			modo_autonomo: document.querySelector('button.modo-autonomo'),
+			iniciar_download: document.querySelector('button.iniciar-download'),
 			reiniciar: document.querySelector('button.reiniciar'),
 			desligar: document.querySelector('button.desligar')
 		};
@@ -109,6 +111,7 @@
 		btns.iniciar_aquisicao.disabled = true;
 		btns.parar_aquisicao.disabled = true;
 		btns.iniciar_download.disabled = true;
+		btns.modo_odometro.disabled = true;
 		btns.modo_tempo.disabled = true;
 		btns.modo_autonomo.disabled = true;
 		btns.reiniciar.disabled = true;
@@ -159,10 +162,11 @@
 		});
 		btns.parar_aquisicao.addEventListener('click', next_estado);
 
-		btns.iniciar_download.addEventListener('click', event => next_modo(event, 'Download'));
-		btns.modo_autonomo.addEventListener('click', event => next_modo(event, 'Autonomo'));
+		btns.modo_odometro.addEventListener('click', event => next_modo(event, 'Odometro'));
 		btns.modo_tempo.addEventListener('click', event => next_modo(event, 'Tempo'));
+		btns.modo_autonomo.addEventListener('click', event => next_modo(event, 'Autonomo'));
 
+		btns.iniciar_download.addEventListener('click', event => next_modo(event, 'Download'));
 		btns.reiniciar.addEventListener('click', event => next_modo(event, 'reboot'));
 		btns.desligar.addEventListener('click', event => next_modo(event, 'poweroff'));
 
@@ -195,9 +199,10 @@
 			status_watcher.rpi0.innerText = `RPi Zero
 			${status.rpi0 ? `Temp: ${status.rpi0.temp?.toFixed(2)} ℃` : ''}`
 
-			if (status.modo === 'Tempo') {
+			if (status.modo === 'Tempo' || status.modo === 'Odometro') {
 				btns.iniciar_download.disabled = false;
-				btns.modo_tempo.disabled = true;
+				btns.modo_tempo.disabled = status.modo === 'Tempo';
+				btns.modo_odometro.disabled = status.modo === 'Odometro';
 				btns.modo_autonomo.disabled = false;
 
 				btns.calibracao.disabled = status.estado !== 'Set';
@@ -269,12 +274,12 @@
 		<button class="iniciar-aquisicao" disabled>Iniciar Aquisição</button>
 		<button class="parar-aquisicao" disabled>Parar Aquisição</button>
 
-		<button class="reiniciar" disabled>Reiniciar</button>
-
-		<button class="iniciar-download" disabled>Iniciar Download</button>
 		<button class="modo-tempo" disabled>Modo Tempo</button>
+		<button class="modo-odometro" disabled>Modo Odometro</button>
 		<button class="modo-autonomo" disabled>Modo Autonomo</button>
 
+		<button class="iniciar-download" disabled>Iniciar Download</button>
+		<button class="reiniciar" disabled>Reiniciar</button>
 		<button class="desligar" disabled>Desligar</button>
 	</div>
 

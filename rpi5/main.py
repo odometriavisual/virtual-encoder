@@ -36,6 +36,7 @@ def main():
     buttons = (GpiodButton(24), GpiodButton(27), GpiodButton(18))
     client = PiZeroClient()
     ihm = IHM(client.get_img)
+    ihm.modo = 'Iniciando'
     net_manager = NetworkManager()
     ssd_manager = MountDeviceManager(device="/dev/sda1", mount_point="/media/usb-ssd")
 
@@ -63,7 +64,6 @@ def main():
     time.sleep(1)
 
     modo = ModoTempo(client, ihm, encoders)
-    ihm.modo = 'Tempo'
 
     def _get_ip():
         while True:
@@ -84,6 +84,8 @@ def main():
             match modo, ev:
                 case _, ('next_modo', 'Autonomo'):
                     modo = ModoAutonomo(client, ihm, encoders)
+                case _, ('next_modo', 'Odometro'):
+                    modo = ModoOdometro(client, ihm, encoders)
                 case _, ('next_modo', 'Tempo'):
                     modo = ModoTempo(client, ihm, encoders)
                 case _, ('next_modo', 'Download'):

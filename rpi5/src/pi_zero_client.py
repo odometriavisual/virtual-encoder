@@ -118,7 +118,7 @@ class PiZeroClient:
         try:
             requests.get(f'{PIZERO_HOST}/poweroff', timeout=1.0)
         except RequestException:
-            return
+            pass
 
         try:
             subprocess.run(['sudo', 'poweroff'])
@@ -129,7 +129,7 @@ class PiZeroClient:
         try:
             requests.get(f'{PIZERO_HOST}/reboot', timeout=1.0)
         except RequestException:
-            return
+            pass
 
         try:
             subprocess.run(['sudo', 'reboot'])

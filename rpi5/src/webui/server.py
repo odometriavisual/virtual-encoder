@@ -60,6 +60,11 @@ class WebuiApp:
             self.ihm.send_event('next_estado')
             return 'ok'
 
+        @self.app.route('/next_estado/<estado>/<args>', methods=['POST'])
+        def next_estado_parameter(estado, args):
+            self.ihm.send_event(('next_estado', estado, args))
+            return 'ok'
+
         @self.app.route('/next_modo', methods=['POST'])
         def next_modo():
             self.ihm.send_event('next_estado')

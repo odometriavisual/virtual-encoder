@@ -20,11 +20,11 @@ class EstadoReady:
         time.sleep(0.001)
 
 class EstadoAquisicaoTempo:
-    def __init__(self, ihm: IHM, encoders: tuple[PulseGenerator, ...]):
+    def __init__(self, ihm: IHM, encoders: tuple[PulseGenerator, ...], pulses_frequency: int):
         ihm.estado = 'Aquisicao'
         ihm.update_display()
 
-        self.period = 1_000_000_000 // 10
+        self.period = 1_000_000_000 // pulses_frequency
         self.next_time = time.time_ns() + self.period
         self.encoders = encoders
 

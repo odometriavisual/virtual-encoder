@@ -138,6 +138,13 @@
 			await fetch('/next_estado', { method });
 		}
 
+		async function next_estado_args(event, estado, args) {
+			event.target.disabled = true;
+
+			const method = 'POST';
+			await fetch(`/next_estado/${estado}/${args}`, { method });
+		}
+
 		async function next_modo(event, modo) {
 			event.target.disabled = true;
 
@@ -146,7 +153,10 @@
 		}
 
 		btns.calibracao.addEventListener('click', next_estado);
-		btns.iniciar_aquisicao.addEventListener('click', next_estado);
+		btns.iniciar_aquisicao.addEventListener('click', event => {
+			const pps = parseInt(window.prompt('Frequência de pulsos por segundo:', '10'));
+			next_estado_args(event, 'Aquisicao', pps);
+		});
 		btns.parar_aquisicao.addEventListener('click', next_estado);
 
 		btns.iniciar_download.addEventListener('click', event => next_modo(event, 'Download'));

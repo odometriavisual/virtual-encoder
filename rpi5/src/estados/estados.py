@@ -19,7 +19,7 @@ class EstadoReady:
     def run(self):
         time.sleep(0.001)
 
-class EstadoAquisicao:
+class EstadoAquisicaoTempo:
     def __init__(self, ihm: IHM, encoders: tuple[PulseGenerator, ...]):
         ihm.estado = 'Aquisicao'
         ihm.update_display()

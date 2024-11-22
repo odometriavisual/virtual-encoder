@@ -12,7 +12,7 @@ class ModoAutonomo:
         self.encoders = encoders
         self.client = client
 
-        self.estado = EstadoAquisicao(self.ihm, self.encoders)
+        self.estado = EstadoAquisicaoTempo(self.ihm, self.encoders)
 
     def run(self):
         self.estado.run()

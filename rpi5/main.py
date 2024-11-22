@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 import time
 import threading
-from visual_odometer import VisualOdometer
 
 from src.network_manager import NetworkManager
 from src.webui.server import WebuiApp
@@ -35,7 +34,6 @@ def main():
     )
 
     buttons = (GpiodButton(24), GpiodButton(27), GpiodButton(18))
-    odometer = VisualOdometer((640, 480))
     client = PiZeroClient()
     ihm = IHM(client.get_img)
     net_manager = NetworkManager()

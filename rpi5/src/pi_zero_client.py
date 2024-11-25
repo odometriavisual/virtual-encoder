@@ -16,10 +16,11 @@ class PiZeroClient:
         self.streaming_enabled = True
 
         self.vid_lock = threading.Lock()
+        self.vid_event = threading.Event()
         self.vid = cv2.VideoCapture()
 
         self.frame_lock = threading.Lock()
-        self.frame = cv2.Mat(np.array(0x000000AA, dtype=np.float32))
+        self.frame = cv2.Mat(np.array([0x000000AA], dtype=np.float32))
 
         def update():
             while True:
@@ -33,8 +34,9 @@ class PiZeroClient:
                             if ret:
                                 with self.frame_lock:
                                     self.frame = frame
+                                self.vid_event.set()
                             else:
-                                self.frame = cv2.Mat(np.array(0x000000AA, dtype=np.float32))
+                                self.frame = cv2.Mat(np.array([0x000000AA], dtype=np.float32))
                                 self.vid.release()
                                 cv2.destroyAllWindows()
 
@@ -78,12 +80,6 @@ class PiZeroClient:
             return False
 
     def get_img(self) -> cv2.Mat:
-        with self.vid_lock:
-            if self.streaming_enabled and not self.vid.isOpened():
-                self.vid.open(f'{PIZERO_HOST}/stream.mjpg')
-                self.vid.set(cv2.CAP_PROP_BUFFERSIZE, 1)
-                time.sleep(1)
-
         with self.frame_lock:
             frame = self.frame.copy()
 
@@ -143,7 +139,7 @@ class PiZeroClient:
             cv2.destroyAllWindows()
 
         with self.frame_lock:
-            self.frame = cv2.Mat(np.array(0x000000AA, dtype=np.float32))
+            self.frame = cv2.Mat(np.array([0x000000AA], dtype=np.float32))
 
     def enable_streaming(self):
         with self.vid_lock:

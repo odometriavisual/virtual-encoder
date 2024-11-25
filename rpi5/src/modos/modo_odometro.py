@@ -15,7 +15,6 @@ def to_grayscale(img):
     return np.asarray(ImageOps.grayscale(Image.fromarray(img)))
 
 class EstadoAquisicaoOdometro:
-
     def __init__(self, client: PiZeroClient, ihm: IHM, encoders: tuple[PulseGenerator, ...], odometer: VisualOdometer):
         self.client = client
         self.ihm = ihm
@@ -26,8 +25,10 @@ class EstadoAquisicaoOdometro:
         self.ihm.update_display()
 
         img = to_grayscale(self.client.get_img())
-        self.odometer.feed_image(img)
-        self.odometer.feed_image(img)
+        self.odometer.feed_image(img, 2)
+        self.odometer.feed_image(img, 2)
+
+        self.new_image_event = threading.Event()
 
         self.pulses_lock = threading.Lock()
         self.pending_pulses = [0, 0]
@@ -36,16 +37,23 @@ class EstadoAquisicaoOdometro:
 
         def _preprocess_last_img():
             while self.is_running:
-                self.odometer.feed_image(to_grayscale(self.client.get_img()))
+                self.odometer.feed_image(to_grayscale(self.client.get_img()), 2)
+                self.new_image_event.set()
 
         self.preprocess_thread = threading.Thread(target=_preprocess_last_img, daemon=True).start()
 
         def _estimate_distance():
+            self.new_image_event.clear()
+
             while self.is_running:
+                self.new_image_event.wait()
+                self.new_image_event.clear()
+
                 new_pulses = self.odometer.get_displacement()
                 with self.pulses_lock:
                     self.pending_pulses[0] += new_pulses[0]
                     self.pending_pulses[1] += new_pulses[1]
+
         self.estimate_thread = threading.Thread(target=_estimate_distance, daemon=True).start()
 
     def __del__(self):

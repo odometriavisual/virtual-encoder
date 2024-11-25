@@ -14,6 +14,9 @@ class ModoTempo:
 
         self.estado = EstadoSet(self.ihm)
 
+    def stop(self):
+        pass
+
     def run(self):
         self.estado.run()
 

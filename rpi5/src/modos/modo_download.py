@@ -45,6 +45,9 @@ class ModoDownload:
             self.ihm.send_event(('next_modo', 'Tempo'))
             self.client.enable_streaming()
 
+    def stop(self):
+        pass
+
     def run(self):
         status = self.dowloader.get_status()
         match status:

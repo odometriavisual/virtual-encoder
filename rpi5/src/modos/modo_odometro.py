@@ -74,6 +74,9 @@ class ModoOdometro:
         self.estado = EstadoSet(self.ihm)
         self.odometer = VisualOdometer((480, 640))
 
+    def stop(self):
+        self.estado.is_running = False
+
     def run(self):
         self.estado.run()
 

@@ -83,12 +83,16 @@ def main():
         while ev := ihm.poll_event():
             match modo, ev:
                 case _, ('next_modo', 'Autonomo'):
+                    modo.stop()
                     modo = ModoAutonomo(client, ihm, encoders)
                 case _, ('next_modo', 'Odometro'):
+                    modo.stop()
                     modo = ModoOdometro(client, ihm, encoders)
                 case _, ('next_modo', 'Tempo'):
+                    modo.stop()
                     modo = ModoTempo(client, ihm, encoders)
                 case _, ('next_modo', 'Download'):
+                    modo.stop()
                     modo = ModoDownload(client, ihm, ssd_manager)
 
                 case _, ('next_modo', 'poweroff'):
@@ -97,8 +101,10 @@ def main():
                     client.reboot()
 
                 case ModoTempo(), 'next_modo':
+                    modo.stop()
                     modo = ModoAutonomo(client, ihm, encoders)
                 case ModoAutonomo(), 'next_modo':
+                    modo.stop()
                     modo = ModoTempo(client, ihm, encoders)
 
                 case _:

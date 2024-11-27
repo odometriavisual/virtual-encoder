@@ -48,15 +48,26 @@ class EstadoAquisicaoOdometro:
 
         def _estimate_distance():
             self.new_image_event.clear()
+            acc = [0., 0.]
 
             while self.is_running:
+                t0 = time.time()
                 self.new_image_event.wait()
                 self.new_image_event.clear()
 
-                new_pulses = self.odometer.get_displacement()
+                try:
+                    new_pulses = self.odometer.get_displacement()
+                except ValueError:
+                    new_pulses = (0, 0)
+
                 with self.pulses_lock:
                     self.pending_pulses[0] += new_pulses[0]
                     self.pending_pulses[1] += new_pulses[1]
+
+                acc[0] += new_pulses[0]
+                acc[1] += new_pulses[1]
+                self.ihm.estado = f' Deslocamento: {acc[0]:.2f}, {acc[1]:.2f}'
+                print(f'fps {1/(time.time()-t0):06.02f}, acumulado {acc[0]: 6.02f} {acc[1]: 6.02f}')
 
         self.estimate_thread = threading.Thread(target=_estimate_distance, daemon=True).start()
 
@@ -65,11 +76,11 @@ class EstadoAquisicaoOdometro:
 
     def run(self):
         with self.pulses_lock:
-            if self.pending_pulses[0] > 0:
+            if self.pending_pulses[0] > 1:
                 self.encoders[0].send_pulses(1)
                 self.pending_pulses[0] -= 1
 
-            if self.pending_pulses[1] > 0:
+            if self.pending_pulses[1] > 1:
                 self.encoders[1].send_pulses(1)
                 self.pending_pulses[1] -= 1
 

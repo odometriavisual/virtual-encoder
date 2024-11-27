@@ -15,7 +15,6 @@ class Logger:
         self.save_dir = f'/home/pi/picam_imgs/{self.boot_num}_{datenow}'
         self.modo = modo
 
-        self.enable_save_period = 15 * 1_000_000_000
         self.enable_save = False
 
     def _poll_modo(self):
@@ -49,10 +48,10 @@ class Logger:
 
                 current_displacement_index = self.modo.odometer.number_of_displacements
                 if current_displacement_index != last_displacement_index and current_displacement_index != 0:
-                    timenow = time.time_ns()
+                    time_now = time.time_ns()
                     with open(path, mode='a', newline='') as file:
                         writer = csv.writer(file)
-                        row = [timenow, self.modo.odometer[0], self.modo.odometer[1]]
+                        row = [time_now, self.modo.odometer[0], self.modo.odometer[1]]
                         writer.writerow(row)
                     last_displacement_index = current_displacement_index
                 elif current_displacement_index == 0:

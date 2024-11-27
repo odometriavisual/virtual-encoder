@@ -8,7 +8,9 @@ import numpy as np
 import requests
 from requests.exceptions import RequestException
 
-PIZERO_HOST = 'http://rpi0:7123'
+PIZERO_HOST = 'rpi0'
+WEBSERVER_PORT = 7123
+STREAM_PORT = 7100
 
 class PiZeroClient:
     def __init__(self):
@@ -41,7 +43,7 @@ class PiZeroClient:
                                 cv2.destroyAllWindows()
 
                         else:
-                            self.vid.open(f'{PIZERO_HOST}/stream.mjpg')
+                            self.vid.open(f'udp://{PIZERO_HOST}:{STREAM_PORT}')
                             self.vid.set(cv2.CAP_PROP_BUFFERSIZE, 1)
                             time.sleep(1)
                     else:
@@ -52,28 +54,28 @@ class PiZeroClient:
 
     def pizero_calibration(self):
         try:
-            requests.get(f'{PIZERO_HOST}/run_autofocus', timeout=300.0)
+            requests.get(f'http://{PIZERO_HOST}:{WEBSERVER_PORT}/run_autofocus', timeout=300.0)
             return True
         except RequestException:
             return False
 
     def set_focus(self, focus: float):
         try:
-            requests.get(f'{PIZERO_HOST}/focus/{focus}', timeout=1.0)
+            requests.get(f'http://{PIZERO_HOST}:{WEBSERVER_PORT}/focus/{focus}', timeout=1.0)
             return True
         except RequestException:
             return False
 
     def set_exposure(self, exposure: int):
         try:
-            requests.get(f'{PIZERO_HOST}/exposure/{exposure}', timeout=1.0)
+            requests.get(f'http://{PIZERO_HOST}:{WEBSERVER_PORT}/exposure/{exposure}', timeout=1.0)
             return True
         except RequestException:
             return False
 
     def get_orientation(self) -> [float, float, float, float, float, float]:
         try:
-            res = requests.get(f'{PIZERO_HOST}/imu', timeout=1.0)
+            res = requests.get(f'http://{PIZERO_HOST}:{WEBSERVER_PORT}/imu', timeout=1.0)
             if res.status_code == 200:
                 return res.text.strip().split(',')
         except (RequestException, ValueError):
@@ -91,7 +93,7 @@ class PiZeroClient:
                 temp = file.read()
                 temp = int(temp) / 1000
 
-            status = requests.get(f'{PIZERO_HOST}/status?rpi5status={local_status}', timeout=1.0).json()
+            status = requests.get(f'http://{PIZERO_HOST}:{WEBSERVER_PORT}/status?rpi5status={local_status}', timeout=1.0).json()
             status['rpi5'] = { 'temp': temp, 'ip': self.ip }
         except RequestException:
             status = {
@@ -105,14 +107,14 @@ class PiZeroClient:
 
     def get_file_count(self) -> int:
         try:
-            file_count = requests.get(f'{PIZERO_HOST}/file_count', timeout=15.0).text.strip()
+            file_count = requests.get(f'http://{PIZERO_HOST}:{WEBSERVER_PORT}/file_count', timeout=15.0).text.strip()
             return int(file_count)
         except (RequestException, ValueError):
             return 0
 
     def poweroff(self):
         try:
-            requests.get(f'{PIZERO_HOST}/poweroff', timeout=1.0)
+            requests.get(f'http://{PIZERO_HOST}:{WEBSERVER_PORT}/poweroff', timeout=1.0)
         except RequestException:
             pass
 
@@ -123,7 +125,7 @@ class PiZeroClient:
 
     def reboot(self):
         try:
-            requests.get(f'{PIZERO_HOST}/reboot', timeout=1.0)
+            requests.get(f'http://{PIZERO_HOST}:{WEBSERVER_PORT}/reboot', timeout=1.0)
         except RequestException:
             pass
 

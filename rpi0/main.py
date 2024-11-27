@@ -8,11 +8,30 @@ from src.localCalibration import load_or_recalibrate
 from src.server import Server
 from src.log import Logger
 
+from picamera2.encoders import MJPEGEncoder
+from picamera2.outputs import FileOutput
+import socket, threading
+
+def start_camera_stream(picam):
+    def _listen():
+        encoder = MJPEGEncoder(2_000_000)
+
+        with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as sock:
+            sock.connect(("rpi5", 7100))
+            stream = sock.makefile("wb")
+            picam.start_recording(encoder, FileOutput(stream))
+
+        while True:
+            time.sleep(36000)
+
+    threading.Thread(target=_listen, daemon=True).start()
+
 def main():
     picam = Picamera2()
     picam.configure(picam.create_preview_configuration({'format': 'RGB888', "size": (640//2, 480//2)}))
     picam.controls.FrameRate = 60  # Ajusta o FPS
-    picam.start()
+
+    start_camera_stream(picam)
 
     try:
         imu = adafruit_bno055.BNO055_I2C(board.I2C(), 0x29)

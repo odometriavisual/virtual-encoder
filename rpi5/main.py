@@ -9,6 +9,7 @@ from src.ihm.gpiod_button import GpiodButton
 from src.pi_zero_client import PiZeroClient
 from src.pulse_generator import PulseGenerator
 from src.mount_device_manager import MountDeviceManager
+from src.log import Logger
 
 from src.modos import *
 
@@ -64,6 +65,9 @@ def main():
     time.sleep(1)
 
     modo = ModoTempo(client, ihm, encoders)
+
+    logger = Logger(modo)
+    logger.start()
 
     def _get_ip():
         while True:

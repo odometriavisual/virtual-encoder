@@ -25,8 +25,8 @@ class EstadoAquisicaoOdometro:
         self.ihm.update_display()
 
         img = to_grayscale(self.client.get_img())
-        self.odometer.feed_image(img, 2)
-        self.odometer.feed_image(img, 2)
+        self.odometer.feed_image(img)
+        self.odometer.feed_image(img)
 
         self.new_image_event = threading.Event()
 
@@ -40,7 +40,7 @@ class EstadoAquisicaoOdometro:
                 self.client.vid_event.wait()
                 self.client.vid_event.clear()
 
-                self.odometer.feed_image(to_grayscale(self.client.get_img()), 2)
+                self.odometer.feed_image(to_grayscale(self.client.get_img()))
 
                 self.new_image_event.set()
 

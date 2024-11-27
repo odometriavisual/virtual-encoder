@@ -17,7 +17,7 @@ class WebuiApp:
             self.html = file.read()
 
     def generate_frames(self):
-        period = 1_000_000_000
+        period = 1_000_000_000 / 60
         time_now = time.time_ns()
         next_time = time_now
         while True:

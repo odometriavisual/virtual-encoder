@@ -10,7 +10,7 @@ from src.log import Logger
 
 def main():
     picam = Picamera2()
-    picam.configure(picam.create_preview_configuration({'format': 'RGB888', "size": (640, 480)}))
+    picam.configure(picam.create_preview_configuration({'format': 'RGB888', "size": (640//2, 480//2)}))
     picam.controls.FrameRate = 60  # Ajusta o FPS
     picam.start()
 

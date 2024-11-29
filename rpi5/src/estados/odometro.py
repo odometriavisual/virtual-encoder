@@ -15,16 +15,16 @@ def to_grayscale(img):
     return np.asarray(ImageOps.grayscale(Image.fromarray(img)))
 
 class EstadoAquisicaoOdometro(Estado):
-    def __init__(self, client: PiZeroClient, ihm: IHM, encoders: tuple[PulseGenerator, ...], odometer: VisualOdometer, logger: Logger):
+    def __init__(self, client: PiZeroClient, ihm: IHM, status: dict, encoders: tuple[PulseGenerator, ...], odometer: VisualOdometer, logger: Logger):
         self.client = client
         self.ihm = ihm
+        self.status = status
         self.encoders = encoders
         self.odometer = odometer
         self.logger = logger
         self.logger.start()
 
-        self.ihm.estado = 'Aquisicao'
-        self.ihm.update_display()
+        self.status['estado'] = 'Aquisicao'
 
         img = to_grayscale(self.client.get_img())
         self.odometer.feed_image(img)
@@ -61,7 +61,7 @@ class EstadoAquisicaoOdometro(Estado):
                     new_pulses = self.odometer.get_displacement()
                 except ValueError:
                     new_pulses = (0, 0)
-                self.ihm.estado = f' Deslocamento: {acc[0]:.2f}, {acc[1]:.2f}'
+                self.status['estado'] = f' Deslocamento: {acc[0]:.2f}, {acc[1]:.2f}'
                 print(f'fps {1/(time.time()-t0):06.02f}, acumulado {acc[0]: 6.02f} {acc[1]: 6.02f}')
 
                 with self.pulses_lock:

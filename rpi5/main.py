@@ -13,6 +13,24 @@ from src.logger import Logger
 
 from src.modos import *
 
+status = {
+    'rpi5': {
+        'temp': 0.,
+        'ip': '0.0.0.0',
+    },
+    'rpi0': {
+        'temp': 0.,
+    },
+    'camera': False,
+    'imu': False,
+    'pos': {
+        'x': 0,
+        'y': 0
+    },
+    'modo': 'Iniciando',
+    'estado': '',
+}
+
 def main():
     """
     OLED: 2 (SDA)
@@ -35,9 +53,9 @@ def main():
     )
 
     buttons = (GpiodButton(24), GpiodButton(27), GpiodButton(18))
-    client = PiZeroClient()
-    ihm = IHM(client.get_img)
-    ihm.modo = 'Iniciando'
+    client = PiZeroClient(status)
+    ihm = IHM(client.get_img, status)
+
     net_manager = NetworkManager()
     ssd_manager = MountDeviceManager(device="/dev/sda1", mount_point="/media/usb-ssd")
 
@@ -59,44 +77,55 @@ def main():
             time.sleep(0.1)
     threading.Thread(target=check_all_buttons, daemon=True).start()
 
-    webui = WebuiApp(ihm)
+    webui = WebuiApp(ihm, status)
     threading.Thread(target=webui.run, daemon=True).start()
 
     time.sleep(1)
 
-    modo = ModoTempo(client, ihm, encoders)
+    modo = ModoTempo(client, ihm, status, encoders)
 
     logger = Logger(modo)
 
     def _get_ip():
         while True:
-            ihm.ip = net_manager.get_ip('eth1')
-            client.ip = ihm.ip
+            status['rpi5']['ip'] = net_manager.get_ip('eth1')
             time.sleep(30)
     threading.Thread(target=_get_ip, daemon=True).start()
 
-    def _get_status():
+    def _get_temp():
+        while True:
+            with open('/sys/class/thermal/thermal_zone0/temp', 'r') as file:
+                temp = file.read()
+            status['rpi5']['temp'] = int(temp) / 1000
+            time.sleep(1)
+    threading.Thread(target=_get_temp, daemon=True).start()
+
+    def _get_rpi0_status():
         while True:
             time.sleep(1.0)
-            ihm.status = client.get_status(ihm.estado)
+            rpi0_status = client.get_status()
+            if rpi0_status:
+                status['rpi0'] = rpi0_status['rpi0']
+                status['imu'] = rpi0_status['imu']
+                status['camera'] = rpi0_status['camera']
             ihm.update_display()
-    threading.Thread(target=_get_status, daemon=True).start()
+    threading.Thread(target=_get_rpi0_status, daemon=True).start()
 
     while True:
         while ev := ihm.poll_event():
             match modo, ev:
                 case _, ('next_modo', 'Autonomo'):
                     modo.stop()
-                    modo = ModoAutonomo(client, ihm, encoders)
+                    modo = ModoAutonomo(client, status, encoders)
                 case _, ('next_modo', 'Odometro'):
                     modo.stop()
-                    modo = ModoOdometro(client, ihm, encoders, logger)
+                    modo = ModoOdometro(client, ihm, status, encoders, logger)
                 case _, ('next_modo', 'Tempo'):
                     modo.stop()
-                    modo = ModoTempo(client, ihm, encoders)
+                    modo = ModoTempo(client, ihm, status, encoders)
                 case _, ('next_modo', 'Download'):
                     modo.stop()
-                    modo = ModoDownload(client, ihm, ssd_manager)
+                    modo = ModoDownload(client, ihm, status, ssd_manager)
 
                 case _, ('next_modo', 'poweroff'):
                     client.poweroff()
@@ -105,10 +134,10 @@ def main():
 
                 case ModoTempo(), 'next_modo':
                     modo.stop()
-                    modo = ModoAutonomo(client, ihm, encoders)
+                    modo = ModoAutonomo(client, status, encoders)
                 case ModoAutonomo(), 'next_modo':
                     modo.stop()
-                    modo = ModoTempo(client, ihm, encoders)
+                    modo = ModoTempo(client, ihm, status, encoders)
 
                 case _:
                     modo.handle_event(ev)

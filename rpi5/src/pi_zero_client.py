@@ -13,8 +13,9 @@ WEBSERVER_PORT = 7123
 STREAM_PORT = 7100
 
 class PiZeroClient:
-    def __init__(self):
-        self.ip = None
+    def __init__(self, status: dict):
+        self.status = status
+
         self.streaming_enabled = True
 
         self.vid_lock = threading.Lock()
@@ -87,23 +88,11 @@ class PiZeroClient:
 
         return frame
 
-    def get_status(self, local_status):
+    def get_status(self):
         try:
-            with open('/sys/class/thermal/thermal_zone0/temp', 'r') as file:
-                temp = file.read()
-                temp = int(temp) / 1000
-
-            status = requests.get(f'http://{PIZERO_HOST}:{WEBSERVER_PORT}/status?rpi5status={local_status}', timeout=1.0).json()
-            status['rpi5'] = { 'temp': temp, 'ip': self.ip }
+            return requests.get(f'http://{PIZERO_HOST}:{WEBSERVER_PORT}/status?rpi5status={self.status["estado"]}', timeout=1.0).json()
         except RequestException:
-            status = {
-                'rpi5': {'temp': temp, 'ip': self.ip },
-                'rpi0': False,
-                'imu': False,
-                'camera': False,
-            }
-
-        return status
+            return False
 
     def get_file_count(self) -> int:
         try:

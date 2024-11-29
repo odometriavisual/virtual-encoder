@@ -14,29 +14,27 @@ class Estado:
         pass
 
 class EstadoSet(Estado):
-    def __init__(self, ihm: IHM):
-        ihm.estado = 'Set'
-        ihm.update_display()
+    def __init__(self, status: dict):
+        status['estado'] = 'Set'
 
     def run(self):
         time.sleep(0.001)
 
 class EstadoReady(Estado):
-    def __init__(self, ihm: IHM):
-        ihm.estado = 'Ready'
-        ihm.update_display()
+    def __init__(self, status: dict):
+        status['estado'] = 'Ready'
 
     def run(self):
         time.sleep(0.001)
 
 class EstadoAquisicaoTempo(Estado):
-    def __init__(self, ihm: IHM, encoders: tuple[PulseGenerator, ...], pulses_frequency: int):
-        ihm.estado = 'Aquisicao'
-        ihm.update_display()
+    def __init__(self, status: dict, encoders: tuple[PulseGenerator, ...], pulses_frequency: int):
+        self.encoders = encoders
+
+        status['estado'] = 'Aquisicao'
 
         self.period = 1_000_000_000 // pulses_frequency
         self.next_time = time.time_ns() + self.period
-        self.encoders = encoders
 
     def run(self):
         current_time = time.time_ns()
@@ -49,11 +47,10 @@ class EstadoAquisicaoTempo(Estado):
         time.sleep(0.001)
 
 class EstadoErro(Estado):
-    def __init__(self, ihm: IHM, message):
+    def __init__(self, ihm: IHM, status: dict, message):
         self.ihm = ihm
 
-        self.ihm.estado = message
-        self.ihm.update_display()
+        status['estado'] = message
 
         self.time_now = time.time_ns()
         self.time_exit = self.time_now + int(5e9)

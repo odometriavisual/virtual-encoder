@@ -2,23 +2,14 @@ from queue import Queue
 from .display import Screen
 
 class IHM:
-    def __init__(self, get_img):
+    def __init__(self, get_img, status: dict):
         self._event_queue = Queue(4)
         self._threads = []
 
         self.oled_screen = Screen()
         self.get_img = get_img
 
-        self.modo: str = ''
-        self.estado: str = ''
-        self.ip: str = ''
-
-        self.status: dict = {
-            'rpi5': False,
-            'rpi0': False,
-            'imu': False,
-            'camera': False,
-        }
+        self.status = status
 
     def send_event(self, ev):
         self._event_queue.put(ev)
@@ -28,10 +19,10 @@ class IHM:
         rpi_zero = 'Ok' if self.status['rpi0'] else 'Err.'
         imu = 'Ok' if self.status['imu'] else 'Err.'
 
-        self.oled_screen.drawLine(0, f'MODO: {self.modo}', 'center')
-        self.oled_screen.drawLine(1, f'ESTADO: {self.estado}', 'center')
+        self.oled_screen.drawLine(0, f'MODO: {self.status["modo"]}', 'center')
+        self.oled_screen.drawLine(1, f'ESTADO: {self.status["estado"]}', 'center')
 
-        self.oled_screen.drawLine(2, f'IP: {self.ip}')
+        self.oled_screen.drawLine(2, f'IP: {self.status["rpi5"]["ip"]}')
         self.oled_screen.drawLine(3, f'CAM : {camera}')
         self.oled_screen.drawLine(4, f'piZ: {rpi_zero} | IMU: {imu}')
 

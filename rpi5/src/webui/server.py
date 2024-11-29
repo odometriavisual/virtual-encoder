@@ -3,15 +3,18 @@ import time
 from flask import Flask, Response, request
 from werkzeug.serving import BaseWSGIServer
 
+from ..ihm.ihm import IHM
+
 class WebuiApp:
-    def __init__(self, ihm, host='0.0.0.0', port=5000):
+    def __init__(self, ihm: IHM, status: dict, host='0.0.0.0', port=5000):
+        self.ihm = ihm
+        self.status = status
+
         self.app = Flask(__name__)
         self.setup_routes()
 
         self.host = host
         self.port = port
-
-        self.ihm = ihm
 
         with open('src/webui/public/index.html', 'r') as file:
             self.html = file.read()
@@ -44,10 +47,7 @@ class WebuiApp:
 
         @self.app.route('/status', methods=['GET'])
         def status():
-            res = self.ihm.status
-            res['estado'] = self.ihm.estado
-            res['modo'] = self.ihm.modo
-            return res
+            return self.status
 
         @self.app.route('/set_focus', methods=['POST'])
         def set_focus():

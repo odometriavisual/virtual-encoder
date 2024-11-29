@@ -5,14 +5,14 @@ from ..pulse_generator import PulseGenerator
 from ..estados import *
 
 class ModoAutonomo:
-    def __init__(self, client: PiZeroClient, ihm: IHM, encoders: tuple[PulseGenerator, ...]):
-        self.ihm = ihm
-        self.ihm.modo = 'Autonomo'
-
-        self.encoders = encoders
+    def __init__(self, client: PiZeroClient, status: dict, encoders: tuple[PulseGenerator, ...]):
         self.client = client
+        self.status = status
+        self.encoders = encoders
 
-        self.estado = EstadoAquisicaoTempo(self.ihm, self.encoders, 10)
+        self.status['modo'] = 'Autonomo'
+
+        self.estado = EstadoAquisicaoTempo(self.status, self.encoders, 10)
 
     def stop(self):
         pass

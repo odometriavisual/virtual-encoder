@@ -6,23 +6,23 @@ from ..mount_device_manager import MountDeviceManager
 from ..pi_zero_client import PiZeroClient
 
 class ModoDownload:
-    def __init__(self, client: PiZeroClient, ihm: IHM, mount_manager: MountDeviceManager):
+    def __init__(self, client: PiZeroClient, ihm: IHM, status: dict, mount_manager: MountDeviceManager):
         self.client = client
-
         self.ihm = ihm
-
+        self.status = status
         self.ssd_manager = mount_manager
+
         self.dowloader = Downloader()
 
-        self.ihm.modo = 'Download'
-        self.ihm.estado = 'Inicializando...'
+        self.status['modo'] = 'Download'
+        self.status['estado'] = 'Inicializando...'
 
         self.transfered_files = 0
 
         self.file_count = client.get_file_count()
 
         if self.file_count == 0:
-            self.ihm.estado = 'Nenhum ensaio salvo'
+            self.status['estado'] = 'Nenhum ensaio salvo'
             time.sleep(5)
             self.ihm.send_event(('next_modo', 'Tempo'))
             return
@@ -40,7 +40,7 @@ class ModoDownload:
         is_downloading = self.dowloader.start()
 
         if not is_downloading:
-            self.ihm.estado = 'Erro no download'
+            self.status['estado'] = 'Erro no download'
             time.sleep(5)
             self.ihm.send_event(('next_modo', 'Tempo'))
             self.client.enable_streaming()
@@ -49,12 +49,11 @@ class ModoDownload:
         pass
 
     def run(self):
-        status = self.dowloader.get_status()
-        match status:
+        match status := self.dowloader.get_status():
             case True | False:
                 self.dowloader.stop()
                 self.ssd_manager.unmount()
-                self.ihm.estado = 'Concluida' if status else 'Erro'
+                self.status['estado'] = 'Concluida' if status else 'Erro'
                 self.ihm.send_event(('next_modo', 'Tempo'))
                 self.client.enable_streaming()
                 time.sleep(5)
@@ -63,7 +62,7 @@ class ModoDownload:
                 self.transfered_files += 1
                 percent = self.transfered_files / self.file_count
                 percent = 99.99 if percent >= 100. else 100. * percent
-                self.ihm.estado = f'{percent:.2f} %'
+                self.status['estado'] = f'{percent:.2f} %'
                 time.sleep(0.1)
 
     def handle_event(self, ev):

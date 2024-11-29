@@ -8,6 +8,7 @@ import numpy as np
 from ..ihm.ihm import IHM
 from ..pi_zero_client import PiZeroClient
 from ..pulse_generator import PulseGenerator
+from ..logger import Logger
 
 from ..estados import *
 
@@ -15,11 +16,13 @@ def to_grayscale(img):
     return np.asarray(ImageOps.grayscale(Image.fromarray(img)))
 
 class EstadoAquisicaoOdometro:
-    def __init__(self, client: PiZeroClient, ihm: IHM, encoders: tuple[PulseGenerator, ...], odometer: VisualOdometer):
+    def __init__(self, client: PiZeroClient, ihm: IHM, encoders: tuple[PulseGenerator, ...], odometer: VisualOdometer, logger: Logger):
         self.client = client
         self.ihm = ihm
         self.encoders = encoders
         self.odometer = odometer
+        self.logger = logger
+        self.logger.start()
 
         self.ihm.estado = 'Aquisicao'
         self.ihm.update_display()
@@ -51,14 +54,16 @@ class EstadoAquisicaoOdometro:
             acc = [0., 0.]
 
             while self.is_running:
-                t0 = time.time()
                 self.new_image_event.wait()
                 self.new_image_event.clear()
 
+                t0 = time.time()
                 try:
                     new_pulses = self.odometer.get_displacement()
                 except ValueError:
                     new_pulses = (0, 0)
+                self.ihm.estado = f' Deslocamento: {acc[0]:.2f}, {acc[1]:.2f}'
+                print(f'fps {1/(time.time()-t0):06.02f}, acumulado {acc[0]: 6.02f} {acc[1]: 6.02f}')
 
                 with self.pulses_lock:
                     self.pending_pulses[0] += new_pulses[0]
@@ -66,13 +71,13 @@ class EstadoAquisicaoOdometro:
 
                 acc[0] += new_pulses[0]
                 acc[1] += new_pulses[1]
-                self.ihm.estado = f' Deslocamento: {acc[0]:.2f}, {acc[1]:.2f}'
-                print(f'fps {1/(time.time()-t0):06.02f}, acumulado {acc[0]: 6.02f} {acc[1]: 6.02f}')
+                self.logger.log(new_pulses)
 
         self.estimate_thread = threading.Thread(target=_estimate_distance, daemon=True).start()
 
     def __del__(self):
         self.is_running = False
+        self.logger.reset()
 
     def run(self):
         with self.pulses_lock:
@@ -87,7 +92,7 @@ class EstadoAquisicaoOdometro:
         time.sleep(0.001)
 
 class ModoOdometro:
-    def __init__(self, client: PiZeroClient, ihm: IHM, encoders: tuple[PulseGenerator, ...]):
+    def __init__(self, client: PiZeroClient, ihm: IHM, encoders: tuple[PulseGenerator, ...], logger: Logger):
         self.ihm = ihm
         self.ihm.modo = 'Odometro'
 
@@ -96,6 +101,7 @@ class ModoOdometro:
 
         self.estado = EstadoSet(self.ihm)
         self.odometer = VisualOdometer((480, 640))
+        self.logger = logger
 
     def stop(self):
         self.estado.is_running = False
@@ -112,13 +118,7 @@ class ModoOdometro:
                 self.estado = EstadoSet(self.ihm)
 
             case EstadoSet(), 'next_estado':
-                self.estado = EstadoCalibracao(self.ihm, self.client)
-
-            case EstadoCalibracao(), 'fim_calibracao':
-                self.estado = EstadoReady(self.ihm)
-
-            case EstadoReady(), ('next_estado', _, _):
-                self.estado = EstadoAquisicaoOdometro(self.client, self.ihm, self.encoders, self.odometer)
+                self.estado = EstadoAquisicaoOdometro(self.client, self.ihm, self.encoders, self.odometer, self.logger)
 
             case EstadoAquisicaoOdometro(), 'next_estado':
                 self.estado.is_running = False

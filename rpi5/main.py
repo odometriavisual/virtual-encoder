@@ -67,7 +67,6 @@ def main():
     modo = ModoTempo(client, ihm, encoders)
 
     logger = Logger(modo)
-    logger.start()
 
     def _get_ip():
         while True:
@@ -91,7 +90,7 @@ def main():
                     modo = ModoAutonomo(client, ihm, encoders)
                 case _, ('next_modo', 'Odometro'):
                     modo.stop()
-                    modo = ModoOdometro(client, ihm, encoders)
+                    modo = ModoOdometro(client, ihm, encoders, logger)
                 case _, ('next_modo', 'Tempo'):
                     modo.stop()
                     modo = ModoTempo(client, ihm, encoders)

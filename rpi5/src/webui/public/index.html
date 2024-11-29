@@ -157,8 +157,14 @@
 
 		btns.calibracao.addEventListener('click', next_estado);
 		btns.iniciar_aquisicao.addEventListener('click', event => {
-			const pps = parseInt(window.prompt('Frequência de pulsos por segundo:', '10'));
-			next_estado_args(event, 'Aquisicao', pps);
+			// if on Modo Tempo
+			if (btns.modo_tempo.disabled === true) {
+				const pps = parseInt(window.prompt('Frequência de pulsos por segundo:', '10'));
+				next_estado_args(event, 'Aquisicao', pps);
+			}
+			else {
+				next_estado(event);
+			}
 		});
 		btns.parar_aquisicao.addEventListener('click', next_estado);
 
@@ -199,19 +205,21 @@
 			status_watcher.rpi0.innerText = `RPi Zero
 			${status.rpi0 ? `Temp: ${status.rpi0.temp?.toFixed(2)} ℃` : ''}`
 
-			if (status.modo === 'Tempo' || status.modo === 'Odometro') {
-				btns.iniciar_download.disabled = false;
-				btns.modo_tempo.disabled = status.modo === 'Tempo';
-				btns.modo_odometro.disabled = status.modo === 'Odometro';
-				btns.modo_autonomo.disabled = false;
+			const global_disable = status.estado === 'Calibrando'
 
-				btns.calibracao.disabled = status.estado !== 'Set';
-				btns.iniciar_aquisicao.disabled = status.estado !== 'Ready';
-				btns.parar_aquisicao.disabled = status.estado !== 'Aquisicao';
+			if (status.modo === 'Tempo' || status.modo === 'Odometro') {
+				btns.iniciar_download.disabled = global_disable;
+				btns.modo_tempo.disabled = global_disable || status.modo === 'Tempo';
+				btns.modo_odometro.disabled = global_disable || status.modo === 'Odometro';
+				btns.modo_autonomo.disabled = global_disable;
+
+				btns.calibracao.disabled = global_disable || status.estado !== 'Set';
+				btns.iniciar_aquisicao.disabled = global_disable || status.estado !== 'Ready';
+				btns.parar_aquisicao.disabled = global_disable || !status.estado.startsWith('Aquisicao');
 			}
 			else if (status.modo === 'Autonomo') {
-				btns.iniciar_download.disabled = false;
-				btns.modo_tempo.disabled = false;
+				btns.iniciar_download.disabled = global_disable;
+				btns.modo_tempo.disabled = global_disable;
 				btns.modo_autonomo.disabled = true;
 
 				btns.calibracao.disabled = true;
@@ -228,8 +236,8 @@
 				btns.parar_aquisicao.disabled = true;
 			}
 
-			btns.reiniciar.disabled = status.rpi5 === false;
-			btns.desligar.disabled = status.rpi5 === false;
+			btns.reiniciar.disabled = global_disable || status.rpi5 === false;
+			btns.desligar.disabled = global_disable || status.rpi5 === false;
 		}
 
 		async function fetch_status() {
@@ -252,6 +260,7 @@
 					rpi0: false, // { temp: 82.3, },
 					camera: false,
 					imu: false,
+					pos: { x: 0., y: 0. },
 					modo: 'Desligado',
 					estado: '',
 				});

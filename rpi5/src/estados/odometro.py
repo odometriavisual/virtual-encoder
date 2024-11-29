@@ -61,8 +61,13 @@ class EstadoAquisicaoOdometro(Estado):
                     new_pulses = self.odometer.get_displacement()
                 except ValueError:
                     new_pulses = (0, 0)
-                self.status['estado'] = f' Deslocamento: {acc[0]:.2f}, {acc[1]:.2f}'
-                print(f'fps {1/(time.time()-t0):06.02f}, acumulado {acc[0]: 6.02f} {acc[1]: 6.02f}')
+
+                if self.is_running:
+                    # Checking again to avoid setting status after is_running was set to False
+                    self.status['estado'] = f'Aquisicao Deslocamento: {acc[0]:.2f}, {acc[1]:.2f}'
+                    self.status['pos']['x'] = acc[0]
+                    self.status['pos']['y'] = acc[1]
+                    print(f'fps {1/(time.time()-t0):06.02f}, acumulado {acc[0]: 6.02f} {acc[1]: 6.02f}')
 
                 with self.pulses_lock:
                     self.pending_pulses[0] += new_pulses[0]

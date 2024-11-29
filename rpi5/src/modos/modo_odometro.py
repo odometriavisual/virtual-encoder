@@ -45,7 +45,7 @@ class ModoOdometro:
             case EstadoCalibracao(), 'fim_calibracao':
                 self.estado = EstadoReady(self.status)
 
-            case EstadoReady(), ('next_estado', _, _):
+            case EstadoReady(), 'next_estado':
                 self.estado = EstadoAquisicaoOdometro(self.client, self.ihm, self.status, self.encoders, self.odometer, self.logger)
 
             case EstadoAquisicaoOdometro(), 'next_estado':

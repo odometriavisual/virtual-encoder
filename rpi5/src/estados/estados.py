@@ -1,9 +1,19 @@
 import time
 
+from abc import abstractmethod
+
 from ..pulse_generator import PulseGenerator
 from ..ihm.ihm import IHM
 
-class EstadoSet:
+class Estado:
+    def stop(self):
+        pass
+
+    @abstractmethod
+    def run(self):
+        pass
+
+class EstadoSet(Estado):
     def __init__(self, ihm: IHM):
         ihm.estado = 'Set'
         ihm.update_display()
@@ -11,7 +21,7 @@ class EstadoSet:
     def run(self):
         time.sleep(0.001)
 
-class EstadoReady:
+class EstadoReady(Estado):
     def __init__(self, ihm: IHM):
         ihm.estado = 'Ready'
         ihm.update_display()
@@ -19,7 +29,7 @@ class EstadoReady:
     def run(self):
         time.sleep(0.001)
 
-class EstadoAquisicaoTempo:
+class EstadoAquisicaoTempo(Estado):
     def __init__(self, ihm: IHM, encoders: tuple[PulseGenerator, ...], pulses_frequency: int):
         ihm.estado = 'Aquisicao'
         ihm.update_display()
@@ -38,7 +48,7 @@ class EstadoAquisicaoTempo:
 
         time.sleep(0.001)
 
-class EstadoErro:
+class EstadoErro(Estado):
     def __init__(self, ihm: IHM, message):
         self.ihm = ihm
 

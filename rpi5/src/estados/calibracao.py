@@ -1,7 +1,7 @@
-import time
 import cv2
 import numpy
 
+from .estados import Estado
 from ..pi_zero_client import PiZeroClient
 
 #O frame do cv2 é do tipo numpy.ndarray, por isso não é necessário converter
@@ -24,7 +24,7 @@ def calculate_teng_score(frame: numpy.ndarray) -> float:
 def calculate_max_laplacian(frame: numpy.ndarray) -> float:
     return numpy.max(cv2.convertScaleAbs(cv2.Laplacian(frame, 3)))
 
-class EstadoCalibracao:
+class EstadoCalibracao(Estado):
     def __init__(self, ihm, client: PiZeroClient, calibration_start:int = 0, calibration_end:int = 15, calibration_step:int = 1):
         #Nota, a PyCamera aceita valores floats como foco, porém é necessário reformular o código do servidor para aceitar esses valores.
         self.ihm = ihm

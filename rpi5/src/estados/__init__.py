@@ -1,11 +1,12 @@
-from .estados import EstadoSet, EstadoAquisicaoTempo, EstadoReady, EstadoErro
+from .estados import Estado, EstadoSet, EstadoAquisicaoTempo, EstadoReady, EstadoErro
 from .calibracao import EstadoCalibracao
-from .ativado import EstadoAtivado
+from .odometro import EstadoAquisicaoOdometro
 
 __all__ = [
-    "EstadoAtivado",
+    "Estado",
     "EstadoCalibracao",
     "EstadoAquisicaoTempo",
+    "EstadoAquisicaoOdometro",
     "EstadoErro",
     "EstadoReady",
     "EstadoSet",

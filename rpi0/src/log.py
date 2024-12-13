@@ -54,7 +54,7 @@ class Logger:
                 if not isfile(path):
                     with open(path, mode='w', newline='') as file:
                         writer = csv.writer(file)
-                        writer.writerow(["timestamp", "boot_time", "qx", "qy", "qz", "qw"])
+                        writer.writerow(["timestamp", "qx", "qy", "qz", "qw"])
 
                 measure = self.client.get_orientation()
                 if measure[0] > 0:

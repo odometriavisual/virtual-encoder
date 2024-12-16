@@ -38,13 +38,14 @@ def main():
     except :
         imu = None
 
-    client = LocalPiZeroClient(picam, imu)
-    time.sleep(1)
+    logger = Logger()
 
-    logger = Logger(client)
-    logger.start()
+    client = LocalPiZeroClient(picam, imu, logger)
+    time.sleep(1)
+    logger.client = client
 
     load_or_recalibrate(client)
+    logger.start()
 
     server = Server(client)
     server.run()

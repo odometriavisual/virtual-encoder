@@ -5,8 +5,10 @@ import subprocess
 from picamera2 import Picamera2
 from libcamera import controls
 
+from ..src.log import Logger
+
 class LocalPiZeroClient:
-    def __init__(self, picam, imu):
+    def __init__(self, picam, imu, logger: Logger):
         # Inicializa a câmera
         self.picam2 = picam
 
@@ -27,6 +29,8 @@ class LocalPiZeroClient:
 
         self.imu_enabled = not imu is None
         self.imu = imu
+
+        self.logger = logger
 
         def update():
             while True:
@@ -93,6 +97,12 @@ class LocalPiZeroClient:
             total += len(files)
 
         return total
+
+    def start_acquisition(self, timestamp):
+        self.logger.start_acquisition(timestamp)
+
+    def stop_acquititions(self):
+        self.logger.stop_acquisition()
 
     def poweroff(self):
         subprocess.run(['sudo', 'poweroff'])

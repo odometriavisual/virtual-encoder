@@ -14,6 +14,14 @@ Dados imu no formato:
 ### `GET file_count`
 Quantidade arquivos na pasta picam_imgs. Inteiro.
 
+### `GET start_acquisition/TIMESTAMP_NS`
+Inicia uma aquisição na pasta do timestamp correspondente.
+Timestamp em nanosegundos.
+Se existir uma aquisição corrente, para ela antes.
+
+### `GET stop_acquitition`
+Para aquisição corrente
+
 ### `GET poweroff`
 Desliga pi_zero. Não retorna.
 

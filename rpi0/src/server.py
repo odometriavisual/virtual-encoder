@@ -58,6 +58,10 @@ class Server:
                 self._send_page(self._get_timestamp_and_imu_data().encode('utf-8'))
             elif self.path == '/file_count':
                 self._send_page(f'{self.client.get_file_count()}'.encode('utf-8'))
+            elif self.path.startswith('/start_acquisition'):
+                self.client.start_acquisition(int(self._extract_last_path()))
+            elif self.path == '/stop_acquisition':
+                self.client.stop_acquititions()
             elif self.path == '/poweroff':
                 self.client.poweroff()
             elif self.path == '/reboot':

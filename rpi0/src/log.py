@@ -6,14 +6,14 @@ from cv2 import imwrite
 import threading, csv, time
 
 class Logger:
-    def __init__(self, client):
+    def __init__(self):
         with open('/home/pi/boot-count.txt') as file:
             self.boot_num = file.read().strip()
 
         time_now = time.time_ns()
         datenow = datetime.fromtimestamp(time_now // 1_000_000_000).strftime('%Y%m%dT%H%M%S')
         self.save_dir = f'/home/pi/picam_imgs/{self.boot_num}_{datenow}'
-        self.client = client
+        self.client = None
 
         self.enable_save_period = 15 * 1_000_000_000
         self.enable_save = False

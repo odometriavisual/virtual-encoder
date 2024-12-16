@@ -23,16 +23,10 @@ class Logger:
         while True:
             time.sleep(0.1)
             time_now = time.time_ns()
-            if time_now > self.client.last_status_time + self.enable_save_period or self.client.rpi5status == 'Aquisicao':
-                if not self.enable_save:
-                    datenow = datetime.fromtimestamp(time_now // 1_000_000_000).strftime('%Y%m%dT%H%M%S')
-                    self.save_dir = f'/home/pi/picam_imgs/{self.boot_num}_{datenow}'
-                    if not isdir(self.save_dir):
-                        makedirs(self.save_dir)
-                        self._save_calibration_data()
-
-                    self.enable_save = True
+            if time_now > self.client.last_status_time + self.enable_save_period:
+                self.start_acquisition(time_now)
             elif self.enable_save:
+                ### O que acontece quando da timeout durante aquisicao e volta?
                 self.enable_save = False
 
     def _save_imgs(self):
@@ -69,6 +63,18 @@ class Logger:
             writer = csv.writer(file)
             writer.writerow(["timestamp", "exposure", "focus"])
             writer.writerow([time_now, self.client.exposure, self.client.focus])
+
+    def start_acquisition(self, timestamp_ns):
+        datenow = datetime.fromtimestamp(timestamp_ns // 1_000_000_000).strftime('%Y%m%dT%H%M%S')
+        self.save_dir = f'/home/pi/picam_imgs/{self.boot_num}_{datenow}'
+        if not isdir(self.save_dir):
+            makedirs(self.save_dir)
+            self._save_calibration_data()
+
+        self.enable_save = True
+
+    def stop_acquisition(self):
+        self.enable_save = False
 
     def start(self):
         threading.Thread(target=self._poll_rpi5_status, daemon=True).start()

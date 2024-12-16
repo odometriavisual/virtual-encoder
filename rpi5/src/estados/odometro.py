@@ -22,7 +22,10 @@ class EstadoAquisicaoOdometro(Estado):
         self.encoders = encoders
         self.odometer = odometer
         self.logger = logger
-        self.logger.start()
+
+        timestamp_ns = time.time_ns()
+        self.client.start_acquisition(timestamp_ns)
+        self.logger.start(timestamp_ns)
 
         self.status['estado'] = 'Aquisicao'
 
@@ -82,6 +85,7 @@ class EstadoAquisicaoOdometro(Estado):
     def stop(self):
         self.is_running = False
         self.logger.reset()
+        self.client.stop_acquisition()
 
     def run(self):
         with self.pulses_lock:

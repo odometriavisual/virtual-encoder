@@ -16,7 +16,7 @@ class ModoTempo:
         self.estado = EstadoSet(self.status)
 
     def stop(self):
-        pass
+        self.estado.stop()
 
     def run(self):
         self.estado.run()
@@ -42,4 +42,5 @@ class ModoTempo:
                 self.estado = EstadoAquisicaoTempo(self.status, self.encoders, int(pulses_frequency))
 
             case EstadoAquisicaoTempo(), 'next_estado':
+                self.estado.stop()
                 self.estado = EstadoSet(self.status)

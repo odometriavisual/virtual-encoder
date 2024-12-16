@@ -17,15 +17,14 @@ class Logger:
         self.queue = deque()
         self.thread = threading.Thread(target=self._save_displacement, daemon=True)
         
-    def _create_newdir(self):
-        time_now = time.time_ns()
-        self.datenow = datetime.fromtimestamp(time_now // 1_000_000_000).strftime('%Y%m%dT%H%M%S')
+    def _create_newdir(self, timestamp_ns):
+        self.datenow = datetime.fromtimestamp(timestamp_ns // 1_000_000_000).strftime('%Y%m%dT%H%M%S')
         self.save_dir = f'/home/pi/picam_imgs/{self.boot_num}_{self.datenow}'
         if not isdir(self.save_dir):
             makedirs(self.save_dir)
     
-    def start(self):
-        self._create_newdir()
+    def start(self, timestamp_ns):
+        self._create_newdir(timestamp_ns)
         self.active = True
 
         # Check if there is a log file, create otherwise 

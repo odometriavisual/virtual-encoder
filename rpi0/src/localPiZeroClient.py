@@ -5,7 +5,7 @@ import subprocess
 from picamera2 import Picamera2
 from libcamera import controls
 
-from ..src.log import Logger
+from .log import Logger
 
 class LocalPiZeroClient:
     def __init__(self, picam, imu, logger: Logger):

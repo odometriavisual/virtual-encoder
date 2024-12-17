@@ -103,14 +103,14 @@ class PiZeroClient:
 
     def start_acquisition(self, timestamp_ns):
         try:
-            requests.get(f'http://{PIZERO_HOST}:{WEBSERVER_PORT}/start_acquititions/{timestamp_ns}', timeout=1.0)
+            requests.get(f'http://{PIZERO_HOST}:{WEBSERVER_PORT}/start_acquisition/{timestamp_ns}', timeout=1.0)
             return True
         except (RequestException, ValueError):
             return False
 
     def stop_acquisition(self):
         try:
-            requests.get(f'http://{PIZERO_HOST}:{WEBSERVER_PORT}/stop_acquititions', timeout=1.0)
+            requests.get(f'http://{PIZERO_HOST}:{WEBSERVER_PORT}/stop_acquisition', timeout=1.0)
             return True
         except (RequestException, ValueError):
             return False

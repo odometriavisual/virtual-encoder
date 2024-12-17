@@ -196,7 +196,7 @@
 
 			status_watcher.rpi5.innerText = `RPi 5
 			Modo ${status.modo}
-			${status.rpi5 === false || status.modo === 'Download'? '':
+			${status.rpi5 === false || status.modo === 'Download'? status.estado:
 					(status.estado === 'Calibrando'? `Calibrando ${status.rpi0.progress}%`: 'Estado' + status.estado)
 			}
 			${status.rpi5 ? `IP: ${status.rpi5.ip}` : ''}

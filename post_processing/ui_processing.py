@@ -249,13 +249,6 @@ class TrajectoryApp(QMainWindow):
         container.setLayout(self.layout)
         self.setCentralWidget(container)
 
-        # Definir uma nova subfigura para a visualização da orientação
-        # self.orientation_ax = self.figure.add_subplot(122, projection='3d')
-        # self.orientation_ax.set_title("Orientação do Objeto")
-        # self.orientation_ax.set_xlim(-1, 1)
-        # self.orientation_ax.set_ylim(-1, 1)
-        # self.orientation_ax.set_zlim(-1, 1)
-
     def open_folder_dialog(self):
         folder = QFileDialog.getExistingDirectory(self, "Selecione a pasta")
         if folder:
@@ -314,14 +307,21 @@ class TrajectoryApp(QMainWindow):
         ])
 
     def plot_partial_trajectory(self, partial_positions3D):
-        # Preservar a posição da câmera atual antes de limpar a figura
+        # Recuperar a orientação da câmera do último Axes3D
         if self.figure.axes:
-            self.elev = self.figure.gca().elev
-            self.azim = self.figure.gca().azim
+            ax_current = self.figure.axes[0]  # Assume que o primeiro eixo seja o Axes3D
+            self.elev = ax_current.elev
+            self.azim = ax_current.azim
+        else:
+            self.elev = 30  # Valor padrão
+            self.azim = -60  # Valor padrão
 
         # Plotar a trajetória parcial em 3D
-        self.figure.clear()  # Limpa a figura, mas mantemos a orientação em uma subplot separada
+        self.figure.clear()  # Limpa a figura
         ax = self.figure.add_subplot(111, projection='3d')
+
+        # Configurar a orientação da câmera com os valores salvos
+        ax.view_init(elev=self.elev, azim=self.azim)
 
         # Extrair coordenadas parciais
         x, y, z = zip(*partial_positions3D)

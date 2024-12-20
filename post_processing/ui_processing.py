@@ -304,36 +304,6 @@ class TrajectoryApp(QMainWindow):
                 self.playing = False
                 self.play_pause_button.setText("Iniciar")
 
-    def update_orientation(self, position3D, quaternion):
-        # Extrair a rotação do quaternion
-        qx, qy, qz, qw = quaternion
-
-        # Converter quaternion para matriz de rotação
-        rotation_matrix = self.quaternion_to_rotation_matrix([qx, qy, qz, qw])
-
-        #self.orientation_ax.cla()  # Limpar a subfigura da orientação (mas manter a outra)
-
-        #self.draw_orientation_arrow(rotation_matrix)
-
-        # self.orientation_ax.set_title("Orientação do Objeto")
-        # self.orientation_ax.set_xlim(-1, 1)
-        # self.orientation_ax.set_ylim(-1, 1)
-        # self.orientation_ax.set_zlim(-1, 1)
-        # self.canvas.draw()
-
-    # def draw_orientation_arrow(self, rotation_matrix):
-    #     # Representar uma seta (vetor) no gráfico 3D usando a matriz de rotação
-    #     arrow_length = 0.5
-    #     arrow_start = np.array([0, 0, 0])
-    #     arrow_end = rotation_matrix @ np.array([arrow_length, 0, 0])  # A seta será alinhada ao eixo X
-    #
-    #     # Plotar a seta
-    #     self.orientation_ax.quiver(arrow_start[0], arrow_start[1], arrow_start[2],
-    #                                arrow_end[0], arrow_end[1], arrow_end[2],
-    #                                color='r', linewidth=3, label="Orientação")
-    #     self.orientation_ax.set_xlabel('X')
-    #     self.orientation_ax.set_ylabel('Y')
-    #     self.orientation_ax.set_zlabel('Z')
 
     def quaternion_to_rotation_matrix(self, q):
         qx, qy, qz, qw = q

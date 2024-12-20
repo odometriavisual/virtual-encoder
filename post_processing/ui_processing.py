@@ -20,7 +20,6 @@ import matplotlib.pyplot as plt
 #from post_processing.tools.gpu_tools import gpu_svd_method
 from PIL import Image, ImageOps, ImageEnhance
 
-
 matplotlib.use('Qt5Agg')
 
 class ProcessingThread(QThread):
@@ -193,7 +192,7 @@ class TrajectoryApp(QMainWindow):
     def __init__(self):
         super().__init__()
         self.setWindowTitle("Visualização de Trajetória 3D")
-        self.setGeometry(100, 100, 800, 600)
+        self.setGeometry(100, 100, 1600, 600)
 
         # Layout principal
         self.layout = QVBoxLayout()
@@ -236,18 +235,31 @@ class TrajectoryApp(QMainWindow):
         # Adicionar QLabel para exibir a imagem
         self.image_label = QLabel("Imagem do deslocamento atual", self)
         self.image_label.setAlignment(Qt.AlignCenter)
+        self.image_label.setFixedSize(700, 500)
         side_by_side_layout.addWidget(self.image_label)
 
         # Adicionar o layout lateral ao layout principal
         self.layout.addLayout(side_by_side_layout)
 
         # Controle de correção de gama
+        gamma_layout = QHBoxLayout()
+
+        # Texto à esquerda do slider
+        self.gamma_label = QLabel("Ajuste de gamma:", self)
+        gamma_layout.addWidget(self.gamma_label)
+
+        # Slider de gama (horizontal)
         self.gamma_slider = QSlider(Qt.Horizontal, self)
         self.gamma_slider.setMinimum(1)
         self.gamma_slider.setMaximum(300)
         self.gamma_slider.setValue(100)  # Valor padrão (sem correção de gama)
         self.gamma_slider.valueChanged.connect(self.on_gamma_slider_changed)
-        self.layout.addWidget(self.gamma_slider)
+
+        # Adicionando o slider ao layout
+        gamma_layout.addWidget(self.gamma_slider)
+
+        # Adicionando o layout ao layout principal
+        self.layout.addLayout(gamma_layout)
 
         self.gamma_value = 1.0  # Gama inicial
 
@@ -272,6 +284,7 @@ class TrajectoryApp(QMainWindow):
 
     def on_gamma_slider_changed(self, value):
         self.gamma_value = value / 100.0
+        self.update_image(self.image_files[self.current_index])
 
     def on_slider_value_changed(self):
         # Atualiza a posição atual com base no valor da barra de progresso
@@ -313,7 +326,7 @@ class TrajectoryApp(QMainWindow):
         if self.playing:
             self.timer.stop()
             self.playing = False
-            self.play_pause_button.setText("Continuar")
+            self.play_pause_button.setText("Iniciar")
         else:
             self.timer.start(100)  # Atualizar o gráfico a cada 100ms
             self.playing = True

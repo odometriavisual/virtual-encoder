@@ -6,6 +6,7 @@ import numpy as np
 from PySide6.QtWidgets import QApplication, QMainWindow, QPushButton, QLabel, QVBoxLayout, QWidget, QFileDialog, QProgressBar, QMessageBox
 from PySide6.QtCore import Qt, QThread, Signal
 from PySide6.QtGui import QPixmap,QImage
+from PySide6.QtWidgets import QSlider
 
 
 import matplotlib
@@ -212,6 +213,14 @@ class TrajectoryApp(QMainWindow):
         self.play_pause_button.clicked.connect(self.toggle_play_pause)
         self.layout.addWidget(self.play_pause_button)
 
+        # Barra de Progresso (QSlider)
+        self.progress_slider = QSlider(Qt.Horizontal, self)
+        self.progress_slider.setMinimum(0)
+        self.progress_slider.setValue(0)
+        self.progress_slider.setEnabled(False)  # Desativada até o processamento ser concluído
+        self.progress_slider.valueChanged.connect(self.on_slider_value_changed)
+        self.layout.addWidget(self.progress_slider)
+
         # Label para progresso
         self.progress_label = QLabel("Progresso: Aguardando seleção da pasta", self)
         self.layout.addWidget(self.progress_label)
@@ -249,6 +258,13 @@ class TrajectoryApp(QMainWindow):
         container.setLayout(self.layout)
         self.setCentralWidget(container)
 
+    def on_slider_value_changed(self):
+        # Atualiza a posição atual com base no valor da barra de progresso
+        if self.positions3D is not None:
+            self.current_index = self.progress_slider.value()
+            self.plot_partial_trajectory(self.positions3D[:self.current_index + 1])
+            self.update_image(self.image_files[self.current_index])
+
     def open_folder_dialog(self):
         folder = QFileDialog.getExistingDirectory(self, "Selecione a pasta")
         if folder:
@@ -274,6 +290,8 @@ class TrajectoryApp(QMainWindow):
         self.current_index = 0
         self.image_files = self.thread.image_files  # Agora está disponível
         self.play_pause_button.setEnabled(True)  # Ativar botão Play/Pause
+        self.progress_slider.setEnabled(True)  # Ativar a barra de progresso
+        self.progress_slider.setMaximum(len(self.positions3D) - 1)  # Ajustar o máximo baseado no número de pontos
         self.progress_label.setText("Processamento concluído! Clique em 'Iniciar' para visualizar a trajetória.")
 
     def toggle_play_pause(self):
@@ -291,12 +309,12 @@ class TrajectoryApp(QMainWindow):
             if self.current_index < len(self.positions3D):
                 self.plot_partial_trajectory(self.positions3D[:self.current_index + 1])
                 self.update_image(self.image_files[self.current_index])  # Atualizar a imagem exibida
+                self.progress_slider.setValue(self.current_index)  # Atualizar a barra de progresso
                 self.current_index += 1
             else:
                 self.timer.stop()  # Parar o timer ao final da trajetória
                 self.playing = False
                 self.play_pause_button.setText("Iniciar")
-
 
     def quaternion_to_rotation_matrix(self, q):
         qx, qy, qz, qw = q

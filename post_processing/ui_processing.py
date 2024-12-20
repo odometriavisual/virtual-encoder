@@ -130,11 +130,13 @@ class ProcessingThread(QThread):
             quaternions = [qx, qy, qz, qw]
             rotation_matrix = self.quaternion_to_rotation_matrix(quaternions)
 
-            print(quaternions)
+            #print(quaternions)
 
-            displacement_2d = np.array([dy, dx, 0.0])
-            # displacement_3d = rotation_matrix @ displacement_2d
-            displacement_3d = displacement_2d
+            displacement_2d = np.array([0.0 , dy, dx])
+            #displacement_2d = np.array([dy , 0.0, dx])
+
+            displacement_3d = rotation_matrix @ displacement_2d
+            #displacement_3d = displacement_2d
 
             current_position2D += displacement_2d
             current_position3D += displacement_3d
@@ -296,15 +298,6 @@ class TrajectoryApp(QMainWindow):
             if self.current_index < len(self.positions3D):
                 self.plot_partial_trajectory(self.positions3D[:self.current_index + 1])
                 self.update_image(self.image_files[self.current_index])  # Atualizar a imagem exibida
-
-                # Check if quaternions are available before accessing them
-                if self.thread.quaternions is not None:
-                    if 0 <= self.current_index < len(self.positions3D) and 0 <= self.current_index < len(
-                            self.thread.quaternions):
-                        self.update_orientation(self.positions3D[self.current_index],
-                                                self.thread.quaternions[self.current_index])
-                    else:
-                        print(f"Index out of range: {self.current_index}")
                 self.current_index += 1
             else:
                 self.timer.stop()  # Parar o timer ao final da trajetória

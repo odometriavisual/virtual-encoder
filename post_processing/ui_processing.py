@@ -307,27 +307,32 @@ class TrajectoryApp(QMainWindow):
         ])
 
     def plot_partial_trajectory(self, partial_positions3D):
-        # Recuperar a orientação da câmera do último Axes3D
+        # Preservar a posição da câmera atual antes de limpar a figura
         if self.figure.axes:
-            ax_current = self.figure.axes[0]  # Assume que o primeiro eixo seja o Axes3D
-            self.elev = ax_current.elev
-            self.azim = ax_current.azim
-        else:
-            self.elev = 30  # Valor padrão
-            self.azim = -60  # Valor padrão
+            self.elev = self.figure.gca().elev
+            self.azim = self.figure.gca().azim
 
         # Plotar a trajetória parcial em 3D
-        self.figure.clear()  # Limpa a figura
+        self.figure.clear()
         ax = self.figure.add_subplot(111, projection='3d')
-
-        # Configurar a orientação da câmera com os valores salvos
-        ax.view_init(elev=self.elev, azim=self.azim)
+        ax.view_init(elev=self.elev, azim=self.azim)  # Restaurar a posição da câmera
 
         # Extrair coordenadas parciais
         x, y, z = zip(*partial_positions3D)
 
-        # Plotar as trajetórias
-        ax.plot(x, y, z, color='blue', marker='o', label='Trajetória Parcial')
+        # Configurar cores e transparências para todos os pontos, exceto o último
+        num_points = len(partial_positions3D)
+        alpha_values = [i / num_points for i in range(num_points - 1)]
+        color_values = [(i / num_points, 0, 1 - i / num_points, alpha_values[i]) for i in range(num_points - 1)]
+
+        # Plotar todos os pontos anteriores de uma só vez
+        ax.scatter(x[:-1], y[:-1], z[:-1], c=color_values, s=30, label='Trajetória')
+
+        # Destacar o ponto atual
+        ax.scatter(x[-1], y[-1], z[-1], color='red', s=100, label='Posição Atual')
+
+        # Conectar os pontos com uma linha
+        ax.plot(x, y, z, color='blue', label='Trajetória Parcial')
 
         # Configurar limites e título
         max_value = max(max(x), max(y), max(z))

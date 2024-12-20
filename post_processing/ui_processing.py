@@ -16,13 +16,9 @@ from PySide6.QtCore import QTimer
 
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 import matplotlib.pyplot as plt
-from concurrent.futures import ThreadPoolExecutor
 
-from mpl_toolkits.mplot3d import Axes3D
-from datetime import datetime
-from post_processing.tools.gpu_tools import gpu_svd_method
+#from post_processing.tools.gpu_tools import gpu_svd_method
 from PIL import Image, ImageOps, ImageEnhance
-import io
 
 
 matplotlib.use('Qt5Agg')

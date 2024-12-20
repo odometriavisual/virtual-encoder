@@ -36,10 +36,10 @@ class ModoTempo:
                 self.estado = EstadoReady(self.status)
 
             case EstadoReady(), 'next_estado':
-                self.estado = EstadoAquisicaoTempo(self.status, self.encoders, 10)
+                self.estado = EstadoAquisicaoTempo(self.client, self.status, self.encoders, 10)
 
             case EstadoReady(), ('next_estado', _, pulses_frequency):
-                self.estado = EstadoAquisicaoTempo(self.status, self.encoders, int(pulses_frequency))
+                self.estado = EstadoAquisicaoTempo(self.client, self.status, self.encoders, int(pulses_frequency))
 
             case EstadoAquisicaoTempo(), 'next_estado':
                 self.estado.stop()

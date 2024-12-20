@@ -2,6 +2,7 @@ import time
 
 from abc import abstractmethod
 
+from ..pi_zero_client import PiZeroClient
 from ..pulse_generator import PulseGenerator
 from ..ihm.ihm import IHM
 
@@ -28,13 +29,20 @@ class EstadoReady(Estado):
         time.sleep(0.001)
 
 class EstadoAquisicaoTempo(Estado):
-    def __init__(self, status: dict, encoders: tuple[PulseGenerator, ...], pulses_frequency: int):
+    def __init__(self, client: PiZeroClient, status: dict, encoders: tuple[PulseGenerator, ...], pulses_frequency: int):
         self.encoders = encoders
+        self.client = client
+
+        timestamp_ns = time.time_ns()
+        self.client.start_acquisition(timestamp_ns)
 
         status['estado'] = 'Aquisicao'
 
         self.period = 1_000_000_000 // pulses_frequency
         self.next_time = time.time_ns() + self.period
+
+    def stop(self):
+        self.client.stop_acquisition()
 
     def run(self):
         current_time = time.time_ns()

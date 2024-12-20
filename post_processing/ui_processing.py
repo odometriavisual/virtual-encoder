@@ -6,7 +6,7 @@ import numpy as np
 from PySide6.QtWidgets import QApplication, QMainWindow, QPushButton, QLabel, QVBoxLayout, QWidget, QFileDialog, QProgressBar, QMessageBox
 from PySide6.QtCore import Qt, QThread, Signal
 from PySide6.QtGui import QPixmap,QImage
-from PySide6.QtWidgets import QSlider, QCheckBox
+from PySide6.QtWidgets import QSlider, QHBoxLayout
 
 
 import matplotlib
@@ -229,15 +229,21 @@ class TrajectoryApp(QMainWindow):
         self.progress_bar = QProgressBar(self)
         self.layout.addWidget(self.progress_bar)
 
+        # Layout horizontal para o Matplotlib canvas e o QLabel de imagem
+        side_by_side_layout = QHBoxLayout()
+
         # Matplotlib canvas para plotagem 3D
         self.figure = plt.figure()
         self.canvas = FigureCanvas(self.figure)
-        self.layout.addWidget(self.canvas)
+        side_by_side_layout.addWidget(self.canvas)
 
         # Adicionar QLabel para exibir a imagem
         self.image_label = QLabel("Imagem do deslocamento atual", self)
         self.image_label.setAlignment(Qt.AlignCenter)
-        self.layout.addWidget(self.image_label)
+        side_by_side_layout.addWidget(self.image_label)
+
+        # Adicionar o layout lateral ao layout principal
+        self.layout.addLayout(side_by_side_layout)
 
         # Controle de correção de gama
         self.gamma_slider = QSlider(Qt.Horizontal, self)
@@ -269,7 +275,7 @@ class TrajectoryApp(QMainWindow):
         self.setCentralWidget(container)
 
     def on_gamma_slider_changed(self, value):
-        self.gamma = value / 100.0
+        self.gamma_value = value / 100.0
 
     def on_slider_value_changed(self):
         # Atualiza a posição atual com base no valor da barra de progresso
@@ -408,7 +414,7 @@ class TrajectoryApp(QMainWindow):
         img_array = np.array(img) / 255.0  # Normaliza os valores para o intervalo [0, 1]
 
         # Aplica a correção de gamma
-        img_array = np.power(img_array, self.gamma)
+        img_array = np.power(img_array, self.gamma_value)
 
         # Reverter a normalização (trazendo de volta para o intervalo [0, 255])
         img_array = np.uint8(img_array * 255)

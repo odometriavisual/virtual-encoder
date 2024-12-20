@@ -35,7 +35,7 @@ def generate_subimages_fixed_step(input_image_path, output_folder, sub_width=640
     for movement, (limit_x, limit_y) in zip(movements, limits):
         for _ in range(total_images // 4):
             # Extrair a subimagem
-            subimage = original_image.crop((x, y, x + sub_width, y + sub_height))
+            subimage = original_image.crop((x+500, y+500, x + sub_width+500, y + sub_height+500))
             subimage.save(f"{output_folder}/{subimage_count:03d}.jpg")
             subimage_count += 1
 
@@ -50,4 +50,4 @@ def generate_subimages_fixed_step(input_image_path, output_folder, sub_width=640
     print(f"{subimage_count - 1} subimagens geradas em {output_folder}.")
 
 # Exemplo de uso
-generate_subimages_fixed_step("data/high_res_img.jpg", "data/generated_imgs")
+generate_subimages_fixed_step("../data/generated/high_res.jpg", "../data/generated/images")

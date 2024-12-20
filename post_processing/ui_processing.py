@@ -35,6 +35,7 @@ class ProcessingThread(QThread):
         super().__init__()
         self.folder_path = folder_path
         self.image_files = []  # Inicializar o atributo
+        self.quaternions = []  # Add this line to initialize the quaternions list
 
     def run(self):
         # Carregar dados da IMU e imagens
@@ -109,7 +110,7 @@ class ProcessingThread(QThread):
 
         current_position2D = np.array([0.0, 0.0, 0.0])
         current_position3D = np.array([0.0, 0.0, 0.0])
-        quaternions = []
+        array_quaternions = []
         timestamps = []
 
         old_processed_img = img_stream.pop(0)
@@ -126,14 +127,18 @@ class ProcessingThread(QThread):
             qy = closest_imu_data['qy']
             qz = closest_imu_data['qz']
             qw = closest_imu_data['qw']
-            rotation_matrix = self.quaternion_to_rotation_matrix([qx, qy, qz, qw])
+            quaternions = [qx, qy, qz, qw]
+            rotation_matrix = self.quaternion_to_rotation_matrix(quaternions)
 
-            displacement_2d = np.array([dx, dy, 0.0])
-            displacement_3d = rotation_matrix @ displacement_2d
+            print(quaternions)
+
+            displacement_2d = np.array([dy, dx, 0.0])
+            # displacement_3d = rotation_matrix @ displacement_2d
+            displacement_3d = displacement_2d
 
             current_position2D += displacement_2d
             current_position3D += displacement_3d
-            quaternions.append([qx, qy, qz, qw])
+            array_quaternions.append(quaternions)
             timestamps.append(img_timestamp)
 
             positions2D.append(tuple(current_position2D))
@@ -142,7 +147,7 @@ class ProcessingThread(QThread):
             old_processed_img = img_preprocessed
             self.progress_signal.emit(f"Processando imagem {idx + 1}...", 60 + int(40 * (idx + 1) / len(image_files)))
 
-        return np.array(positions3D), np.array(positions2D), np.array(quaternions), np.array(timestamps)
+        return np.array(positions3D), np.array(positions2D), np.array(array_quaternions), np.array(timestamps)
 
     def save_data_to_csv(self, positions3D, positions2D, quaternions, timestamps):
         processed_data_path = os.path.join(self.folder_path, "processed_data.csv")
@@ -242,6 +247,13 @@ class TrajectoryApp(QMainWindow):
         container.setLayout(self.layout)
         self.setCentralWidget(container)
 
+        # Definir uma nova subfigura para a visualização da orientação
+        # self.orientation_ax = self.figure.add_subplot(122, projection='3d')
+        # self.orientation_ax.set_title("Orientação do Objeto")
+        # self.orientation_ax.set_xlim(-1, 1)
+        # self.orientation_ax.set_ylim(-1, 1)
+        # self.orientation_ax.set_zlim(-1, 1)
+
     def open_folder_dialog(self):
         folder = QFileDialog.getExistingDirectory(self, "Selecione a pasta")
         if folder:
@@ -284,11 +296,59 @@ class TrajectoryApp(QMainWindow):
             if self.current_index < len(self.positions3D):
                 self.plot_partial_trajectory(self.positions3D[:self.current_index + 1])
                 self.update_image(self.image_files[self.current_index])  # Atualizar a imagem exibida
+
+                # Check if quaternions are available before accessing them
+                if self.thread.quaternions is not None:
+                    if 0 <= self.current_index < len(self.positions3D) and 0 <= self.current_index < len(
+                            self.thread.quaternions):
+                        self.update_orientation(self.positions3D[self.current_index],
+                                                self.thread.quaternions[self.current_index])
+                    else:
+                        print(f"Index out of range: {self.current_index}")
                 self.current_index += 1
             else:
                 self.timer.stop()  # Parar o timer ao final da trajetória
                 self.playing = False
                 self.play_pause_button.setText("Iniciar")
+
+    def update_orientation(self, position3D, quaternion):
+        # Extrair a rotação do quaternion
+        qx, qy, qz, qw = quaternion
+
+        # Converter quaternion para matriz de rotação
+        rotation_matrix = self.quaternion_to_rotation_matrix([qx, qy, qz, qw])
+
+        #self.orientation_ax.cla()  # Limpar a subfigura da orientação (mas manter a outra)
+
+        #self.draw_orientation_arrow(rotation_matrix)
+
+        # self.orientation_ax.set_title("Orientação do Objeto")
+        # self.orientation_ax.set_xlim(-1, 1)
+        # self.orientation_ax.set_ylim(-1, 1)
+        # self.orientation_ax.set_zlim(-1, 1)
+        # self.canvas.draw()
+
+    # def draw_orientation_arrow(self, rotation_matrix):
+    #     # Representar uma seta (vetor) no gráfico 3D usando a matriz de rotação
+    #     arrow_length = 0.5
+    #     arrow_start = np.array([0, 0, 0])
+    #     arrow_end = rotation_matrix @ np.array([arrow_length, 0, 0])  # A seta será alinhada ao eixo X
+    #
+    #     # Plotar a seta
+    #     self.orientation_ax.quiver(arrow_start[0], arrow_start[1], arrow_start[2],
+    #                                arrow_end[0], arrow_end[1], arrow_end[2],
+    #                                color='r', linewidth=3, label="Orientação")
+    #     self.orientation_ax.set_xlabel('X')
+    #     self.orientation_ax.set_ylabel('Y')
+    #     self.orientation_ax.set_zlabel('Z')
+
+    def quaternion_to_rotation_matrix(self, q):
+        qx, qy, qz, qw = q
+        return np.array([
+            [1 - 2 * (qy ** 2 + qz ** 2), 2 * (qx * qy - qw * qz), 2 * (qx * qz + qw * qy)],
+            [2 * (qx * qy + qw * qz), 1 - 2 * (qx ** 2 + qz ** 2), 2 * (qy * qz - qw * qx)],
+            [2 * (qx * qz - qw * qy), 2 * (qy * qz + qw * qx), 1 - 2 * (qx ** 2 + qy ** 2)]
+        ])
 
     def plot_partial_trajectory(self, partial_positions3D):
         # Preservar a posição da câmera atual antes de limpar a figura
@@ -297,12 +357,8 @@ class TrajectoryApp(QMainWindow):
             self.azim = self.figure.gca().azim
 
         # Plotar a trajetória parcial em 3D
-        self.figure.clear()
+        self.figure.clear()  # Limpa a figura, mas mantemos a orientação em uma subplot separada
         ax = self.figure.add_subplot(111, projection='3d')
-
-        # Restaurar a posição da câmera
-        if self.elev is not None and self.azim is not None:
-            ax.view_init(elev=self.elev, azim=self.azim)
 
         # Extrair coordenadas parciais
         x, y, z = zip(*partial_positions3D)
@@ -313,6 +369,11 @@ class TrajectoryApp(QMainWindow):
         # Configurar limites e título
         max_value = max(max(x), max(y), max(z))
         min_value = min(min(x), min(y), min(z))
+        margin = 0.1
+        if max_value == min_value:
+            max_value += margin
+            min_value -= margin
+
         ax.set_xlim(min_value, max_value)
         ax.set_ylim(min_value, max_value)
         ax.set_zlim(min_value, max_value)

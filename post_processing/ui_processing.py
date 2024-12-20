@@ -6,7 +6,7 @@ import numpy as np
 from PySide6.QtWidgets import QApplication, QMainWindow, QPushButton, QLabel, QVBoxLayout, QWidget, QFileDialog, QProgressBar, QMessageBox
 from PySide6.QtCore import Qt, QThread, Signal
 from PySide6.QtGui import QPixmap,QImage
-from PySide6.QtWidgets import QSlider
+from PySide6.QtWidgets import QSlider, QCheckBox
 
 
 import matplotlib
@@ -239,6 +239,16 @@ class TrajectoryApp(QMainWindow):
         self.image_label.setAlignment(Qt.AlignCenter)
         self.layout.addWidget(self.image_label)
 
+        # Controle de correção de gama
+        self.gamma_slider = QSlider(Qt.Horizontal, self)
+        self.gamma_slider.setMinimum(1)
+        self.gamma_slider.setMaximum(300)
+        self.gamma_slider.setValue(100)  # Valor padrão (sem correção de gama)
+        self.gamma_slider.valueChanged.connect(self.on_gamma_slider_changed)
+        self.layout.addWidget(self.gamma_slider)
+
+        self.gamma_value = 1.0  # Gama inicial
+
         # Timer para atualizar o gráfico
         self.timer = QTimer()
         self.timer.timeout.connect(self.update_trajectory)
@@ -257,6 +267,9 @@ class TrajectoryApp(QMainWindow):
         container = QWidget()
         container.setLayout(self.layout)
         self.setCentralWidget(container)
+
+    def on_gamma_slider_changed(self, value):
+        self.gamma = value / 100.0
 
     def on_slider_value_changed(self):
         # Atualiza a posição atual com base no valor da barra de progresso
@@ -377,6 +390,9 @@ class TrajectoryApp(QMainWindow):
         img = img.resize((400, 300), Image.Resampling.LANCZOS)  # Redimensionar a imagem
         img = ImageOps.exif_transpose(img)  # Manter a orientação correta
 
+        # Aplicar correção de gamma
+        img = self.apply_gamma(img)
+
         # Converter imagem para array NumPy
         img_array = np.array(img)
 
@@ -385,6 +401,20 @@ class TrajectoryApp(QMainWindow):
         pixmap = QPixmap.fromImage(qimage)
         self.image_label.setPixmap(pixmap)
         self.image_label.setAlignment(Qt.AlignCenter)  # Centralizar no QLabel
+
+    def apply_gamma(self, img):
+        """Aplica a correção de gamma na imagem"""
+        # Converter a imagem para array NumPy
+        img_array = np.array(img) / 255.0  # Normaliza os valores para o intervalo [0, 1]
+
+        # Aplica a correção de gamma
+        img_array = np.power(img_array, self.gamma)
+
+        # Reverter a normalização (trazendo de volta para o intervalo [0, 255])
+        img_array = np.uint8(img_array * 255)
+
+        # Converter de volta para imagem PIL
+        return Image.fromarray(img_array)
 
     def show_error(self, message):
         error_dialog = QMessageBox()

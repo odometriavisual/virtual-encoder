@@ -36,9 +36,10 @@
 			grid-gap: 4px;
 
 			grid-template-columns: repeat(13, 1fr);
-			grid-template-rows: 0.3fr 1fr 1fr 1fr;
+			grid-template-rows: 24px 48px 48px 48px 48px;
 			grid-template-areas:
 				"brilho brilho brilho brilho brilho brilho brilho brilho brilho brilho brilho brilho brilho"
+				"expo   expo   expo   expo   expo   .      .      .      foco   foco   foco   foco   foco"
 				".      .      .      .      .      .      .      .      .      .      init-d init-d init-d"
 			    "calib  calib  calib  init-a init-a init-a stop-a stop-a stop-a .      reboot reboot reboot"
 				"modo-o modo-o modo-o modo-t modo-t modo-t modo-a modo-a modo-a .      shutd  shutd  shutd"
@@ -54,6 +55,20 @@
 		.modo-autonomo { grid-area: modo-a; }
 		.reiniciar { grid-area: reboot; }
 		.desligar { grid-area: shutd; }
+
+		.exposicao { grid-area: expo; }
+		.foco { grid-area: foco; }
+		/* Chrome, Safari, Edge, Opera */
+		input::-webkit-outer-spin-button,
+		input::-webkit-inner-spin-button {
+			-webkit-appearance: none;
+			margin: 0;
+		}
+
+		/* Firefox */
+		input[type=number] {
+			-moz-appearance: textfield;
+		}
 
 		label { display: flex; gap: 8px; }
 		label > div { align-self: center; }
@@ -104,7 +119,9 @@
 			modo_autonomo: document.querySelector('button.modo-autonomo'),
 			iniciar_download: document.querySelector('button.iniciar-download'),
 			reiniciar: document.querySelector('button.reiniciar'),
-			desligar: document.querySelector('button.desligar')
+			desligar: document.querySelector('button.desligar'),
+			enviar_expo: document.querySelector('.exposicao > button'),
+			enviar_foco: document.querySelector('.foco > button'),
 		};
 
 		btns.calibracao.disabled = true;
@@ -123,6 +140,9 @@
 			camera: document.querySelector('.status.camera'),
 			imu: document.querySelector('.status.imu'),
 		};
+
+		const exposicao = document.querySelector('.exposicao > input');
+		const foco = document.querySelector('.foco > input');
 
 		const video_frame = document.querySelector('.video-frame');
 		video_frame.src = '/video_feed';
@@ -175,6 +195,16 @@
 		btns.iniciar_download.addEventListener('click', event => next_modo(event, 'Download'));
 		btns.reiniciar.addEventListener('click', event => next_modo(event, 'reboot'));
 		btns.desligar.addEventListener('click', event => next_modo(event, 'poweroff'));
+
+		btns.enviar_expo.addEventListener('click', async event => {
+			const method = 'POST';
+			await fetch(`/set_exposure/${exposicao.value}`, { method });
+		});
+
+		btns.enviar_foco.addEventListener('click', async event => {
+			const method = 'POST';
+			await fetch(`/set_focus/${foco.value}`, { method });
+		});
 
 		function update_classname(div, stat) {
 			if (stat) div.className = div.className.replace('err', 'ok')
@@ -277,6 +307,18 @@
 		<label class="brilho">
 			<div>Brilho:</div>
 			<input type="range" min="0" max="10" step="0.05" value="1" />
+		</label>
+
+		<label class="exposicao">
+			<div>Exposicao:</div>
+			<input type="number" value="1" />
+			<button>Enviar</button>
+		</label>
+
+		<label class="foco">
+			<div>Foco:</div>
+			<input type="number" value="1" />
+			<button>Enviar</button>
 		</label>
 
 		<button class="calibracao" disabled>Iniciar Calibracao</button>

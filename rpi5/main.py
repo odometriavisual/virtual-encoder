@@ -132,6 +132,11 @@ def main():
                 case _, ('next_modo', 'reboot'):
                     client.reboot()
 
+                case _, ('set_focus', focus):
+                    client.set_focus(focus)
+                case _, ('set_exposure', exposure):
+                    client.set_exposure(exposure)
+
                 case ModoTempo(), 'next_modo':
                     modo.stop()
                     modo = ModoAutonomo(client, status, encoders)

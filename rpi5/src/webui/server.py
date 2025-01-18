@@ -49,11 +49,15 @@ class WebuiApp:
         def status():
             return self.status
 
-        @self.app.route('/set_focus', methods=['POST'])
-        def set_focus():
-            data = request.get_json()
-            self.ihm.send_event(('set_focus', data.get('focus_value')))
-            return "Nenhum valor de foco fornecido."
+        @self.app.route('/set_focus/<focus>', methods=['POST'])
+        def set_focus(focus):
+            self.ihm.send_event(('set_focus', focus))
+            return "Ok"
+
+        @self.app.route('/set_exposure/<exposure>', methods=['POST'])
+        def set_exposure(exposure):
+            self.ihm.send_event(('set_exposure', exposure))
+            return "Ok"
 
         @self.app.route('/next_estado', methods=['POST'])
         def next_estado():

@@ -12,6 +12,7 @@ from PySide6.QtWidgets import QSlider, QHBoxLayout
 import matplotlib
 from visual_odometer.displacement_estimators.svd import svd_method
 from visual_odometer.preprocessing import image_preprocessing
+from visual_odometer.visual_odometer import DEFAULT_CONFIG
 from PySide6.QtCore import QTimer
 
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
@@ -19,7 +20,7 @@ import matplotlib.pyplot as plt
 
 #from post_processing.tools.gpu_tools import gpu_svd_method
 from PIL import Image, ImageOps, ImageEnhance
-
+2
 matplotlib.use('Qt5Agg')
 
 class ProcessingThread(QThread):
@@ -82,7 +83,7 @@ class ProcessingThread(QThread):
         # Normalizar os valores de pixel para 0-1
         img_array = img_array / 255.0
 
-        return image_preprocessing(img_array)
+        return image_preprocessing(img_array, DEFAULT_CONFIG)
 
     def load_imu_data(self, imu_file):
         imu_data = []

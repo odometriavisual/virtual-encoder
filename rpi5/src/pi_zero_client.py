@@ -74,11 +74,13 @@ class PiZeroClient:
         except RequestException:
             return False
 
-    def get_orientation(self) -> [float, float, float, float, float, float]:
+    def get_orientation(self) -> [float, float, float, float, float]:
         try:
             res = requests.get(f'http://{PIZERO_HOST}:{WEBSERVER_PORT}/imu', timeout=1.0)
             if res.status_code == 200:
-                return res.text.strip().split(',')
+                quat = res.text.strip().split(',')
+                status.imu = quat[1:]
+                return quat
         except (RequestException, ValueError):
             return False
 

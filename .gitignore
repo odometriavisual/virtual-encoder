@@ -69,3 +69,5 @@ dist/
 ui_processing.spec
 
 venv/
+
+calibration_data

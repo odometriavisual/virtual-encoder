@@ -41,7 +41,7 @@ class Logger:
 
     def _save_orientations(self):
         while True:
-            time.sleep(0.1)
+            time.sleep(0.02)
 
             if self.enable_save:
                 path = f'{self.save_dir}/imu.csv'

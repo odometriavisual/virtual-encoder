@@ -1,6 +1,11 @@
 <html lang="pt">
 <head>
 	<style>
+		canvas {
+			position: absolute;
+			top: 0;
+			left: -80;
+		}
 		.wrapper {
 			display: grid;
 			grid-gap: 4px;
@@ -12,7 +17,7 @@
 				"h-group h-group";
 		}
 
-		.wrapper > .video-frame {
+		.video-frame, .visualization {
 			width: 640px;
 			height: 480px;
 		}
@@ -317,13 +322,14 @@
 
 		// 3D CUBE
 
-		const renderer = new THREE.WebGLRenderer();
-		renderer.setSize(640, 480);
-		document.body.appendChild( renderer.domElement );
+		const renderer = new THREE.WebGLRenderer({alpha: true, antialias: true});
+		// renderer.setSize(640, 480);
+		
+		document.querySelector('.visualization').appendChild(renderer.domElement);
 
 		const scene = new THREE.Scene();
 		const camera = new THREE.PerspectiveCamera( 75, renderer.domElement.width / renderer.domElement.height, 0.1, 1000 );
-		camera.position.set(0, 0, -2);
+		camera.position.set(0, 0, 2);
 		camera.lookAt(0, 0, 0);
 
 		let box_parent = new THREE.Group();
@@ -379,7 +385,9 @@
 	}
 </script>
 <div class="wrapper">
-	<img class='video-frame'/>
+	<div class="visualization">
+		<img class='video-frame'/>
+	</div>
 
 	<div class="h-group">
 		<label class="brilho">

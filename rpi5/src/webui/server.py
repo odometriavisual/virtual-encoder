@@ -16,8 +16,6 @@ class WebuiApp:
         self.host = host
         self.port = port
 
-        with open('src/webui/public/index.html', 'r') as file:
-            self.html = file.read()
 
     def generate_frames(self):
         period = 1_000_000_000 / 60
@@ -43,7 +41,13 @@ class WebuiApp:
 
         @self.app.route('/')
         def index():
-            return self.html
+            with open('src/webui/public/index.html', 'r') as file:
+                return file.read()
+
+        @self.app.route('/three.min.js')
+        def threejs():
+            with open('src/webui/public/three.min.js', 'r') as file:
+                return file.read()
 
         @self.app.route('/status', methods=['GET'])
         def status():

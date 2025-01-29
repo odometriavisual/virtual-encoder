@@ -109,7 +109,7 @@ class Server:
 
         def _get_timestamp_and_imu_data(self):
             quat = self.client.get_orientation()
-            return f"{quat[0]},{quat[1]},{quat[2]},{quat[3]},{quat[4]},{quat[5]}"
+            return f"{quat[0]},{quat[1]},{quat[2]},{quat[3]},{quat[4]}"
 
         def _extract_last_path(self):
             try:

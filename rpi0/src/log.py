@@ -3,7 +3,7 @@ from datetime import datetime
 from os.path import isfile, isdir
 from cv2 import imwrite
 
-import threading, csv, time
+import threading, csv, time, shutil
 
 class Logger:
     def __init__(self):
@@ -12,7 +12,10 @@ class Logger:
 
         time_now = time.time_ns()
         datenow = datetime.fromtimestamp(time_now // 1_000_000_000).strftime('%Y%m%dT%H%M%S')
-        self.save_dir = f'/home/pi/picam_imgs/{self.boot_num}_{datenow}'
+        self.root_dir = f'/home/pi/picam_imgs'
+        self.ensaio_number = f'{self.boot_num}_{datenow}'
+        self.save_dir = f'{self.root_dir}/{self.ensaio_number}'
+
         self.client = None
 
         self.enable_save_period = 15 * 1_000_000_000
@@ -25,7 +28,7 @@ class Logger:
             time_now = time.time_ns()
             if time_now > self.client.last_status_time + self.enable_save_period:
                 self.start_acquisition(time_now)
-            elif self.enable_save:
+            elif self.enable_save and self.client.rpi5status != 'Aquisicao':
                 ### O que acontece quando da timeout durante aquisicao e volta?
                 self.enable_save = False
 
@@ -66,7 +69,10 @@ class Logger:
 
     def start_acquisition(self, timestamp_ns):
         datenow = datetime.fromtimestamp(timestamp_ns // 1_000_000_000).strftime('%Y%m%dT%H%M%S')
-        self.save_dir = f'/home/pi/picam_imgs/{self.boot_num}_{datenow}'
+
+        self.ensaio_number = f'{self.boot_num}_{datenow}'
+        self.save_dir = f'{self.root_dir}/{self.ensaio_number}'
+
         if not isdir(self.save_dir):
             makedirs(self.save_dir)
             self._save_calibration_data()
@@ -75,6 +81,8 @@ class Logger:
 
     def stop_acquisition(self):
         self.enable_save = False
+        shutil.make_archive(f'{self.root_dir}/{self.ensaio_number}', 'zip', self.root_dir, self.ensaio_number)
+        shutil.rmtree(self.save_dir)
 
     def start(self):
         threading.Thread(target=self._poll_rpi5_status, daemon=True).start()

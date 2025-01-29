@@ -1,5 +1,5 @@
 import cv2
-import time
+import time, json
 from flask import Flask, Response, request
 from werkzeug.serving import BaseWSGIServer
 
@@ -47,7 +47,11 @@ class WebuiApp:
 
         @self.app.route('/status', methods=['GET'])
         def status():
-            return self.status
+            def generate_status():
+                while True:
+                    time.sleep(0.05)
+                    yield ''.join([json.dumps(self.status), '\n'])
+            return Response(generate_status(), content_type="application/json")
 
         @self.app.route('/set_focus/<focus>', methods=['POST'])
         def set_focus(focus):

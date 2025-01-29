@@ -1,6 +1,5 @@
 #!/usr/bin/env python
-import time
-import threading
+import threading, time, json, socket
 
 from src.network_manager import NetworkManager
 from src.webui.server import WebuiApp
@@ -106,10 +105,26 @@ def main():
             rpi0_status = client.get_status()
             if rpi0_status:
                 status['rpi0'] = rpi0_status['rpi0']
-                status['imu'] = rpi0_status['imu']
                 status['camera'] = rpi0_status['camera']
             ihm.update_display()
     threading.Thread(target=_get_rpi0_status, daemon=True).start()
+
+    def _get_imu_status():
+        with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as sock:
+            sock.bind(('', 7101))
+
+            while True:
+                message, address = sock.recvfrom(512)
+
+                try:
+                    imu = json.loads(message)
+                    if imu:
+                        status['imu'] = [float(x) for x in imu[1:]]
+                    else:
+                        status['imu'] = False
+                except:
+                    pass
+    threading.Thread(target=_get_imu_status, daemon=True).start()
 
     while True:
         while ev := ihm.poll_event():

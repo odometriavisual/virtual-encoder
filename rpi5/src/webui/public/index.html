@@ -4,7 +4,7 @@
 		.wrapper {
 			display: grid;
 			grid-gap: 4px;
-			font-family: 'sans-serif';
+			font-family: sans-serif;
 
 			grid-template-columns: 640px 168px;
 			grid-template-areas:
@@ -284,14 +284,24 @@
 			};
 			const method = 'GET';
 			const keepalive = true;
-			const signal = AbortSignal.timeout(3000);
 
 			try {
-				const res = await fetch('/status', {headers, keepalive, method, signal});
-				const status = await res.json();
-				update_status(status);
+				const res = await fetch('/status', {headers, keepalive, method });
+				const decoder = new TextDecoder();
+				let result = '';
+
+				for await (const chunk of res.body) {
+					result += decoder.decode(chunk, {stream: true});	
+					const lines = result.split('\n');
+					result = lines.pop() || '';
+
+					for (const line of lines) {
+						update_status(JSON.parse(line));
+					}
+				}
 			}
 			catch (err) {
+				console.log(err)
 				update_status({
 					rpi5: false, // { temp: 33., ip: '0.0.0.0', },
 					rpi0: false, // { temp: 82.3, },
@@ -303,7 +313,6 @@
 				});
 			}
 		}
-		setInterval(fetch_status, 1000);
 		fetch_status();
 
 		// 3D CUBE

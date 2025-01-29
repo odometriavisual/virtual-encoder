@@ -1,7 +1,7 @@
 from picamera2 import Picamera2
 import adafruit_bno055
 import board
-import time
+import time, json
 
 from src.localPiZeroClient import LocalPiZeroClient
 from src.localCalibration import load_or_recalibrate
@@ -11,6 +11,16 @@ from src.log import Logger
 from picamera2.encoders import MJPEGEncoder
 from picamera2.outputs import FileOutput
 import socket, threading
+
+def start_imu_stream(client):
+    def _start():
+        while True:
+            with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as sock:
+                sock.connect(("rpi5", 7101))
+                sock.send(json.dumps(client.get_orientation()).encode('utf-8'))
+            time.sleep(0.02)
+
+    threading.Thread(target=_start, daemon=True).start()
 
 def start_camera_stream(picam):
     def _listen():
@@ -42,6 +52,8 @@ def main():
 
     client = LocalPiZeroClient(picam, imu, logger)
     time.sleep(1)
+
+    start_imu_stream(client)
     logger.client = client
 
     load_or_recalibrate(client)

@@ -388,9 +388,10 @@
 			}
 			animate();
 		}
-		
+
 		function init_canvas2d() {
 			const ctx = window.canvas2d.getContext("2d");
+			window.zoom2d = 0.1;
 
 			draw_point = (x, y) => {
 				ctx.fillStyle = "rgba(255, 255, 255, 1.0)";
@@ -398,8 +399,8 @@
 
 				ctx.fillStyle = "black";
 				const side = 6;
-				x = window.canvas2d.width/2 + x;
-				y = window.canvas2d.height/2 - y;
+				x = window.canvas2d.width/2 + window.zoom2d * x;
+				y = window.canvas2d.height/2 - window.zoom2d * y;
 				ctx.fillRect(x - side/2, y - side/2, side, side);
 			}
 

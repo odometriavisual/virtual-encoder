@@ -28,9 +28,6 @@ class Logger:
             time_now = time.time_ns()
             if time_now > self.client.last_status_time + self.enable_save_period:
                 self.start_acquisition(time_now)
-            elif self.enable_save and self.client.rpi5status != 'Aquisicao':
-                ### O que acontece quando da timeout durante aquisicao e volta?
-                self.enable_save = False
 
     def _save_imgs(self):
         while True:

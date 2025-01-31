@@ -89,6 +89,9 @@ class LocalPiZeroClient:
         self.last_status_time = time.time_ns()
         self.rpi5status = status
 
+        if self.logger.enable_save and status != 'Aquisicao':
+            self.logger.stop_acquisition()
+
     def get_file_count(self) -> int:
         """
         Returns number of files in picam_imgs directory tree

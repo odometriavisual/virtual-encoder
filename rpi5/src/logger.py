@@ -15,8 +15,8 @@ class Logger:
         self.save_dir = None
         self.active = False
         self.queue = deque()
-        self.thread = threading.Thread(target=self._save_displacement, daemon=True)
-        
+        self.thread = None
+
     def _create_newdir(self, timestamp_ns):
         self.datenow = datetime.fromtimestamp(timestamp_ns // 1_000_000_000).strftime('%Y%m%dT%H%M%S')
         self.save_dir = f'/home/pi/picam_imgs/{self.boot_num}_{self.datenow}'
@@ -34,7 +34,7 @@ class Logger:
                 writer = csv.writer(file)
                 writer.writerow(["timestamp", "x", "y"])
 
-
+        self.thread = threading.Thread(target=self._save_displacement, daemon=True)
         self.thread.start()
 
     def reset(self):
@@ -58,7 +58,7 @@ class Logger:
             else:
                 if not self.active:
                     self.path = '/dev/null'
-                    self.save_dir= None
+                    self.save_dir = None
                     break
 
 

@@ -1,29 +1,20 @@
 <html lang="pt">
 <head>
 	<style>
-		canvas {
-			position: absolute;
-			top: 0;
-			left: -80;
-		}
 		.wrapper {
 			display: grid;
 			grid-gap: 4px;
 			font-family: sans-serif;
 
-			grid-template-columns: 640px 168px;
+			grid-template-columns: 640px 168px 480px;
+			grid-template-rows: 480px;
 			grid-template-areas:
-				"img     v-group"
-				"h-group h-group";
+				"img       monitoramento canvas2d"
+				"controles controles .";
 		}
 
-		.video-frame, .visualization {
-			width: 640px;
-			height: 480px;
-		}
-
-		.wrapper > .v-group {
-			grid-area: v-group;
+		.monitoramento {
+			grid-area: monitoramento;
 
 			display: grid;
 			grid-template-rows: 0.3fr 2fr 1fr 0.6fr 0.6fr;
@@ -33,8 +24,23 @@
 			user-select: none;
 		}
 
-		.wrapper > .h-group {
-			grid-area: h-group;
+		.visualization {
+			position: absolute;
+		}
+
+		.visualization > canvas {
+			position: absolute;
+			top: 0;
+			left: 0;
+		}
+
+		.canvas2d {
+			grid-area: canvas2d;
+			border: 1px solid black;
+		}
+
+		.controles {
+			grid-area: controles;
 
 			display: grid;
 			grid-gap: 4px;
@@ -78,7 +84,7 @@
 		label > div { align-self: center; }
 		label > input { flex-grow: 1; min-width: 1px;}
 
-		.v-group > div {
+		.monitoramento > div {
 			display: flex;
 			justify-content: center;
 			align-items: center;
@@ -111,56 +117,11 @@
 	</style>
 	<script src="./three.min.js"></script>
 	<title>Virtual Encoder</title>
+	<meta charset="UTF-8">
 </head>
 <body>
 <script type="module">
 	window.onload = () => {
-		let set_cube_quat = (x, y, z, w) => { };
-
-		const btns = {
-			calibracao: document.querySelector('button.calibracao'),
-			iniciar_aquisicao: document.querySelector('button.iniciar-aquisicao'),
-			parar_aquisicao: document.querySelector('button.parar-aquisicao'),
-			modo_odometro: document.querySelector('button.modo-odometro'),
-			modo_tempo: document.querySelector('button.modo-tempo'),
-			modo_autonomo: document.querySelector('button.modo-autonomo'),
-			iniciar_download: document.querySelector('button.iniciar-download'),
-			reiniciar: document.querySelector('button.reiniciar'),
-			desligar: document.querySelector('button.desligar'),
-			enviar_expo: document.querySelector('.exposicao > button'),
-			enviar_foco: document.querySelector('.foco > button'),
-		};
-
-		btns.calibracao.disabled = true;
-		btns.iniciar_aquisicao.disabled = true;
-		btns.parar_aquisicao.disabled = true;
-		btns.iniciar_download.disabled = true;
-		btns.modo_odometro.disabled = true;
-		btns.modo_tempo.disabled = true;
-		btns.modo_autonomo.disabled = true;
-		btns.reiniciar.disabled = true;
-		btns.desligar.disabled = true;
-
-		const status_watcher = {
-			rpi5: document.querySelector('.status.rpi5'),
-			rpi0: document.querySelector('.status.rpi0'),
-			camera: document.querySelector('.status.camera'),
-			imu: document.querySelector('.status.imu'),
-		};
-
-		const exposicao = document.querySelector('.exposicao > input');
-		const foco = document.querySelector('.foco > input');
-
-		const video_frame = document.querySelector('.video-frame');
-		video_frame.src = '/video_feed';
-		video_frame.style = 'filter: brightness(1.0)';
-
-		const brightness_slider = document.querySelector('.brilho > input');
-		brightness_slider.value = 1;
-		brightness_slider.oninput = () => {
-			video_frame.style.filter = video_frame.style.filter.replace(/brightness(.*)/, `brightness(${brightness_slider.value})`);
-		}
-
 		async function next_estado(event) {
 			event.target.disabled = true;
 
@@ -182,36 +143,81 @@
 			await fetch(`/next_modo/${modo}`, { method });
 		}
 
-		btns.calibracao.addEventListener('click', next_estado);
-		btns.iniciar_aquisicao.addEventListener('click', event => {
-			// if on Modo Tempo
-			if (btns.modo_tempo.disabled === true) {
-				const pps = parseInt(window.prompt('Frequência de pulsos por segundo:', '10'));
-				next_estado_args(event, 'Aquisicao', pps);
+		function init() {
+			window.btns = {
+				calibracao: document.querySelector('button.calibracao'),
+				iniciar_aquisicao: document.querySelector('button.iniciar-aquisicao'),
+				parar_aquisicao: document.querySelector('button.parar-aquisicao'),
+				modo_odometro: document.querySelector('button.modo-odometro'),
+				modo_tempo: document.querySelector('button.modo-tempo'),
+				modo_autonomo: document.querySelector('button.modo-autonomo'),
+				iniciar_download: document.querySelector('button.iniciar-download'),
+				reiniciar: document.querySelector('button.reiniciar'),
+				desligar: document.querySelector('button.desligar'),
+				enviar_expo: document.querySelector('.exposicao > button'),
+				enviar_foco: document.querySelector('.foco > button'),
+			};
+
+			for (let [_, btn] of Object.entries(window.btns)) {
+				btn.disabled = true;
 			}
-			else {
-				next_estado(event);
+
+			window.status_watcher = {
+				rpi5: document.querySelector('.status.rpi5'),
+				rpi0: document.querySelector('.status.rpi0'),
+				camera: document.querySelector('.status.camera'),
+				imu: document.querySelector('.status.imu'),
+			};
+
+			window.exposicao = document.querySelector('.exposicao > input');
+			window.foco = document.querySelector('.foco > input');
+
+			window.video_frame = document.querySelector('.video-frame');
+			window.video_frame.src = '/video_feed';
+			window.video_frame.style = 'filter: brightness(1.0)';
+
+			window.brightness_slider = document.querySelector('.brilho > input');
+			window.brightness_slider.value = 1;
+			window.brightness_slider.oninput = () => {
+				window.video_frame.style.filter = window.video_frame.style.filter.replace(/brightness(.*)/, `brightness(${window.brightness_slider.value})`);
 			}
-		});
-		btns.parar_aquisicao.addEventListener('click', next_estado);
 
-		btns.modo_odometro.addEventListener('click', event => next_modo(event, 'Odometro'));
-		btns.modo_tempo.addEventListener('click', event => next_modo(event, 'Tempo'));
-		btns.modo_autonomo.addEventListener('click', event => next_modo(event, 'Autonomo'));
+			window.btns.calibracao.addEventListener('click', next_estado);
+			window.btns.iniciar_aquisicao.addEventListener('click', event => {
+				// if on Modo Tempo
+				if (window.btns.modo_tempo.disabled === true) {
+					const pps = parseInt(window.prompt('Frequência de pulsos por segundo:', '10'));
+					next_estado_args(event, 'Aquisicao', pps);
+				}
+				else {
+					next_estado(event);
+				}
+			});
+			window.btns.parar_aquisicao.addEventListener('click', next_estado);
 
-		btns.iniciar_download.addEventListener('click', event => next_modo(event, 'Download'));
-		btns.reiniciar.addEventListener('click', event => next_modo(event, 'reboot'));
-		btns.desligar.addEventListener('click', event => next_modo(event, 'poweroff'));
+			window.btns.modo_odometro.addEventListener('click', event => next_modo(event, 'Odometro'));
+			window.btns.modo_tempo.addEventListener('click', event => next_modo(event, 'Tempo'));
+			window.btns.modo_autonomo.addEventListener('click', event => next_modo(event, 'Autonomo'));
 
-		btns.enviar_expo.addEventListener('click', async event => {
-			const method = 'POST';
-			await fetch(`/set_exposure/${exposicao.value}`, { method });
-		});
+			window.btns.iniciar_download.addEventListener('click', event => next_modo(event, 'Download'));
+			window.btns.reiniciar.addEventListener('click', event => next_modo(event, 'reboot'));
+			window.btns.desligar.addEventListener('click', event => next_modo(event, 'poweroff'));
 
-		btns.enviar_foco.addEventListener('click', async event => {
-			const method = 'POST';
-			await fetch(`/set_focus/${foco.value}`, { method });
-		});
+			window.btns.enviar_expo.addEventListener('click', async event => {
+				const method = 'POST';
+				await fetch(`/set_exposure/${window.exposicao.value}`, { method });
+			});
+
+			window.btns.enviar_foco.addEventListener('click', async event => {
+				const method = 'POST';
+				await fetch(`/set_focus/${window.foco.value}`, { method });
+			});
+
+			window.canvas2d = document.querySelector('.canvas2d');
+		}
+
+		let set_cube_quat = (x, y, z, w) => { };
+		let draw_point = (x, y) => { };
 
 		function update_classname(div, stat) {
 			if (stat) div.className = div.className.replace('err', 'ok')
@@ -219,19 +225,19 @@
 		}
 
 		function update_status(status) {
-			update_classname(status_watcher.rpi5, status.rpi5);
+			update_classname(window.status_watcher.rpi5, status.rpi5);
 			if (status.estado === 'Calibrando' || status.modo === 'Download') {
-				status_watcher.rpi5.classList.add('warn');
+				window.status_watcher.rpi5.classList.add('warn');
 			}
 			else {
-				status_watcher.rpi5.classList.remove('warn');
+				window.status_watcher.rpi5.classList.remove('warn');
 			}
 
-			update_classname(status_watcher.rpi0, status.rpi0);
-			update_classname(status_watcher.camera, status.camera);
-			update_classname(status_watcher.imu, status.imu);
+			update_classname(window.status_watcher.rpi0, status.rpi0);
+			update_classname(window.status_watcher.camera, status.camera);
+			update_classname(window.status_watcher.imu, status.imu);
 
-			status_watcher.rpi5.innerText = `RPi 5
+			window.status_watcher.rpi5.innerText = `RPi 5
 			Modo ${status.modo}
 			${status.rpi5 === false || status.modo === 'Download'? status.estado:
 					(status.estado === 'Calibrando'? `Calibrando ${status.rpi0.progress}%`: 'Estado' + status.estado)
@@ -239,50 +245,52 @@
 			${status.rpi5 ? `IP: ${status.rpi5.ip}` : ''}
 			${status.rpi5? `Temp: ${status.rpi5.temp?.toFixed(2)} ℃`: ''}`
 
-			status_watcher.rpi0.innerText = `RPi Zero
+			window.status_watcher.rpi0.innerText = `RPi Zero
 			${status.rpi0 ? `Temp: ${status.rpi0.temp?.toFixed(2)} ℃` : ''}`
 
 			const global_disable = status.estado === 'Calibrando'
 
 			if (status.modo === 'Tempo' || status.modo === 'Odometro') {
-				btns.iniciar_download.disabled = global_disable;
-				btns.modo_tempo.disabled = global_disable || status.modo === 'Tempo';
-				btns.modo_odometro.disabled = global_disable || status.modo === 'Odometro';
-				btns.modo_autonomo.disabled = global_disable;
+				window.btns.iniciar_download.disabled = global_disable;
+				window.btns.modo_tempo.disabled = global_disable || status.modo === 'Tempo';
+				window.btns.modo_odometro.disabled = global_disable || status.modo === 'Odometro';
+				window.btns.modo_autonomo.disabled = global_disable;
 
-				btns.calibracao.disabled = global_disable || status.estado !== 'Set';
-				btns.iniciar_aquisicao.disabled = global_disable || status.estado !== 'Ready';
-				btns.parar_aquisicao.disabled = global_disable || !status.estado.startsWith('Aquisicao');
+				window.btns.calibracao.disabled = global_disable || status.estado !== 'Set';
+				window.btns.iniciar_aquisicao.disabled = global_disable || status.estado !== 'Ready';
+				window.btns.parar_aquisicao.disabled = global_disable || !status.estado.startsWith('Aquisicao');
 			}
 			else if (status.modo === 'Autonomo') {
-				btns.iniciar_download.disabled = global_disable;
-				btns.modo_tempo.disabled = global_disable;
-				btns.modo_autonomo.disabled = true;
+				window.btns.iniciar_download.disabled = global_disable;
+				window.btns.modo_tempo.disabled = global_disable;
+				window.btns.modo_autonomo.disabled = true;
 
-				btns.calibracao.disabled = true;
-				btns.iniciar_aquisicao.disabled = true;
-				btns.parar_aquisicao.disabled = true;
+				window.btns.calibracao.disabled = true;
+				window.btns.iniciar_aquisicao.disabled = true;
+				window.btns.parar_aquisicao.disabled = true;
 			}
 			else if (status.modo === 'Download') {
-				btns.iniciar_download.disabled = true;
-				btns.modo_tempo.disabled = true;
-				btns.modo_autonomo.disabled = true;
+				window.btns.iniciar_download.disabled = true;
+				window.btns.modo_tempo.disabled = true;
+				window.btns.modo_autonomo.disabled = true;
 
-				btns.calibracao.disabled = true;
-				btns.iniciar_aquisicao.disabled = true;
-				btns.parar_aquisicao.disabled = true;
+				window.btns.calibracao.disabled = true;
+				window.btns.iniciar_aquisicao.disabled = true;
+				window.btns.parar_aquisicao.disabled = true;
 			}
 
-			btns.reiniciar.disabled = global_disable || status.rpi5 === false;
-			btns.desligar.disabled = global_disable || status.rpi5 === false;
+			window.btns.reiniciar.disabled = global_disable || status.rpi5 === false;
+			window.btns.desligar.disabled = global_disable || status.rpi5 === false;
 
 			if (status.imu) {
 				const [x, y, z, w] = status.imu;
 				set_cube_quat(x, y, z, w);
 			}
+
+			draw_point(status.pos.x, status.pos.y);
 		}
 
-		async function fetch_status() {
+		async function fetch_status_stream() {
 			const headers = {
 				'Accept': 'application/json',
 				'Keep-Alive': 'timeout=5, max=-1'
@@ -306,7 +314,6 @@
 				}
 			}
 			catch (err) {
-				console.log(err)
 				update_status({
 					rpi5: false, // { temp: 33., ip: '0.0.0.0', },
 					rpi0: false, // { temp: 82.3, },
@@ -318,70 +325,94 @@
 				});
 			}
 		}
-		fetch_status();
 
-		// 3D CUBE
+		function init_3d_cube() {
+			const renderer = new THREE.WebGLRenderer({alpha: true, antialias: true});
+			renderer.setSize(150, 150);
+			
+			document.querySelector('.visualization').appendChild(renderer.domElement);
 
-		const renderer = new THREE.WebGLRenderer({alpha: true, antialias: true});
-		// renderer.setSize(640, 480);
-		
-		document.querySelector('.visualization').appendChild(renderer.domElement);
+			const scene = new THREE.Scene();
+			const camera = new THREE.PerspectiveCamera( 75, renderer.domElement.width / renderer.domElement.height, 0.1, 1000 );
+			camera.position.set(0, 0, 2);
+			camera.lookAt(0, 0, 0);
 
-		const scene = new THREE.Scene();
-		const camera = new THREE.PerspectiveCamera( 75, renderer.domElement.width / renderer.domElement.height, 0.1, 1000 );
-		camera.position.set(0, 0, 2);
-		camera.lookAt(0, 0, 0);
+			let box_parent = new THREE.Group();
 
-		let box_parent = new THREE.Group();
+			let geometry = new THREE.PlaneGeometry();
+			const green = new THREE.MeshLambertMaterial({ color: 0x00FF00 });
+			const red = new THREE.MeshLambertMaterial({ color: 0xFF0000 });
+			const blue = new THREE.MeshLambertMaterial({ color: 0x0000FF });
 
-		let geometry = new THREE.PlaneGeometry();
-		const green = new THREE.MeshLambertMaterial({ color: 0x00FF00 });
-		const red = new THREE.MeshLambertMaterial({ color: 0xFF0000 });
-		const blue = new THREE.MeshLambertMaterial({ color: 0x0000FF });
+			const top_plane = new THREE.Mesh(geometry, green);
+			top_plane.rotateX(-Math.PI/2);
+			top_plane.position.y = 0.5;
+			box_parent.add(top_plane);
 
-		const top_plane = new THREE.Mesh(geometry, green);
-		top_plane.rotateX(-Math.PI/2);
-		top_plane.position.y = 0.5;
-		box_parent.add(top_plane);
+			const bot_plane = new THREE.Mesh(geometry, green);
+			bot_plane.rotateX(Math.PI/2);
+			bot_plane.position.y = -0.5;
+			box_parent.add(bot_plane);
 
-		const bot_plane = new THREE.Mesh(geometry, green);
-		bot_plane.rotateX(Math.PI/2);
-		bot_plane.position.y = -0.5;
-		box_parent.add(bot_plane);
+			const front_plane = new THREE.Mesh(geometry, blue);
+			front_plane.rotateY(Math.PI);
+			front_plane.position.z = -0.5;
+			box_parent.add(front_plane);
 
-		const front_plane = new THREE.Mesh(geometry, blue);
-		front_plane.rotateY(Math.PI);
-		front_plane.position.z = -0.5;
-		box_parent.add(front_plane);
+			const back_plane = new THREE.Mesh(geometry, blue);
+			back_plane.position.z = 0.5;
+			box_parent.add(back_plane);
 
-		const back_plane = new THREE.Mesh(geometry, blue);
-		back_plane.position.z = 0.5;
-		box_parent.add(back_plane);
+			const left_plane = new THREE.Mesh(geometry, red);
+			left_plane.rotateY(Math.PI/2);
+			left_plane.position.x = 0.5;
+			box_parent.add(left_plane);
 
-		const left_plane = new THREE.Mesh(geometry, red);
-		left_plane.rotateY(Math.PI/2);
-		left_plane.position.x = 0.5;
-		box_parent.add(left_plane);
+			const right_plane = new THREE.Mesh(geometry, red);
+			right_plane.rotateY(-Math.PI/2);
+			right_plane.position.x = -0.5;
+			box_parent.add(right_plane);
 
-		const right_plane = new THREE.Mesh(geometry, red);
-		right_plane.rotateY(-Math.PI/2);
-		right_plane.position.x = -0.5;
-		box_parent.add(right_plane);
+			scene.add(box_parent);
 
-		scene.add(box_parent);
+			const ambientLight = new THREE.AmbientLight(0xCCCCCC);
+			scene.add(ambientLight);
 
-		const ambientLight = new THREE.AmbientLight(0xCCCCCC);
-		scene.add(ambientLight);
+			set_cube_quat = (x, y, z, w) => {
+				box_parent.quaternion.set(x, y, z, w);
+			};
 
-		set_cube_quat = (x, y, z, w) => {
-			box_parent.quaternion.set(x, y, z, w);
-		};
-
-		function animate() {
-			requestAnimationFrame( animate );
-			renderer.render( scene, camera );
+			function animate() {
+				requestAnimationFrame(animate);
+				renderer.render(scene, camera);
+			}
+			animate();
 		}
-		animate();
+		
+		function init_canvas2d() {
+			const ctx = window.canvas2d.getContext("2d");
+
+			draw_point = (x, y) => {
+				ctx.fillStyle = "rgba(255, 255, 255, 1.0)";
+				ctx.fillRect(0, 0, window.canvas2d.width, window.canvas2d.height);
+
+				ctx.fillStyle = "black";
+				const side = 6;
+				x = window.canvas2d.width/2 + x;
+				y = window.canvas2d.height/2 - y;
+				ctx.fillRect(x - side/2, y - side/2, side, side);
+			}
+
+			draw_point(0, 0);
+		}
+
+		window.update_status = update_status;
+
+		init();
+		init_3d_cube();
+		init_canvas2d();
+
+		fetch_status_stream();
 	}
 </script>
 <div class="wrapper">
@@ -389,7 +420,19 @@
 		<img class='video-frame'/>
 	</div>
 
-	<div class="h-group">
+	<div class="monitoramento">
+		<div>Monitoramento</div>
+		<div class="status rpi5 err">
+			RPi 5
+		</div>
+		<div class="status rpi0 err">RPi Zero</div>
+		<div class="status camera err">Picam</div>
+		<div class="status imu err">IMU</div>
+	</div>
+
+	<canvas class="canvas2d" width="480" height="480"></canvas>
+
+	<div class="controles">
 		<label class="brilho">
 			<div>Brilho:</div>
 			<input type="range" min="0" max="10" step="0.05" value="1" />
@@ -418,16 +461,6 @@
 		<button class="iniciar-download" disabled>Iniciar Download</button>
 		<button class="reiniciar" disabled>Reiniciar</button>
 		<button class="desligar" disabled>Desligar</button>
-	</div>
-
-	<div class="v-group">
-		<div>Monitoramento</div>
-		<div class="status rpi5 err">
-			RPi 5
-		</div>
-		<div class="status rpi0 err">RPi Zero</div>
-		<div class="status camera err">Picam</div>
-		<div class="status imu err">IMU</div>
 	</div>
 </div>
 </body>

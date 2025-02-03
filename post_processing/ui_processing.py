@@ -37,7 +37,12 @@ DEFAULT_CONFIG = {
     },
     "Spatial Window": {
         "method": "blackman_harris",
-        "params": {}
+        "params": {
+            "a0": 0.358,
+            "a1": 0.47,
+            "a2": 0.135,
+            "a3": 0.037,
+        }
     },
     "Downsampling": {
         "method": "",
@@ -57,6 +62,7 @@ class ProcessingThread(QThread):
         self.folder_path = folder_path
         self.image_files = []  # Inicializar o atributo
         self.quaternions = []  # Add this line to initialize the quaternions list
+        self.R_correction = None
 
     def run(self):
         # Carregar dados da IMU e imagens
@@ -95,8 +101,8 @@ class ProcessingThread(QThread):
         #enhancer_brightness = ImageEnhance.Brightness(img_rgb)
         #img_rgb = enhancer_brightness.enhance(1.5)  # Ajuste o valor para mais brilho (1.0 é padrão)
 
-        enhancer_contrast = ImageEnhance.Contrast(img_rgb)
-        img_rgb = enhancer_contrast.enhance(1.5)  # Ajuste o valor para mais contraste
+        #enhancer_contrast = ImageEnhance.Contrast(img_rgb)
+        #img_rgb = enhancer_contrast.enhance(1.5)  # Ajuste o valor para mais contraste
 
         # Converter para escala de cinza
         img_grayscale = ImageOps.grayscale(img_rgb)
@@ -105,7 +111,7 @@ class ProcessingThread(QThread):
         img_array = np.asarray(img_grayscale)
 
         # Normalizar os valores de pixel para 0-1
-        img_array = img_array / 255.0
+        # img_array = img_array / 255.0
 
         return image_preprocessing(img_array, DEFAULT_CONFIG)
 
@@ -152,17 +158,28 @@ class ProcessingThread(QThread):
             qz = closest_imu_data['qz']
             qw = closest_imu_data['qw']
             quaternions = [qx, qy, qz, qw]
-            rotation_matrix = self.quaternion_to_rotation_matrix(quaternions)
+
+            inverse_quaternion = [-quaternions[0], -quaternions[1], -quaternions[2], quaternions[3]]
+
+
+            if self.R_correction is None:
+                # Converte o quaternion inverso em uma matriz de rotação
+                self.R_correction = self.quaternion_to_rotation_matrix(inverse_quaternion)
+
+            # Converte o quaternion original em uma matriz de rotação
+            rotation_matrix = self.quaternion_to_rotation_matrix(quaternions) @ self.R_correction
 
             #print(quaternions)
 
             displacement_2d = np.array([0 , dy, dx])
             #displacement_2d = np.array([dy , 0.0, dx])
 
-            displacement_3d = rotation_matrix @ displacement_2d
-            #displacement_3d = displacement_2d
 
-            displacement_3dr = rotation_matrix @ np.array([0, dx, dy])
+            displacement_3d =  rotation_matrix @ np.array([dx, dy,0])
+            displacement_3dr = rotation_matrix @ np.array([dy ,dx,0])
+
+            #displacement_3dr = rotation_matrix @ np.array([0, dx, dy])
+
 
             current_position2D += displacement_2d
             current_position3D += displacement_3d
@@ -215,6 +232,11 @@ class ProcessingThread(QThread):
             [2 * (qx * qy + qw * qz), 1 - 2 * (qx ** 2 + qz ** 2), 2 * (qy * qz - qw * qx)],
             [2 * (qx * qz - qw * qy), 2 * (qy * qz + qw * qx), 1 - 2 * (qx ** 2 + qy ** 2)]
         ])
+
+    def inverse_quaternion(self, q):
+        """Retorna o inverso do quaternion (qx, qy, qz, qw)"""
+        qx, qy, qz, qw = q
+        return (-qx, -qy, -qz, qw)
 
     def find_closest_imu_data(self, imu_data, img_timestamp):
         closest_data = min(imu_data, key=lambda x: abs(x['timestamp'] - img_timestamp))

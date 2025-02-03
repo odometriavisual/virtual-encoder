@@ -76,6 +76,8 @@ def animate_cube(data):
     ax.set_zlim([-1.3, 1.3])
     ax.set_box_aspect([1, 1, 1])  # Aspecto uniforme
 
+    ax.view_init(elev=-90, azim=-90)  # Ajusta a visão para olhar a parte de baixo
+
     # Remover grade, ticks e rótulos
     ax.axis('off')
 
@@ -91,21 +93,25 @@ def animate_cube(data):
 
     def start_animation(event):
         nonlocal start_time
-        last_time = start_time
-        i = 0
+        start_time = time.time()  # Atualizar o tempo de início
 
-        while i < len(timestamps):
+        while True:
             current_time = time.time()
-            elapsed_time = (current_time - start_time) * 1e9  # Convert to nanoseconds
+            elapsed_time = (current_time - start_time) * 1e9  # Converter para nanosegundos
 
-            # Sincronizar com o timestamp
-            if elapsed_time >= timestamps[i] - timestamps[0]:
-                update_cube(cube, vertices, quaternions[i])
-                plt.draw()
-                plt.pause(0.05)  # Atualizar a cada 50ms
-                i += 1  # Avançar para o próximo timestamp
-            else:
-                time.sleep(0.001)  # Espera para reduzir o atraso
+            # Encontrar o índice do frame mais próximo do tempo atual
+            i = np.searchsorted(timestamps, timestamps[0] + elapsed_time, side="right") - 1
+
+            # Garantir que o índice está dentro do intervalo válido
+            if i < 0:
+                i = 0
+            elif i >= len(timestamps):
+                break  # Parar quando todos os frames forem processados
+
+            update_cube(cube, vertices, quaternions[i])
+            plt.draw()
+            plt.pause(0.05)  # Pequena pausa para atualizar a exibição
+
 
     # Botão para iniciar a animação
     ax_button = plt.axes([0.85, 0.05, 0.1, 0.075])  # Posição e tamanho do botão
@@ -115,5 +121,5 @@ def animate_cube(data):
     plt.show()
 
 # Ler o arquivo CSV e iniciar a animação
-data = pd.read_csv('data/imu.csv')
+data = pd.read_csv('data/imu2.csv')
 animate_cube(data)

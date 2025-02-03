@@ -8,16 +8,17 @@ from PySide6.QtCore import Qt, QThread, Signal
 from PySide6.QtGui import QPixmap,QImage
 from PySide6.QtWidgets import QSlider, QHBoxLayout
 
-
 import matplotlib
 from visual_odometer.displacement_estimators.svd import svd_method
 from visual_odometer.preprocessing import image_preprocessing
 #from visual_odometer.visual_odometer import DEFAULT_CONFIG
 from PySide6.QtCore import QTimer
+from vpython import *
 
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d.art3d import Poly3DCollection
+import math
 
 
 
@@ -36,7 +37,7 @@ DEFAULT_CONFIG = {
         "params": {}
     },
     "Spatial Window": {
-        "method": "blackman_harris",
+        "method": "blackman_harrisx",
         "params": {}
     },
     "Downsampling": {
@@ -57,6 +58,8 @@ class ProcessingThread(QThread):
         self.folder_path = folder_path
         self.image_files = []  # Inicializar o atributo
         self.quaternions = []  # Add this line to initialize the quaternions list
+
+
 
     def run(self):
         # Carregar dados da IMU e imagens
@@ -156,13 +159,13 @@ class ProcessingThread(QThread):
 
             #print(quaternions)
 
-            displacement_2d = np.array([0 , dy, dx])
+            displacement_2d = np.array([dx , dy, 0])
             #displacement_2d = np.array([dy , 0.0, dx])
 
             displacement_3d = rotation_matrix @ displacement_2d
             #displacement_3d = displacement_2d
 
-            displacement_3dr = rotation_matrix @ np.array([0, dx, dy])
+            displacement_3dr = rotation_matrix @ np.array([dy, 0, dx])
 
             current_position2D += displacement_2d
             current_position3D += displacement_3d
@@ -299,6 +302,29 @@ class TrajectoryApp(QMainWindow):
         super().__init__()
         self.setWindowTitle("Visualização de Trajetória 3D")
         self.setGeometry(100, 100, 1600, 600)
+
+        scene.range = 20
+        toRad = 2 * np.pi / 360
+        self.toDeg = 1 / toRad
+        scene.forward = vector(-1, -1, -1)
+
+        scene.width = 1000
+        scene.height = 1000
+
+        body = cone(pos=vector(5, 0, 0), axis=vector(-15, 0, 0), radius=1, opacity=.3)
+        body2 = cone(pos=vector(5, 0, 0), axis=vector(5, 0, 0), radius=1, opacity=.3)
+        wing = box(pos=vector(3.5, 0, 0), size=vector(3, .3, 18), opacity=.3)
+        tail = box(pos=vector(-7.5, 0, 0), size=vector(2, .3, 5), opacity=.3)
+        aileron = box(pos=vector(-7.5, 1.2, 0), size=vector(2, 2.4, 0.3), opacity=.3)
+        self.myObj = compound([body, body2, wing, tail, aileron])
+
+        Xarrow = arrow(axis=vector(-1, 0, 0), length=10, shaftwidth=.2, color=color.blue)
+        Yarrow = arrow(axis=vector(0, 1, 0), length=8, shaftwidth=.2, color=color.green)
+        Zarrow = arrow(axis=vector(0, 0, 1), length=8, shaftwidth=.2, color=color.red)
+
+        self.frontArrow = arrow(length=8, shaftwidth=.2, color=color.white, axis=vector(1, 0, 0))
+        self.upArrow = arrow(length=8, shaftwidth=.2, color=color.yellow, axis=vector(0, 1, 0))
+        self.sideArrow = arrow(length=8, shaftwidth=.2, color=color.magenta, axis=vector(0, 0, 1))
 
         # Layout principal
         self.layout = QVBoxLayout()
@@ -485,14 +511,47 @@ class TrajectoryApp(QMainWindow):
             self.playing = True
             self.play_pause_button.setText("Pausar")
 
+    def update_vpython_plane(self, quaternion):
+        v = quaternion
+        q0 = v[0]
+        q1 = v[1]
+        q2 = v[2]
+        q3 = v[3]
+        print("QW= {:.3f} Qx= {:.3f} Qy= {:.3f} Qz= {:.3f} \n".format(q0, q1, q2, q3))
+
+        roll = math.atan2(2 * (q0 * q1 + q2 * q3), 1 - 2 * (q1 * q1 + q2 * q2))
+        pitch = math.asin(2 * (q0 * q2 - q3 * q1))
+        yaw = math.atan2(2 * (q0 * q3 + q1 * q2), 1 - 2 * (q2 * q2 + q3 * q3)) - np.pi / 4
+
+        print('Roll= {:.3f}, Pitch= {:.3f}, Yaw= {:.3f}'.format(roll * self.toDeg, pitch * self.toDeg, yaw * self.toDeg))
+
+        # rol.append(roll)
+        # pit.append(pitch)
+        # ya.append(yaw)
+
+        rate(50)
+
+        k = vector(cos(yaw) * cos(pitch), sin(pitch), sin(yaw) * cos(pitch))
+        y = vector(0, 1, 0)
+        s = cross(k, y)
+        v = cross(s, k)
+        vrot = v * cos(roll) + cross(k, v) * sin(roll)
+
+        self.frontArrow.axis = k
+        self.sideArrow.axis = cross(-k, vrot)
+        self.upArrow.axis = vrot
+        self.myObj.axis = k
+        self.myObj.up = vrot
+        self.sideArrow.length = 8
+        self.frontArrow.length = 8
+        self.upArrow.length = 8
     def update_trajectory(self):
         if self.positions3D is not None:
             if self.current_index < len(self.positions3D):
                 self.plot_partial_trajectory(self.positions3D[:self.current_index + 1], self.positions3DR[:self.current_index + 1],self.positions2D[:self.current_index + 1])
                 self.update_image(self.image_files[self.current_index])  # Atualizar a imagem exibida
                 self.progress_slider.setValue(self.current_index)  # Atualizar a barra de progresso
-                rotation_matrix = self.quaternion_to_rotation_matrix(self.quaterion_values[self.current_index])
-                self.update_plane_position(self.positions3D[self.current_index], rotation_matrix)
+                self.update_vpython_plane(self.quaterion_values[self.current_index])
                 self.current_index += 1
             else:
                 self.timer.stop()  # Parar o timer ao final da trajetória

@@ -7,7 +7,7 @@ import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D  # Importar para visualização 3D
 from datetime import datetime
 
-from visual_odometer import VisualOdometer
+from visual_odometer.dsp import apply_blackman_harris_window
 from visual_odometer.preprocessing import image_preprocessing
 from visual_odometer.displacement_estimators.svd import svd_method
 
@@ -39,8 +39,8 @@ def load_image(filename):
     img_rgb = Image.open(filename)
 
     # Melhorar o brilho e o contraste
-    enhancer_brightness = ImageEnhance.Brightness(img_rgb)
-    img_rgb = enhancer_brightness.enhance(1.5)  # Ajuste o valor para mais brilho (1.0 é padrão)
+    # enhancer_brightness = ImageEnhance.Brightness(img_rgb)
+    # img_rgb = enhancer_brightness.enhance(1.5)  # Ajuste o valor para mais brilho (1.0 é padrão)
 
     enhancer_contrast = ImageEnhance.Contrast(img_rgb)
     img_rgb = enhancer_contrast.enhance(1.5)  # Ajuste o valor para mais contraste
@@ -51,6 +51,8 @@ def load_image(filename):
 
     # Converter para matriz NumPy
     img_array = np.asarray(img_grayscale)
+
+    img_array = apply_blackman_harris_window(img_array,0.358, 0.47, 0.135, 0.037)
 
     # img_array = img_array / 255.0
 
@@ -88,8 +90,10 @@ def quaternion_to_rotation_matrix(q):
     ])
 
 
-image_folder = 'C:/Users/dsant/Downloads/Ensaio - Encerramento - 2024-20250116T221232Z-001/Ensaio - Encerramento - 2024/61_20241220T153234'
+image_folder = 'C:/Users/dsant/Downloads/Ensaio - Encerramento - 2024-20250121T212828Z-001/Ensaio - Encerramento - 2024/60_20241220T152426 DADOS DE SVD'
 imu_file = image_folder + "/imu.csv"
+output_folder = image_folder + "/output_images"
+
 
 # Carregar dados da IMU
 imu_data = load_imu_data(imu_file)
@@ -111,7 +115,6 @@ current_position2D = np.array([0.0, 0.0, 0.0])
 
 # Processamento de deslocamento para cada imagem
 # Pasta para salvar as visualizações
-output_folder = "output_visualizations"
 os.makedirs(output_folder, exist_ok=True)
 
 # Processamento de deslocamento para cada imagem
@@ -121,7 +124,7 @@ for i, (img_preprocessed, img_array, img_file) in enumerate(zip(img_stream, load
 
     # Obter dx e dy usando SVD
     dx, dy, qu, qv, ang_qu, ang_qv, yy, ymu, xy, xmu = svd_method(
-        img_preprocessed, old_processed_img, img_size[1], img_size[0], debug=True
+        img_preprocessed, old_processed_img, img_size[1], img_size[0], debug=True, phase_windowing="central"
     )
 
     # Extrair os dados do IMU
@@ -147,38 +150,56 @@ for i, (img_preprocessed, img_array, img_file) in enumerate(zip(img_stream, load
     # Gerar a visualização
     fig, axes = plt.subplots(2, 3, figsize=(15, 10))
 
-    # Imagem atual e próxima
+    # Imagem atual
     axes[0, 0].imshow(old_img, cmap='gray')
     axes[0, 0].set_title("Imagem Atual")
 
+    # Adicionar texto dx, dy
+    axes[0, 0].text(
+        10, 10, f"dx={dx:.2f}, dy={dy:.2f}",
+        color='yellow', fontsize=12, ha='left', va='top', bbox=dict(facecolor='black', alpha=0.5)
+    )
+
+    # Próxima Imagem
     axes[1, 0].imshow(img_array, cmap='gray')
     axes[1, 0].set_title("Próxima Imagem")
 
+
     # Visualizar ang_qu e ang_qv
-    axes[0, 1].plot(ang_qu)
-    axes[0, 1].set_title("ang_qu")
+    axes[0, 1].plot(qu[:, 0])
+    axes[0, 1].set_title("qu")
 
-    axes[1, 1].plot(ang_qv)
-    axes[1, 1].set_title("ang_qv")
+    axes[1, 1].plot(qv[0, :])
+    axes[1, 1].set_title("qv")
 
-    # Criar os dados simulados
+    # Criar os dados simulados para yy
     y = np.arange(len(yy))  # Usar o tamanho de yy como o domínio
     reta_qv = ymu * y  # Apenas inclinação mu, sem offset (c = 0)
 
+    # Identificar os 60 pontos centrais para yy
+    mid_idx_y = len(yy) // 2
+    central_indices_y = range(mid_idx_y - 30, mid_idx_y + 30)
+
     # Plotar ang_qv com a reta mu
-    axes[0, 2].plot(yy, label="qv filtrado")
-    axes[0, 2].plot(y, reta_qv, color='r', linestyle='--', label=f"mu={xmu:.2f}")
-    axes[0, 2].set_title("ang_qv")
+    axes[0, 2].plot(yy, label="qv unwraped")
+    axes[0, 2].plot(y, reta_qv, color='r', linestyle='--', label=f"mu={ymu:.2f}")
+    axes[0, 2].scatter(central_indices_y, [yy[i] for i in central_indices_y], color='orange', label="Central 60 pts")
+    axes[0, 2].set_title("After Phase Unwraping")
     axes[0, 2].legend()
 
-    # Criar os dados simulados
-    x = np.arange(len(xy))  # Usar o tamanho de yy como o domínio
+    # Criar os dados simulados para xy
+    x = np.arange(len(xy))  # Usar o tamanho de xy como o domínio
     reta_qv = xmu * x  # Apenas inclinação mu, sem offset (c = 0)
 
-    # Plotar ang_qv com a reta mu
-    axes[1, 2].plot(xy, label="qv filtrado")
+    # Identificar os 60 pontos centrais para xy
+    mid_idx_x = len(xy) // 2
+    central_indices_x = range(mid_idx_x - 30, mid_idx_x + 30)
+
+    # Plotar ang_qu com a reta mu
+    axes[1, 2].plot(xy, label="qu unwraped")
     axes[1, 2].plot(x, reta_qv, color='r', linestyle='--', label=f"mu={xmu:.2f}")
-    axes[1, 2].set_title("ang_qv")
+    axes[1, 2].scatter(central_indices_x, [xy[i] for i in central_indices_x], color='orange', label="Central 60 pts")
+    axes[1, 2].set_title("After Phase Unwraping")
     axes[1, 2].legend()
 
     # Ajustar layout e salvar

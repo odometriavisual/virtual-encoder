@@ -119,7 +119,12 @@ def main():
                 try:
                     imu = json.loads(message)
                     if imu:
-                        status['imu'] = [float(x) for x in imu[1:]]
+                        imu = [float(x) for x in imu[1:]]
+
+                        d = sum([x*x for x in imu])
+
+                        if 0.99 < d < 1.01:
+                            status['imu'] = imu
                     else:
                         status['imu'] = False
                 except:

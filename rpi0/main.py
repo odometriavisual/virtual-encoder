@@ -12,12 +12,14 @@ from picamera2.encoders import MJPEGEncoder
 from picamera2.outputs import FileOutput
 import socket, threading
 
-def start_imu_stream(client):
+def start_imu_stream(client, logger):
     def _start():
         while True:
             with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as sock:
                 sock.connect(("rpi5", 7101))
-                sock.send(json.dumps(client.get_orientation()).encode('utf-8'))
+                measure = client.get_orientation()
+                logger.orientations_queue.put(measure, block=False)
+                sock.send(json.dumps(measure).encode('utf-8'))
             time.sleep(0.02)
 
     threading.Thread(target=_start, daemon=True).start()
@@ -49,12 +51,12 @@ def main():
         imu = None
 
     logger = Logger()
-
     client = LocalPiZeroClient(picam, imu, logger)
+    logger.client = client
+
     time.sleep(1)
 
-    start_imu_stream(client)
-    logger.client = client
+    start_imu_stream(client, logger)
 
     load_or_recalibrate(client)
     logger.start()

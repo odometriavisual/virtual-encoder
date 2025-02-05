@@ -3,7 +3,7 @@ from datetime import datetime
 from os.path import isfile, isdir
 from cv2 import imwrite
 
-import threading, csv, time, shutil
+import threading, csv, time, shutil, queue
 
 class Logger:
     def __init__(self):
@@ -17,6 +17,7 @@ class Logger:
         self.save_dir = f'{self.root_dir}/{self.ensaio_number}'
 
         self.client = None
+        self.orientations_queue = queue.Queue()
 
         self.enable_save_period = 15 * 1_000_000_000
         self.enable_save = False
@@ -41,7 +42,7 @@ class Logger:
 
     def _save_orientations(self):
         while True:
-            time.sleep(0.02)
+            measure = self.orientations_queue.get(True)
 
             if self.enable_save:
                 path = f'{self.save_dir}/imu.csv'
@@ -50,7 +51,6 @@ class Logger:
                         writer = csv.writer(file)
                         writer.writerow(["timestamp", "qw", "qx", "qy", "qz"])
 
-                measure = self.client.get_orientation()
                 if measure[0] > 0:
                     with open(path, mode='a', newline='') as file:
                         writer = csv.writer(file)

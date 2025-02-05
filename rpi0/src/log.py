@@ -27,7 +27,7 @@ class Logger:
         while True:
             time.sleep(0.1)
             time_now = time.time_ns()
-            if time_now > self.client.last_status_time + self.enable_save_period:
+            if not self.enable_save and time_now > self.client.last_status_time + self.enable_save_period:
                 self.start_acquisition(time_now)
 
     def _save_imgs(self):
@@ -64,7 +64,7 @@ class Logger:
             writer.writerow(["timestamp", "exposure", "focus"])
             writer.writerow([time_now, self.client.exposure, self.client.focus])
 
-    def start_acquisition(self, timestamp_ns):
+    def start_acquisition(self, timestamp_ns, name):
         datenow = datetime.fromtimestamp(timestamp_ns // 1_000_000_000).strftime('%Y%m%dT%H%M%S')
 
         self.ensaio_number = f'{self.boot_num}_{datenow}'

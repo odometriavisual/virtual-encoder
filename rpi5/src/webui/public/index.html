@@ -56,13 +56,13 @@
 			grid-template-rows: 24px 48px 48px 48px 48px;
 			grid-template-areas:
 				"brilho brilho brilho brilho brilho brilho brilho brilho brilho brilho brilho brilho brilho"
-				"expo   expo   expo   expo   expo   .      .      .      foco   foco   foco   foco   foco"
-				".      .      .      .      .      .      .      .      .      .      init-d init-d init-d"
+				"expo   expo   expo   expo   expo   .      .      .      .      .      pps    pps    pps"
+				"foco   foco   foco   foco   foco   .      .      .      .      .      init-d init-d init-d"
 			    "calib  calib  calib  init-a init-a init-a stop-a stop-a stop-a .      reboot reboot reboot"
 				"modo-o modo-o modo-o modo-t modo-t modo-t modo-a modo-a modo-a .      shutd  shutd  shutd"
 		}
 
-		.brilho { grid-area: brilho; }
+		.brilho { grid-area: brilho; grid-auto-columns: 60px auto; }
 		.calibracao { grid-area: calib; }
 		.iniciar-aquisicao { grid-area: init-a; }
 		.parar-aquisicao { grid-area: stop-a; }
@@ -75,6 +75,7 @@
 
 		.exposicao { grid-area: expo; }
 		.foco { grid-area: foco; }
+		.pulsos-por-segundo { grid-area: pps; }
 		/* Chrome, Safari, Edge, Opera */
 		input::-webkit-outer-spin-button,
 		input::-webkit-inner-spin-button {
@@ -87,7 +88,7 @@
 			-moz-appearance: textfield;
 		}
 
-		label { display: flex; gap: 8px; }
+		label { display: grid; gap: 8px; grid-auto-flow: column; }
 		label > div { align-self: center; }
 		label > input { flex-grow: 1; min-width: 1px;}
 
@@ -179,6 +180,7 @@
 
 			window.exposicao = document.querySelector('.exposicao > input');
 			window.foco = document.querySelector('.foco > input');
+			window.pulsos_por_segundo = document.querySelector('.pulsos-por-segundo > input');
 
 			window.video_frame = document.querySelector('.video-frame');
 			window.video_frame.src = '/video_feed';
@@ -194,7 +196,7 @@
 			window.btns.iniciar_aquisicao.addEventListener('click', event => {
 				// if on Modo Tempo
 				if (window.btns.modo_tempo.disabled === true) {
-					const pps = parseInt(window.prompt('Frequência de pulsos por segundo:', '10'));
+					const pps = parseInt(window.pulsos_por_segundo.value);
 					next_estado_args(event, 'Aquisicao', pps);
 				}
 				else {
@@ -460,6 +462,11 @@
 			<div>Foco:</div>
 			<input type="number" value="20" />
 			<button>Enviar</button>
+		</label>
+
+		<label class="pulsos-por-segundo">
+			<div>Pulsos/s:</div>
+			<input type="number" value="10" />
 		</label>
 
 		<button class="calibracao" disabled>Iniciar Calibracao</button>

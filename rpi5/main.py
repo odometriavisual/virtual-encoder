@@ -4,7 +4,6 @@ import threading, time, json, socket
 from src.network_manager import NetworkManager
 from src.webui.server import WebuiApp
 from src.ihm.ihm import IHM
-from src.ihm.gpiod_button import GpiodButton
 from src.pi_zero_client import PiZeroClient
 from src.pulse_generator import PulseGenerator
 from src.mount_device_manager import MountDeviceManager
@@ -34,9 +33,6 @@ def main():
     """
     OLED: 2 (SDA)
           3 (SCL)
-    Push Button 1: 24
-    Push Button 2: 27
-    Push Button 3: 18
 
                 A,  B
     Encoder 1: 19, 13
@@ -51,7 +47,6 @@ def main():
         PulseGenerator(PIN_A=5,PIN_B=6)
     )
 
-    buttons = (GpiodButton(24), GpiodButton(27), GpiodButton(18))
     client = PiZeroClient(status)
     ihm = IHM(client.get_img, status)
 
@@ -61,20 +56,6 @@ def main():
     ssd_manager.mount()
     net_manager.update_address()
     ssd_manager.unmount()
-
-    def check_all_buttons():
-        while True:
-            if buttons[0].checkButton() is True:
-                ihm.send_event("next_modo")
-                time.sleep(1)
-            if buttons[1].checkButton() is True:
-                ihm.send_event("next_estado")
-                time.sleep(1)
-            if buttons[2].checkButton() is True:
-                ihm.send_event(('next_modo', 'Download'))
-                time.sleep(1)
-            time.sleep(0.1)
-    threading.Thread(target=check_all_buttons, daemon=True).start()
 
     webui = WebuiApp(ihm, status)
     threading.Thread(target=webui.run, daemon=True).start()

@@ -134,6 +134,7 @@
 	window.onload = () => {
 		let set_cube_quat = (x, y, z, w) => { };
 		let draw_point = (x, y) => { };
+		let clear_canvas = () => { };
 
 		async function next_estado(event) {
 			event.target.disabled = true;
@@ -203,6 +204,7 @@
 
 			window.btns.calibracao.addEventListener('click', next_estado);
 			window.btns.iniciar_aquisicao.addEventListener('click', event => {
+				clear_canvas()
 				// if on Modo Tempo
 				if (window.btns.modo_tempo.disabled === true) {
 					const pps = parseInt(window.pulsos_por_segundo.value);
@@ -413,14 +415,16 @@
 			window.zoom2d = 0.1;
 
 			draw_point = (x, y) => {
-				ctx.fillStyle = "rgba(255, 255, 255, 1.0)";
-				ctx.fillRect(0, 0, window.canvas2d.width, window.canvas2d.height);
-
 				ctx.fillStyle = "black";
 				const side = 6;
 				x = window.canvas2d.width/2 + window.zoom2d * x;
 				y = window.canvas2d.height/2 - window.zoom2d * y;
 				ctx.fillRect(x - side/2, y - side/2, side, side);
+			}
+
+			clear_canvas = () => {
+				ctx.fillStyle = "rgba(255, 255, 255, 1.0)";
+				ctx.fillRect(0, 0, window.canvas2d.width, window.canvas2d.height);
 			}
 
 			draw_point(0, 0);

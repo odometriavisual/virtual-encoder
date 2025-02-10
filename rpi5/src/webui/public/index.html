@@ -53,16 +53,18 @@
 			grid-gap: 4px;
 
 			grid-template-columns: repeat(13, 1fr);
-			grid-template-rows: 24px 48px 48px 48px 48px;
+			grid-template-rows: 24px 24px 48px 48px 48px 48px;
 			grid-template-areas:
 				"brilho brilho brilho brilho brilho brilho brilho brilho brilho brilho brilho brilho brilho"
+				"rota rota rota rota rota rota rota rota rota rota rota rota rota"
 				"expo   expo   expo   expo   expo   .      .      .      .      .      pps    pps    pps"
 				"foco   foco   foco   foco   foco   .      .      .      .      .      init-d init-d init-d"
 			    "calib  calib  calib  init-a init-a init-a stop-a stop-a stop-a .      reboot reboot reboot"
 				"modo-o modo-o modo-o modo-t modo-t modo-t modo-a modo-a modo-a .      shutd  shutd  shutd"
 		}
 
-		.brilho { grid-area: brilho; grid-auto-columns: 60px auto; }
+		.brilho { grid-area: brilho; grid-auto-columns: 70px auto; }
+		.rotacao { grid-area: rota; grid-auto-columns: 70px auto; }
 		.calibracao { grid-area: calib; }
 		.iniciar-aquisicao { grid-area: init-a; }
 		.parar-aquisicao { grid-area: stop-a; }
@@ -130,6 +132,9 @@
 <body>
 <script type="module">
 	window.onload = () => {
+		let set_cube_quat = (x, y, z, w) => { };
+		let draw_point = (x, y) => { };
+
 		async function next_estado(event) {
 			event.target.disabled = true;
 
@@ -192,6 +197,10 @@
 				window.video_frame.style.filter = window.video_frame.style.filter.replace(/brightness(.*)/, `brightness(${window.brightness_slider.value})`);
 			}
 
+			window.rotation_slider = document.querySelector('.rotacao > input');
+			window.rotation_slider.value = 0;
+			window.rotation_slider.oninput = () => window.rotation_offset = window.rotation_slider.value;
+
 			window.btns.calibracao.addEventListener('click', next_estado);
 			window.btns.iniciar_aquisicao.addEventListener('click', event => {
 				// if on Modo Tempo
@@ -225,9 +234,6 @@
 
 			window.canvas2d = document.querySelector('.canvas2d');
 		}
-
-		let set_cube_quat = (x, y, z, w) => { };
-		let draw_point = (x, y) => { };
 
 		function update_classname(div, stat) {
 			if (stat) div.className = div.className.replace('err', 'ok')
@@ -450,6 +456,11 @@
 		<label class="brilho">
 			<div>Brilho:</div>
 			<input type="range" min="0" max="10" step="0.05" value="1" />
+		</label>
+
+		<label class="rotacao">
+			<div>Rotacao:</div>
+			<input type="range" min="0" max="6.29" step="0.05" value="0" />
 		</label>
 
 		<label class="exposicao">

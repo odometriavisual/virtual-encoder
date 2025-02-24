@@ -5,6 +5,27 @@ import pandas as pd
 import numpy as np
 import time
 
+
+def mult(x, y):
+    return np.array([
+        x[0] * y[0] - x[1] * y[1] - x[2] * y[2] - x[3] * y[3],
+        x[0] * y[1] + x[1] * y[0] + x[2] * y[3] - x[3] * y[2],
+        x[0] * y[2] - x[1] * y[3] + x[2] * y[0] + x[3] * y[1],
+        x[0] * y[3] + x[1] * y[2] - x[2] * y[1] + x[3] * y[0]
+    ])
+
+
+def cross(x, y):
+    return np.array((x[1] * y[2] - x[2] * y[1], x[2] * y[0] - x[0] * y[2], x[0] * y[1] - x[1] * y[0]))
+
+
+def fast_rot(q, v):
+    t = 2 * cross(q[1:], v[1:])
+    R = v[1:] + q[0] * t + cross(q[1:], t)
+    return R
+
+
+
 # Função para criar um cubo em 3D
 def create_cube(ax):
     vertices = np.array([
@@ -49,11 +70,33 @@ def validate_quaternion(qx, qy, qz, qw):
         raise ValueError("Quaternion com norma zero encontrado.")
     return qx / norm, qy / norm, qz / norm, qw / norm
 
+
+l_vertice = None
+
 # Função para atualizar a posição do cubo
-def update_cube(cube, vertices, quaternion):
+def update_cube(cube, vertices, quaternion, id, timestamp):
+    global l_vertice
     qx, qy, qz, qw = validate_quaternion(*quaternion)
-    rotation_matrix = quaternion_to_rotation_matrix(qx, qy, qz, qw)
-    rotated_vertices = np.dot(vertices, rotation_matrix.T)
+
+    q_norm = np.linalg.norm(quaternion)
+    if not np.isclose(q_norm, 1.0):
+        #print(f"Quaternion mal normalizado: {quaternion} (norma={q_norm})")
+        quaternion /= q_norm  # Normaliza o quaternion
+
+    rotated_vertices = []
+    for vertice in vertices:
+        r_vertice = fast_rot(quaternion, [0,vertice[0],vertice[1],vertice[2]])
+        rotated_vertices.append(r_vertice)
+        magnitude = np.linalg.norm(r_vertice)
+        if magnitude > 2 or magnitude < 0.5:  # Ajuste os limites conforme necessário
+            print(f"Problema no vértice {id}: {r_vertice} (magnitude={magnitude})")
+
+    if l_vertice is not None:
+        norm = np.linalg.norm(rotated_vertices[0] - l_vertice)
+        if np.isnan(norm) or norm>0.05:
+            print(f'id:{id}, norm:{norm}, timestamp:{timestamp}')
+
+    l_vertice = rotated_vertices[0]
 
     faces = [
         [rotated_vertices[j] for j in [0, 1, 5, 4]],
@@ -108,7 +151,7 @@ def animate_cube(data):
             elif i >= len(timestamps):
                 break  # Parar quando todos os frames forem processados
 
-            update_cube(cube, vertices, quaternions[i])
+            update_cube(cube, vertices, quaternions[i], i, timestamps[i])
             plt.draw()
             plt.pause(0.05)  # Pequena pausa para atualizar a exibição
 
@@ -121,5 +164,5 @@ def animate_cube(data):
     plt.show()
 
 # Ler o arquivo CSV e iniciar a animação
-data = pd.read_csv('data/imu2.csv')
+data = pd.read_csv('C:/Users/Demarky/Documents/Ensaios de referencia/12.02.2025/1lanterna_rapida_750us/28_20250212T153944/imu.csv')
 animate_cube(data)

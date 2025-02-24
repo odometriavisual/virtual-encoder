@@ -52,6 +52,25 @@ DEFAULT_CONFIG = {
     },
 }
 
+
+def mult(x, y):
+    return np.array([
+        x[0] * y[0] - x[1] * y[1] - x[2] * y[2] - x[3] * y[3],
+        x[0] * y[1] + x[1] * y[0] + x[2] * y[3] - x[3] * y[2],
+        x[0] * y[2] - x[1] * y[3] + x[2] * y[0] + x[3] * y[1],
+        x[0] * y[3] + x[1] * y[2] - x[2] * y[1] + x[3] * y[0]
+    ])
+
+
+def cross(x, y):
+    return np.array((x[1] * y[2] - x[2] * y[1], x[2] * y[0] - x[0] * y[2], x[0] * y[1] - x[1] * y[0]))
+
+
+def fast_rot(q, v):
+    t = 2 * cross(q[1:], v[1:])
+    R = v[1:] + q[0] * t + cross(q[1:], t)
+    return R
+
 class ProcessingThread(QThread):
     progress_signal = Signal(str, int)  # Signals to update the progress label and bar
     finished_signal = Signal(np.ndarray, np.ndarray, np.ndarray, np.ndarray)  # Signal to send final 3D positions
@@ -101,8 +120,8 @@ class ProcessingThread(QThread):
         #enhancer_brightness = ImageEnhance.Brightness(img_rgb)
         #img_rgb = enhancer_brightness.enhance(1.5)  # Ajuste o valor para mais brilho (1.0 é padrão)
 
-        #enhancer_contrast = ImageEnhance.Contrast(img_rgb)
-        #img_rgb = enhancer_contrast.enhance(1.5)  # Ajuste o valor para mais contraste
+        enhancer_contrast = ImageEnhance.Contrast(img_rgb)
+        img_rgb = enhancer_contrast.enhance(1.5)  # Ajuste o valor para mais contraste
 
         # Converter para escala de cinza
         img_grayscale = ImageOps.grayscale(img_rgb)
@@ -143,6 +162,9 @@ class ProcessingThread(QThread):
         array_quaternions = []
         timestamps = []
 
+        skip_frames = True
+        skip_min_distance = 20
+
         old_processed_img = img_stream.pop(0)
 
         for idx, (img_preprocessed, img_file) in enumerate(zip(img_stream, image_files)):
@@ -169,16 +191,22 @@ class ProcessingThread(QThread):
             # Converte o quaternion original em uma matriz de rotação
             rotation_matrix = self.quaternion_to_rotation_matrix(quaternions) @ self.R_correction
 
-            #print(quaternions)
-
             displacement_2d = np.array([0 , dy, dx])
             #displacement_2d = np.array([dy , 0.0, dx])
 
-
-            displacement_3d =  rotation_matrix @ np.array([dx, dy,0])
-            displacement_3dr = rotation_matrix @ np.array([dy ,dx,0])
-
-            #displacement_3dr = rotation_matrix @ np.array([0, dx, dy])
+            if skip_frames is True:
+                if np.linalg.norm(displacement_2d) > skip_min_distance:
+                    displacement_3d = fast_rot(quaternions, [0, 0, dx, dy])
+                    displacement_3dr = fast_rot(quaternions, [0, 0, dy, dx])
+                    old_processed_img = img_preprocessed
+                else:
+                    displacement_2d = np.array([0,0,0])
+                    displacement_3d  =  np.array([0,0,0])
+                    displacement_3dr =  np.array([0,0,0])
+            else:
+                displacement_3d = fast_rot(quaternions, [0, dx, 0, dy])
+                displacement_3dr = fast_rot(quaternions, [0, dy, 0, dx])
+                old_processed_img = img_preprocessed
 
 
             current_position2D += displacement_2d
@@ -192,7 +220,7 @@ class ProcessingThread(QThread):
             positions3D.append(tuple(current_position3D))
             positions3DR.append(tuple(current_position3DR))
 
-            old_processed_img = img_preprocessed
+
             self.progress_signal.emit(f"Processando imagem {idx + 1}...", 60 + int(40 * (idx + 1) / len(image_files)))
 
         return np.array(positions3D), np.array(positions3DR), np.array(positions2D), np.array(array_quaternions), np.array(timestamps)
@@ -585,8 +613,8 @@ class TrajectoryApp(QMainWindow):
             ax.plot(x2d, y2d, z2d, color='green', linestyle='dashed', label='Projeção 2D')
 
         # Configurar limites e título
-        max_value = max(max(x), max(y), max(z))
-        min_value = min(min(x), min(y), min(z))
+        max_value = max(max(x2d), max(y2d), max(z2d))
+        min_value = min(min(x2d), min(y2d), min(z2d))
         margin = 0.1
         if max_value == min_value:
             max_value += margin

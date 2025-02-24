@@ -1,16 +1,41 @@
 import glob
 import os
-import time
 import csv
 import numpy as np
 import matplotlib.pyplot as plt
-from mpl_toolkits.mplot3d import Axes3D  # Importar para visualização 3D
 from datetime import datetime
+from tkinter import Tk, filedialog
+from tqdm import tqdm
 
 from visual_odometer import VisualOdometer
 from visual_odometer.preprocessing import image_preprocessing
 from visual_odometer.displacement_estimators.svd import svd_method
 
+CONFIG = {
+    "Displacement Estimation": {
+        "method": "svd",
+        "params": {}
+    },
+    "Frequency Window": {
+        "method": "Stone et al 2007",
+        "params": {}
+    },
+    "Spatial Window": {
+        "method": "blackman_harris",
+        "params": {
+            "a0": 0.358,
+            "a1": 0.47,
+            "a2": 0.135,
+            "a3": 0.037,
+        }
+    },
+    "Downsampling": {
+        "method": "",
+        "params": {
+            "factor": 1,
+        }
+    },
+}
 
 def load(filename):
     from PIL import Image, ImageOps
@@ -19,11 +44,8 @@ def load(filename):
     img_array = np.asarray(img_grayscale)
     return img_array
 
-
 def preprocessing(img_array):
-    pre_processed_img = image_preprocessing(img_array)
-    return pre_processed_img
-
+    return image_preprocessing(img_array, CONFIG)
 
 def load_imu_data(imu_file):
     imu_data = []
@@ -39,85 +61,47 @@ def load_imu_data(imu_file):
             })
     return imu_data
 
-
 def find_closest_imu_data(imu_data, img_timestamp):
-    # Encontre o timestamp de IMU mais próximo da imagem
-    closest_data = min(imu_data, key=lambda x: abs(x['timestamp'] - img_timestamp))
-    return closest_data
+    return min(imu_data, key=lambda x: abs(x['timestamp'] - img_timestamp))
 
+# Selecionar pasta de processamento
+Tk().withdraw()
+image_folder = filedialog.askdirectory(title="Selecione a pasta de imagens")
+imu_file = os.path.join(image_folder, "imu.csv")
 
-def quaternion_to_rotation_matrix(q):
-    """Converte um quaternion para uma matriz de rotação 3x3."""
-    qx, qy, qz, qw = q
-    return np.array([
-        [1 - 2 * (qy ** 2 + qz ** 2), 2 * (qx * qy - qw * qz), 2 * (qx * qz + qw * qy)],
-        [2 * (qx * qy + qw * qz), 1 - 2 * (qx ** 2 + qz ** 2), 2 * (qy * qz - qw * qx)],
-        [2 * (qx * qz - qw * qy), 2 * (qy * qz + qw * qx), 1 - 2 * (qx ** 2 + qy ** 2)]
-    ])
-
-
-image_folder = 'C:/Users/Daniel Santin/PycharmProjects/virtual-encoder2/post_processing/data/picam_imgs/1_20241014_180236'
-imu_file = image_folder + "/imu.csv"
-
-# Carregar dados da IMU
 imu_data = load_imu_data(imu_file)
-
-# Carregar imagens
 image_files = sorted(glob.glob(os.path.join(image_folder, '*.jpg')))
-img_stream = [load(img_file) for img_file in image_files]
-img_preprocessed_list = [preprocessing(img_array) for img_array in img_stream]
+img_stream = [load(img_file) for img_file in tqdm(image_files, desc="Carregando imagens")]
+img_preprocessed_list = [preprocessing(img_array) for img_array in tqdm(img_stream, desc="Pré-processando imagens")]
 
 img_size = img_stream[0].shape
 old_processed_img = img_preprocessed_list.pop(0)
 
-# Inicializar posição
-positions2D = [(0, 0, 0)]
-positions3D = [(0, 0, 0)]  # Começa na posição (0, 0, 0)
-current_position3D = np.array([0.0, 0.0, 0.0])  # Usando um array numpy para facilitar os cálculos
-current_position2D = np.array([0.0, 0.0, 0.0])
+positions2D = [(0, 0)]
+current_position2D = np.array([0.0, 0.0])
 
-# Processamento de deslocamento para cada imagem
-for img_preprocessed, img_file in zip(img_preprocessed_list, image_files):
+for img_preprocessed, img_file in tqdm(zip(img_preprocessed_list, image_files), total=len(image_files)-1, desc="Calculando deslocamento"):
     img_timestamp = int(os.path.basename(img_file).split('.')[0])
-    closest_imu_data = find_closest_imu_data(imu_data, img_timestamp)
-
-    # Obter dx e dy usando SVD
     dx, dy = svd_method(img_preprocessed, old_processed_img, img_size[1], img_size[0])
-
-    # Extrair os dados do IMU
-    qx = closest_imu_data['qx']
-    qy = closest_imu_data['qy']
-    qz = closest_imu_data['qz']
-    qw = closest_imu_data['qw']
-
-    # Calcular a matriz de rotação a partir do quaternion
-    rotation_matrix = quaternion_to_rotation_matrix([qx, qy, qz, qw])
-
-    # Transformar dx, dy para 3D usando a matriz de rotação
-    displacement_2d = np.array([dx, dy, 0.0])  # Adiciona 0 para a dimensão Z inicialmente
-    displacement_3d = rotation_matrix @ displacement_2d  # Multiplicação de matriz para aplicar a rotação, é o mesmo que np.dot()
-
-    # Atualizar a posição atual
-    current_position2D += displacement_2d
-    current_position3D += displacement_3d
-
-    positions2D.append((current_position2D[0], current_position2D[1], current_position2D[2]))
-    positions3D.append((current_position3D[0], current_position3D[1], current_position3D[2]))
-
-
+    current_position2D += np.array([dx, dy])
+    positions2D.append((current_position2D[0], current_position2D[1]))
     old_processed_img = img_preprocessed
 
-# Converter a lista de posições para um array numpy para facilitar a plotagem
-positions3D = np.array(positions3D)
 positions2D = np.array(positions2D)
 
-# Plotar a trajetória em 3D
-fig = plt.figure(figsize=(10, 8))
-ax = fig.add_subplot(111, projection='3d')
-ax.plot(positions3D[:, 0], positions3D[:, 1], positions3D[:, 2], marker='o')
-ax.set_title('Trajetória de Deslocamento 3D')
-ax.set_xlabel('Deslocamento em X px')
-ax.set_ylabel('Deslocamento em Y px')
-ax.set_zlabel('Deslocamento em Z px')
-ax.grid()
+# Calcular last_dx_dy
+last_dx_dy = svd_method(img_preprocessed_list[0], img_preprocessed_list[-1], img_size[1], img_size[0])
+
+# Calcular erro acumulado
+erro_acumulado = positions2D[0] - positions2D[-1]
+
+plt.figure(figsize=(8, 6))
+plt.plot(positions2D[:, 1], positions2D[:, 0], marker='o')
+plt.title('Trajetória de Deslocamento 2D')
+plt.xlabel('Deslocamento em Y (px)')
+plt.ylabel('Deslocamento em X (px)')
+plt.grid()
+plt.text(0.05, 0.95, f"Último deslocamento: dx={last_dx_dy[0]:.2f}, dy={last_dx_dy[1]:.2f}\nErro acumulado: dx={erro_acumulado[0]:.2f}, dy={erro_acumulado[1]:.2f}",
+         transform=plt.gca().transAxes, fontsize=12, verticalalignment='top', bbox=dict(facecolor='white', alpha=0.5))
+plt.axis('equal')
 plt.show()

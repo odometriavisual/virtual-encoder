@@ -105,8 +105,8 @@ class LocalPiZeroClient:
         zips = [file for file in os.listdir('/home/pi/picam_imgs') if file.find('.zip') > 0]
         return len(zips)
 
-    def start_acquisition(self, timestamp):
-        self.logger.start_acquisition(timestamp, 'api')
+    def start_acquisition(self, timestamp, reason):
+        self.logger.start_acquisition(timestamp, reason)
 
     def stop_acquititions(self):
         self.logger.stop_acquisition()

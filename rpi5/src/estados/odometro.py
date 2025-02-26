@@ -15,7 +15,7 @@ def to_grayscale(img):
     return np.asarray(ImageOps.grayscale(Image.fromarray(img)))
 
 class EstadoAquisicaoOdometro(Estado):
-    def __init__(self, client: PiZeroClient, ihm: IHM, status: dict, encoders: tuple[PulseGenerator, ...], odometer: VisualOdometer, logger: Logger):
+    def __init__(self, client: PiZeroClient, ihm: IHM, status: dict, encoders: tuple[PulseGenerator, ...], odometer: VisualOdometer, logger: Logger, reason: str):
         self.client = client
         self.ihm = ihm
         self.status = status
@@ -24,7 +24,7 @@ class EstadoAquisicaoOdometro(Estado):
         self.logger = logger
 
         timestamp_ns = time.time_ns()
-        self.client.start_acquisition(timestamp_ns)
+        self.client.start_acquisition(timestamp_ns, reason)
         self.logger.start(timestamp_ns)
 
         self.status['estado'] = 'Aquisicao'

@@ -54,12 +54,17 @@ class Server:
                 self._redirect_to_index()
             elif self.path == '/index.html':
                 self._send_page(PAGE.encode('utf-8'))
+
             elif self.path == '/imu':
                 self._send_page(self._get_timestamp_and_imu_data().encode('utf-8'))
             elif self.path == '/file_count':
                 self._send_page(f'{self.client.get_file_count()}'.encode('utf-8'))
+
             elif self.path.startswith('/start_acquisition'):
-                self.client.start_acquisition(int(self._extract_last_path()))
+                query_params = parse_qs(urlparse(self.path).query)
+                timestamp = int(query_params['ts'][0])
+                reason = query_params.get('r') and query_params['r'][0]
+                self.client.start_acquisition(timestamp, reason)
             elif self.path == '/stop_acquisition':
                 self.client.stop_acquititions()
 
@@ -72,12 +77,14 @@ class Server:
                 self.client.poweroff()
             elif self.path == '/reboot':
                 self.client.reboot()
+
             elif self.path.startswith('/status'):
                 status = self.client.get_status()
                 query_params = parse_qs(urlparse(self.path).query)
                 if 'rpi5status' in query_params:
                     self.client.process_status(query_params['rpi5status'][0])
                 self._send_page(json.dumps(status).encode('utf-8'), content_type='application/json')
+
             elif self.path.startswith('/focus'):
                 self.focus = float(self._extract_last_path())
                 self.client.set_focus(self.focus)
@@ -95,6 +102,7 @@ class Server:
             elif self.path == '/get_focus':
                 response = f"{self.focus}"
                 self._send_page(response.encode('utf-8'))
+
             else:
                 self.send_error(404)
                 self.end_headers()

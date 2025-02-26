@@ -29,12 +29,12 @@ class EstadoReady(Estado):
         time.sleep(0.001)
 
 class EstadoAquisicaoTempo(Estado):
-    def __init__(self, client: PiZeroClient, status: dict, encoders: tuple[PulseGenerator, ...], pulses_frequency: int):
+    def __init__(self, client: PiZeroClient, status: dict, encoders: tuple[PulseGenerator, ...], pulses_frequency: int, reason: str):
         self.encoders = encoders
         self.client = client
 
         timestamp_ns = time.time_ns()
-        self.client.start_acquisition(timestamp_ns)
+        self.client.start_acquisition(timestamp_ns, reason)
 
         status['estado'] = 'Aquisicao'
 

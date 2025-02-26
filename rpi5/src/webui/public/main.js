@@ -10,11 +10,11 @@ window.onload = () => {
         await fetch('/next_estado', { method });
     }
 
-    async function next_estado_args(event, estado, args) {
+    async function next_estado_args(event, estado, pps, reason) {
         event.target.disabled = true;
 
         const method = 'POST';
-        await fetch(`/next_estado/${estado}/${args}`, { method });
+        await fetch(`/next_estado/${estado}/${pps}/${reason}`, { method });
     }
 
     async function next_modo(event, modo) {
@@ -51,6 +51,7 @@ window.onload = () => {
         window.exposicao = document.querySelector('.exposicao > input');
         window.foco = document.querySelector('.foco > input');
         window.pulsos_por_segundo = document.querySelector('.pulsos-por-segundo > input');
+        window.motivo = document.querySelector('.motivo > input');
 
         window.video_frame = document.querySelector('.video-frame');
         window.video_frame.src = '/video_feed';
@@ -70,7 +71,8 @@ window.onload = () => {
         window.btns.iniciar_aquisicao.addEventListener('click', event => {
             clear_canvas()
             const pps = parseInt(window.pulsos_por_segundo.value);
-            next_estado_args(event, 'Aquisicao', pps);
+            const reason = window.motivo.value;
+            next_estado_args(event, 'Aquisicao', pps, reason);
         });
         window.btns.parar_aquisicao.addEventListener('click', next_estado);
 

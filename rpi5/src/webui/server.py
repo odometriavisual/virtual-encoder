@@ -72,9 +72,14 @@ class WebuiApp:
             self.ihm.send_event('next_estado')
             return 'ok'
 
-        @self.app.route('/next_estado/<estado>/<args>', methods=['POST'])
-        def next_estado_parameter(estado, args):
-            self.ihm.send_event(('next_estado', estado, args))
+        @self.app.route('/next_estado/<estado>/<pps>/', methods=['POST'])
+        def next_estado_parameter(estado, pps):
+            self.ihm.send_event(('next_estado', estado, pps, ''))
+            return 'ok'
+
+        @self.app.route('/next_estado/<estado>/<pps>/<reason>', methods=['POST'])
+        def next_estado_parameter2(estado, pps, reason):
+            self.ihm.send_event(('next_estado', estado, pps, reason))
             return 'ok'
 
         @self.app.route('/next_modo', methods=['POST'])

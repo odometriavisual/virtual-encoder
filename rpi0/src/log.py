@@ -14,8 +14,8 @@ class Logger:
         datenow = datetime.fromtimestamp(time_now // 1_000_000_000).strftime('%Y%m%dT%H%M%S')
         self.root_dir = f'/home/pi/picam_imgs'
         self.ensaio_number = f'{self.boot_num}_{datenow}'
-        self.ensaio_reason = 'timeout'
         self.save_dir = f'{self.root_dir}/{self.ensaio_number}'
+        self.ensaio_reason = 'timeout'
 
         self.client = None
         self.orientations_queue = queue.Queue()
@@ -70,7 +70,11 @@ class Logger:
 
         self.ensaio_number = f'{self.boot_num}_{datenow}'
         self.ensaio_reason = reason
-        self.save_dir = f'{self.root_dir}/{self.ensaio_number}'
+
+        if reason is None or len(reason) == 0:
+            self.save_dir = f'{self.root_dir}/{self.ensaio_number}'
+        else:
+            self.save_dir = f'{self.root_dir}/{self.ensaio_number} {reason}'
 
         if not isdir(self.save_dir):
             makedirs(self.save_dir)
@@ -80,7 +84,8 @@ class Logger:
 
     def stop_acquisition(self):
         self.enable_save = False
-        shutil.make_archive(f'{self.root_dir}/{self.ensaio_number}', 'zip', self.root_dir, self.ensaio_number)
+        i = self.save_dir.rindex('/')
+        shutil.make_archive(f'{self.save_dir}', 'zip', self.save_dir[:i], self.save_dir[i+1:])
         shutil.rmtree(self.save_dir)
 
     def start(self):

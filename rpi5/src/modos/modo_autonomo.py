@@ -12,7 +12,7 @@ class ModoAutonomo:
 
         self.status['modo'] = 'Autonomo'
 
-        self.estado = EstadoAquisicaoTempo(self.status, self.encoders, 10)
+        self.estado = EstadoAquisicaoTempo(client, self.status, self.encoders, 10, '')
 
     def stop(self):
         pass

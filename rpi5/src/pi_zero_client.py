@@ -96,9 +96,9 @@ class PiZeroClient:
         except (RequestException, ValueError):
             return 0
 
-    def start_acquisition(self, timestamp_ns):
+    def start_acquisition(self, timestamp_ns, reason):
         try:
-            requests.get(f'http://{PIZERO_HOST}:{WEBSERVER_PORT}/start_acquisition/{timestamp_ns}', timeout=1.0)
+            requests.get(f'http://{PIZERO_HOST}:{WEBSERVER_PORT}/start_acquisition?ts={timestamp_ns}&r={reason}', timeout=1.0)
             return True
         except (RequestException, ValueError):
             return False

@@ -35,11 +35,8 @@ class ModoTempo:
             case EstadoCalibracao(), 'fim_calibracao':
                 self.estado = EstadoReady(self.status)
 
-            case EstadoReady(), 'next_estado':
-                self.estado = EstadoAquisicaoTempo(self.client, self.status, self.encoders, 10)
-
-            case EstadoReady(), ('next_estado', _, pulses_frequency):
-                self.estado = EstadoAquisicaoTempo(self.client, self.status, self.encoders, int(pulses_frequency))
+            case EstadoReady(), ('next_estado', _, pulses_frequency, reason):
+                self.estado = EstadoAquisicaoTempo(self.client, self.status, self.encoders, int(pulses_frequency), reason)
 
             case EstadoAquisicaoTempo(), 'next_estado':
                 self.estado.stop()

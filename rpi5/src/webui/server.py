@@ -44,9 +44,9 @@ class WebuiApp:
             with open('src/webui/public/index.html', 'r') as file:
                 return file.read()
 
-        @self.app.route('/three.min.js')
-        def threejs():
-            with open('src/webui/public/three.min.js', 'r') as file:
+        @self.app.route('/<path:path>')
+        def threejs(path):
+            with open(f'src/webui/public/{path}', 'r') as file:
                 return file.read()
 
         @self.app.route('/status', methods=['GET'])

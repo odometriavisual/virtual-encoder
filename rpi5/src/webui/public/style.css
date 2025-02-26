@@ -1,0 +1,123 @@
+body { margin: 0px; }
+
+.wrapper {
+    display: grid;
+    grid-gap: 4px;
+    font-family: sans-serif;
+
+    width: 98vw;
+    height: 98vh;
+    padding: 1vh 1vw;
+
+    grid-template-columns: max-content 168px;
+    grid-template-rows: auto 240px;
+    grid-template-areas:
+				"img       monitoramento"
+				"controles controles"
+}
+
+.monitoramento {
+    grid-area: monitoramento;
+
+    display: grid;
+    grid-template-rows: 0.3fr 2fr 1fr 0.6fr 0.6fr;
+    grid-auto-flow: column;
+    grid-gap: 4px;
+
+    user-select: none;
+}
+
+.visualization {
+    position: relative;
+    width: 100%;
+    height: 100%;
+}
+
+img {
+    object-fit: contain;
+    height: 100%;
+}
+
+.visualization > canvas {
+    position: absolute;
+    top: 0;
+    left: 0;
+}
+
+.controles {
+    grid-area: controles;
+
+    display: grid;
+    grid-gap: 4px;
+
+    grid-template-columns: repeat(13, 1fr);
+    grid-template-rows: 24px 24px 48px 48px 48px;
+    grid-template-areas:
+				"brilho brilho brilho brilho brilho brilho brilho brilho brilho brilho brilho brilho brilho"
+				"rota rota rota rota rota rota rota rota rota rota rota rota rota"
+				"expo   expo   expo   expo   expo   pps    pps    pps    .      .      shutd  shutd  shutd"
+				"foco   foco   foco   foco   foco   .      .      .      .      .      init-d init-d init-d"
+			    "calib  calib  calib  init-a init-a init-a stop-a stop-a stop-a .      reboot reboot reboot"
+}
+
+.brilho { grid-area: brilho; grid-auto-columns: 70px auto; }
+.rotacao { grid-area: rota; grid-auto-columns: 70px auto; }
+.calibracao { grid-area: calib; }
+.iniciar-aquisicao { grid-area: init-a; }
+.parar-aquisicao { grid-area: stop-a; }
+.iniciar-download { grid-area: init-d; }
+.modo-tempo { grid-area: modo-t; }
+.modo-odometro { grid-area: modo-o; }
+.modo-autonomo { grid-area: modo-a; }
+.reiniciar { grid-area: reboot; }
+.desligar { grid-area: shutd; }
+
+.exposicao { grid-area: expo; }
+.foco { grid-area: foco; }
+.pulsos-por-segundo { grid-area: pps; }
+/* Chrome, Safari, Edge, Opera */
+input::-webkit-outer-spin-button,
+input::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+
+/* Firefox */
+input[type=number] {
+    -moz-appearance: textfield;
+}
+
+label { display: grid; gap: 8px; grid-auto-flow: column; }
+label > div { align-self: center; }
+label > input { flex-grow: 1; min-width: 1px;}
+
+.monitoramento > div {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+}
+
+.ok {
+    background-color: #009933;
+    color: white;
+
+    border: 1px solid #114221;
+    border-radius: 4px;
+}
+
+.ok.warn {
+    background-color: #d3cc2a;
+    color: #353150;
+
+    border: 1px solid #39391c;
+    border-radius: 4px;
+}
+
+.err {
+    background-color: #cc0000;
+    color: white;
+
+    border: 1px solid #aa1010;
+    border-radius: 4px;
+}

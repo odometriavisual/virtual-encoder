@@ -34,7 +34,9 @@ class EstadoCalibracao(Estado):
         status['estado'] = 'Calibrando'
 
     def run(self):
-        if self.client.pizero_calibration():
-            self.ihm.send_event('fim_calibracao')
-        else:
-            self.ihm.send_event(('Erro', 'SET FOCUS ERR'))
+        self.ihm.send_event('fim_calibracao')
+        # Calibracao desativada, setar manualmente na interface web
+        # if self.client.pizero_calibration():
+        #     self.ihm.send_event('fim_calibracao')
+        # else:
+        #     self.ihm.send_event(('Erro', 'SET FOCUS ERR'))

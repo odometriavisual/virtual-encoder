@@ -58,7 +58,7 @@ def main():
 
     start_imu_stream(client, logger)
 
-    load_or_recalibrate(client)
+    # load_or_recalibrate(client)
     logger.start()
 
     server = Server(client)

@@ -27,7 +27,7 @@ class ModoDownload:
             self.ihm.send_event(('next_modo', 'Tempo'))
             return
 
-        self.client.disable_streaming()
+        self.client.pause_stream()
 
         is_mounted = self.ssd_manager.mount()
 
@@ -35,7 +35,6 @@ class ModoDownload:
             self.ihm.estado = 'Erro SSD não encontrado'
             time.sleep(5)
             self.ihm.send_event(('next_modo', 'Tempo'))
-            self.client.enable_streaming()
 
         is_downloading = self.dowloader.start()
 
@@ -43,10 +42,9 @@ class ModoDownload:
             self.status['estado'] = 'Erro no download'
             time.sleep(5)
             self.ihm.send_event(('next_modo', 'Tempo'))
-            self.client.enable_streaming()
 
     def stop(self):
-        pass
+        self.client.resume_stream()
 
     def run(self):
         match status := self.dowloader.get_status():
@@ -55,7 +53,6 @@ class ModoDownload:
                 self.ssd_manager.unmount()
                 self.status['estado'] = 'Concluida' if status else 'Erro'
                 self.ihm.send_event(('next_modo', 'Tempo'))
-                self.client.enable_streaming()
                 time.sleep(5)
 
             case line:

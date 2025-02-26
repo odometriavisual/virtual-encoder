@@ -62,6 +62,12 @@ class Server:
                 self.client.start_acquisition(int(self._extract_last_path()))
             elif self.path == '/stop_acquisition':
                 self.client.stop_acquititions()
+
+            elif self.path.startswith('/pause_stream'):
+                self.client.pause_stream()
+            elif self.path == '/resume_stream':
+                self.client.resume_stream()
+
             elif self.path == '/poweroff':
                 self.client.poweroff()
             elif self.path == '/reboot':
@@ -82,8 +88,6 @@ class Server:
                 self.client.set_exposure(exposure_value)
                 response = f"Exposicao selecionada: {exposure_value}"
                 self._send_page(response.encode('utf-8'))
-            elif self.path == '/stream.mjpg':
-                self._stream_video()
             elif self.path == '/run_autofocus':
                 self.focus = startLocalCalibration(self.client, 1)
                 response = f"{self.focus}"
@@ -121,26 +125,3 @@ class Server:
             _ret, jpg_frame = cv2.imencode('.jpg', img)  # transformando em JPG
             bytes_frame = jpg_frame.tobytes()
             return bytes_frame
-
-        def _stream_video(self):
-            self.send_response(200)
-            self.send_header('Age', 0)
-            self.send_header('Cache-Control', 'no-cache, private')
-            self.send_header('Pragma', 'no-cache')
-            self.send_header('Content-Type', 'multipart/x-mixed-replace; boundary=FRAME')
-            self.end_headers()
-            try:
-                while True:
-                    self.client.frame_available.wait()
-                    img = self.client.get_img()
-                    frame = self._encode_img_to_bytes(img)
-
-                    self.wfile.write(b'--FRAME\r\n')
-                    self.send_header('Content-Type', 'image/jpeg')
-                    self.send_header('Content-Length', len(frame))
-                    self.end_headers()
-                    self.wfile.write(frame)
-                    self.wfile.write(b'\r\n')
-            except Exception as e:
-                logging.warning(f'Removed streaming client {self.client_address}: {str(e)}')
-

@@ -16,8 +16,6 @@ class PiZeroClient:
     def __init__(self, status: dict):
         self.status = status
 
-        self.streaming_enabled = True
-
         self.vid_lock = threading.Lock()
         self.vid_event = threading.Event()
         self.vid = cv2.VideoCapture()
@@ -30,25 +28,22 @@ class PiZeroClient:
                 time.sleep(0.001)
 
                 with self.vid_lock:
-                    if self.streaming_enabled:
-                        if self.vid.isOpened():
-                            ret, frame = self.vid.read()
+                    if self.vid.isOpened():
+                        ret, frame = self.vid.read()
 
-                            if ret:
-                                with self.frame_lock:
-                                    self.frame = frame
-                                self.vid_event.set()
-                            else:
-                                self.frame = cv2.Mat(np.array([0x000000AA], dtype=np.float32))
-                                self.vid.release()
-                                cv2.destroyAllWindows()
-
+                        if ret:
+                            with self.frame_lock:
+                                self.frame = frame
+                            self.vid_event.set()
                         else:
-                            self.vid.open(f'udp://{PIZERO_HOST}:{STREAM_PORT}')
-                            self.vid.set(cv2.CAP_PROP_BUFFERSIZE, 1)
-                            time.sleep(1)
+                            self.frame = cv2.Mat(np.array([0x000000AA], dtype=np.float32))
+                            self.vid.release()
+                            cv2.destroyAllWindows()
+
                     else:
-                        time.sleep(0.01)
+                        self.vid.open(f'udp://{PIZERO_HOST}:{STREAM_PORT}')
+                        self.vid.set(cv2.CAP_PROP_BUFFERSIZE, 1)
+                        time.sleep(1)
 
         self.vid_thread = threading.Thread(daemon=True, target=update)
         self.vid_thread.start()
@@ -137,15 +132,17 @@ class PiZeroClient:
         except SubprocessError:
             pass
 
-    def disable_streaming(self):
-        with self.vid_lock:
-            self.streaming_enabled = False
-            self.vid.release()
-            cv2.destroyAllWindows()
+    def pause_stream(self):
+        try:
+            requests.get(f'http://{PIZERO_HOST}:{WEBSERVER_PORT}/pause_stream', timeout=1.0)
+        except RequestException:
+            pass
 
         with self.frame_lock:
             self.frame = cv2.Mat(np.array([0x000000AA], dtype=np.float32))
 
-    def enable_streaming(self):
-        with self.vid_lock:
-            self.streaming_enabled = True
+    def resume_stream(self):
+        try:
+            requests.get(f'http://{PIZERO_HOST}:{WEBSERVER_PORT}/resume_stream', timeout=1.0)
+        except RequestException:
+            pass

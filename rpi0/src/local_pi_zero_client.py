@@ -9,7 +9,6 @@ from picamera2 import Picamera2
 from picamera2.encoders import MJPEGEncoder
 from picamera2.outputs import FileOutput
 
-
 from .log import Logger
 
 class LocalPiZeroClient:
@@ -35,6 +34,8 @@ class LocalPiZeroClient:
 
         self.imu_enabled = not imu is None
         self.imu = imu
+
+        self.streaming_enabled = True
 
         self.logger = logger
 
@@ -119,11 +120,12 @@ class LocalPiZeroClient:
     def start_imu_stream(self):
         def _start():
             while True:
-                with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as sock:
-                    sock.connect(("rpi5", 7101))
-                    measure = self.get_orientation()
-                    self.logger.orientations_queue.put(measure, block=False)
-                    sock.send(json.dumps(measure).encode('utf-8'))
+                if self.streaming_enabled:
+                    with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as sock:
+                        sock.connect(("rpi5", 7101))
+                        measure = self.get_orientation()
+                        self.logger.orientations_queue.put(measure, block=False)
+                        sock.send(json.dumps(measure).encode('utf-8'))
                 time.sleep(0.02)
 
         threading.Thread(target=_start, daemon=True).start()
@@ -138,7 +140,15 @@ class LocalPiZeroClient:
                 self.picam2.start_recording(encoder, FileOutput(stream))
 
             while True:
-                time.sleep(36000)
+                time.sleep(3600)
 
         threading.Thread(target=_listen, daemon=True).start()
+
+    def pause_stream(self):
+        self.streaming_enabled = False
+        self.picam2.stop()
+
+    def resume_stream(self):
+        self.streaming_enabled = True
+        self.picam2.start()
 

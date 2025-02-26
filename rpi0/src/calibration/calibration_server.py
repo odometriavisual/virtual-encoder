@@ -15,8 +15,8 @@ import json
 import numpy as np
 import os
 
-from ..localPiZeroClient import LocalPiZeroClient
-from ..localCalibration import startLocalCalibration
+from ..local_pi_zero_client import LocalPiZeroClient
+from ..local_calibration import startLocalCalibration
 from .calibration_utils import find_mm_per_pixel_calibration
 
 PAGE = '''\

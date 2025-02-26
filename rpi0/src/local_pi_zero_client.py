@@ -1,9 +1,14 @@
+import json
+import os
+import socket
+import subprocess
 import threading
 import time
-import os
-import subprocess
-from picamera2 import Picamera2
 from libcamera import controls
+from picamera2 import Picamera2
+from picamera2.encoders import MJPEGEncoder
+from picamera2.outputs import FileOutput
+
 
 from .log import Logger
 
@@ -89,21 +94,18 @@ class LocalPiZeroClient:
         self.last_status_time = time.time_ns()
         self.rpi5status = status
 
-        if self.logger.enable_save and status != 'Aquisicao':
+        if self.logger.enable_save and self.logger.ensaio_reason == 'timeout':
             self.logger.stop_acquisition()
 
     def get_file_count(self) -> int:
         """
-        Returns number of files in picam_imgs directory tree
+        Returns number of ensaios in picam_imgs directory tree
         """
-        total = 0
-        for root, dir, files in os.walk('/home/pi/picam_imgs'):
-            total += len(files)
-
-        return total
+        zips = [file for file in os.listdir('/home/pi/picam_imgs') if file.find('.zip') > 0]
+        return len(zips)
 
     def start_acquisition(self, timestamp):
-        self.logger.start_acquisition(timestamp)
+        self.logger.start_acquisition(timestamp, 'api')
 
     def stop_acquititions(self):
         self.logger.stop_acquisition()
@@ -114,9 +116,29 @@ class LocalPiZeroClient:
     def reboot(self):
         subprocess.run(['sudo', 'reboot'])
 
-    def download_all_images(self):
-        raise NotImplementedError
+    def start_imu_stream(self):
+        def _start():
+            while True:
+                with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as sock:
+                    sock.connect(("rpi5", 7101))
+                    measure = self.get_orientation()
+                    self.logger.orientations_queue.put(measure, block=False)
+                    sock.send(json.dumps(measure).encode('utf-8'))
+                time.sleep(0.02)
 
-    def delete_all_images(self):
-        raise NotImplementedError
+        threading.Thread(target=_start, daemon=True).start()
+
+    def start_camera_stream(self):
+        def _listen():
+            encoder = MJPEGEncoder(2_000_000)
+
+            with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as sock:
+                sock.connect(("rpi5", 7100))
+                stream = sock.makefile("wb")
+                self.picam2.start_recording(encoder, FileOutput(stream))
+
+            while True:
+                time.sleep(36000)
+
+        threading.Thread(target=_listen, daemon=True).start()
 

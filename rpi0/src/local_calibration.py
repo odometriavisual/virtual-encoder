@@ -1,7 +1,7 @@
 import time
 import cv2
 import numpy
-from .localPiZeroClient import LocalPiZeroClient
+from .local_pi_zero_client import LocalPiZeroClient
 import json
 import os
 

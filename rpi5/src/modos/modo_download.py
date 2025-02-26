@@ -59,10 +59,11 @@ class ModoDownload:
                 time.sleep(5)
 
             case line:
-                self.transfered_files += 1
-                percent = self.transfered_files / self.file_count
-                percent = 99.99 if percent >= 100. else 100. * percent
-                self.status['estado'] = f'{percent:.2f} %'
+                if line.find('.zip') > 0:
+                    self.transfered_files += 1
+                    percent = self.transfered_files / (self.file_count+1)
+                    percent = 99.99 if percent >= 100. else 100. * percent
+                    self.status['estado'] = f'{percent:.2f} %'
                 time.sleep(0.1)
 
     def handle_event(self, ev):

@@ -104,7 +104,7 @@ def main():
 
                         d = sum([x*x for x in imu])
 
-                        if 0.99 < d < 1.01:
+                        if 0.999 < d < 1.001:
                             status['imu'] = imu
                     else:
                         status['imu'] = False

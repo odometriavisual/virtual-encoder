@@ -14,6 +14,7 @@ class Logger:
         datenow = datetime.fromtimestamp(time_now // 1_000_000_000).strftime('%Y%m%dT%H%M%S')
         self.root_dir = f'/home/pi/picam_imgs'
         self.ensaio_number = f'{self.boot_num}_{datenow}'
+        self.ensaio_reason = 'timeout'
         self.save_dir = f'{self.root_dir}/{self.ensaio_number}'
 
         self.client = None
@@ -28,7 +29,7 @@ class Logger:
             time.sleep(0.1)
             time_now = time.time_ns()
             if not self.enable_save and time_now > self.client.last_status_time + self.enable_save_period:
-                self.start_acquisition(time_now)
+                self.start_acquisition(time_now, 'timeout')
 
     def _save_imgs(self):
         while True:
@@ -64,10 +65,11 @@ class Logger:
             writer.writerow(["timestamp", "exposure", "focus"])
             writer.writerow([time_now, self.client.exposure, self.client.focus])
 
-    def start_acquisition(self, timestamp_ns, name):
+    def start_acquisition(self, timestamp_ns, reason):
         datenow = datetime.fromtimestamp(timestamp_ns // 1_000_000_000).strftime('%Y%m%dT%H%M%S')
 
         self.ensaio_number = f'{self.boot_num}_{datenow}'
+        self.ensaio_reason = reason
         self.save_dir = f'{self.root_dir}/{self.ensaio_number}'
 
         if not isdir(self.save_dir):

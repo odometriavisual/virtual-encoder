@@ -71,6 +71,7 @@ def main():
             if rpi0_status:
                 status.set('rpi0', rpi0_status['rpi0'])
                 status.set('camera', rpi0_status['camera'])
+                status.add_message(rpi0_status['msg'])
             ihm.update_display()
     threading.Thread(target=_get_rpi0_status, daemon=True).start()
 

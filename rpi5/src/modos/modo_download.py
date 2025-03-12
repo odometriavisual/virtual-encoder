@@ -24,6 +24,7 @@ class ModoDownload:
 
         if self.file_count == 0:
             self.status.set('estado', 'Nenhum ensaio salvo')
+            self.status.add_message('Download: Nenhuma aquisicao salva')
             time.sleep(5)
             self.ihm.send_event(('next_modo', 'Tempo'))
             return
@@ -34,13 +35,16 @@ class ModoDownload:
 
         if not is_mounted:
             self.ihm.estado = 'Erro SSD não encontrado'
+            self.status.add_message('Download: SSD não encontrado')
             time.sleep(5)
             self.ihm.send_event(('next_modo', 'Tempo'))
 
         is_downloading = self.dowloader.start()
+        self.status.add_message('Download: Iniciando...')
 
         if not is_downloading:
             self.status.set('estado', 'Erro no download')
+            self.status.add_message('Download: Erro de conexao')
             time.sleep(5)
             self.ihm.send_event(('next_modo', 'Tempo'))
 
@@ -54,11 +58,13 @@ class ModoDownload:
                 self.ssd_manager.unmount()
                 self.status.set('estado', 'Concluida' if status else 'Erro')
                 self.ihm.send_event(('next_modo', 'Tempo'))
+                self.status.add_message('Download: Finalizado')
                 time.sleep(5)
 
             case line:
                 if line.find('.zip') > 0:
                     self.transfered_files += 1
+                    self.status.add_message(f'Download: {line}')
                     percent = self.transfered_files / (self.file_count+1)
                     percent = 99.99 if percent >= 100. else 100. * percent
                     self.status.set('estado', f'{percent:.2f} %')

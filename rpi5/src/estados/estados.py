@@ -38,6 +38,7 @@ class EstadoAquisicaoTempo(Estado):
         self.client.start_acquisition(timestamp_ns, reason)
 
         status.set('estado', 'Aquisicao')
+        status.add_message(f'Aquisição: {reason} {pulses_frequency} pulsos/s')
 
         self.period = 1_000_000_000 // pulses_frequency
         self.next_time = time.time_ns() + self.period

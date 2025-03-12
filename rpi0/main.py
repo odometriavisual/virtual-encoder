@@ -4,7 +4,6 @@ import board
 import time
 
 from src.local_pi_zero_client import LocalPiZeroClient
-from src.local_calibration import load_or_recalibrate
 from src.server import Server
 from src.log import Logger
 

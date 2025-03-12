@@ -12,7 +12,7 @@ from picamera2.outputs import FileOutput
 from .log import Logger
 
 class LocalPiZeroClient:
-    def __init__(self, picam, imu, logger: Logger):
+    def __init__(self, picam: Picamera2, imu, logger: Logger):
         # Inicializa a câmera
         self.picam2 = picam
 
@@ -54,7 +54,8 @@ class LocalPiZeroClient:
     def set_focus(self, focus: float):
         # Ajusta o foco da câmera
         self.focus = focus
-        self.picam2.set_controls({"AfMode": controls.AfModeEnum.Manual, "LensPosition": float(focus)})
+        if self.picam2.camera_properties['Model'] == 'imx708':
+            self.picam2.set_controls({"AfMode": controls.AfModeEnum.Manual, "LensPosition": float(focus)})
 
     def set_exposure(self, exposure: int):
         # Ajusta a exposição da câmera

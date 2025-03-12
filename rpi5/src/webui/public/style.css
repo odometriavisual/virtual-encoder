@@ -55,8 +55,8 @@ img {
     grid-template-areas:
 				"brilho brilho brilho brilho brilho brilho brilho brilho brilho brilho brilho brilho brilho"
 				"rota rota rota rota rota rota rota rota rota rota rota rota rota"
-				"expo   expo   expo   expo   expo   pps    pps    pps    .      .      shutd  shutd  shutd"
-				"foco   foco   foco   foco   foco   reason reason reason reason .      init-d init-d init-d"
+				"expo   expo   expo   expo   expo   .      .      .      .      .      shutd  shutd  shutd"
+				"pps    pps    pps    pps    pps    reason reason reason reason .      init-d init-d init-d"
 			    "calib  calib  calib  init-a init-a init-a stop-a stop-a stop-a .      reboot reboot reboot"
 }
 
@@ -73,7 +73,6 @@ img {
 .desligar { grid-area: shutd; }
 
 .exposicao { grid-area: expo; }
-.foco { grid-area: foco; }
 .pulsos-por-segundo { grid-area: pps; }
 .motivo { grid-area: reason; }
 /* Chrome, Safari, Edge, Opera */

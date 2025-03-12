@@ -52,51 +52,5 @@ def load_or_recalibrate(client: LocalPiZeroClient, recalibration_interval=3600):
 def startLocalCalibration(client: LocalPiZeroClient,
                           calibration_start: int = 0, calibration_end: int = 30, calibration_step: int = .5,
                           exposure_start: int = 50, exposure_end: int = 150, exposure_step: int = 25):
-    actual_exposure = exposure_start
-
-    focus_sum = 0
-    num_exposures = (exposure_end - exposure_start) / exposure_step + 1
-    num_focuses = (calibration_end - calibration_start) / calibration_step + 1
-    total_progress = num_focuses * num_exposures
-    progress = 0
-    client.calibration_progress = progress // total_progress
-
-    while actual_exposure <= exposure_end:
-        # Resets the best values:
-        best_focus_value = best_score = 0
-
-        # Sets the exposure:
-        client.set_exposure(actual_exposure)
-        actual_exposure += exposure_step
-
-        actual_focus = calibration_start
-        while actual_focus <= calibration_end:
-            # Sets the focus:
-            client.set_focus(actual_focus)
-            actual_focus += calibration_step
-
-            # Takes a frame:
-            time.sleep(0.3)  # Wait so changes take effect
-            frame = client.get_img()
-
-            # Compute how good is the focus:
-            score = calculate_teng_score(frame)
-
-            if score > best_score:
-                best_focus_value = actual_focus
-                best_score = score
-
-            print(actual_focus, score)
-            progress += 100
-            client.calibration_progress = progress // total_progress
-
-        time.sleep(1)
-        focus_sum += best_focus_value
-    else:
-        focus_mean = round(focus_sum / num_exposures)
-
-        # Set the focus for the mean of best values, and reset the exposure:
-        client.set_focus(focus_mean)
-        client.reset_exposure()
-        save_calibration_data(client)
-        time.sleep(0.5)
+    client.set_focus(20)
+    save_calibration_data(client)

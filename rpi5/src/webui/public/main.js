@@ -39,7 +39,6 @@ window.onload = () => {
         }
 
         window.btns.enviar_expo = document.querySelector('.exposicao > button');
-        window.btns.enviar_foco = document.querySelector('.foco > button');
 
         window.status_watcher = {
             rpi5: document.querySelector('.status.rpi5'),
@@ -49,7 +48,6 @@ window.onload = () => {
         };
 
         window.exposicao = document.querySelector('.exposicao > input');
-        window.foco = document.querySelector('.foco > input');
         window.pulsos_por_segundo = document.querySelector('.pulsos-por-segundo > input');
         window.motivo = document.querySelector('.motivo > input');
 
@@ -83,11 +81,6 @@ window.onload = () => {
         window.btns.enviar_expo.addEventListener('click', async event => {
             const method = 'POST';
             await fetch(`/set_exposure/${window.exposicao.value}`, { method });
-        });
-
-        window.btns.enviar_foco.addEventListener('click', async event => {
-            const method = 'POST';
-            await fetch(`/set_focus/${window.foco.value}`, { method });
         });
     }
 

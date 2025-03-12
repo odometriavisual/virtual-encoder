@@ -16,6 +16,11 @@ class LocalPiZeroClient:
         # Inicializa a câmera
         self.picam2 = picam
 
+        self.status_message_lock = threading.Lock()
+        self.status_message = ''
+        self.last_status_time = 0
+        self.rpi5status = ''
+
         self.vid_lock = threading.Lock()
         self.frame = None
         self.frame_available = threading.Event()
@@ -28,9 +33,6 @@ class LocalPiZeroClient:
         self.set_focus(20)
 
         self.boot_time = time.time_ns()
-
-        self.last_status_time = 0
-        self.rpi5status = ''
 
         self.imu_enabled = not imu is None
         self.imu = imu
@@ -51,6 +53,10 @@ class LocalPiZeroClient:
         self.vid_thread = threading.Thread(daemon=True, target=update)
         self.vid_thread.start()
 
+    def send_debug_message(self, msg):
+        with self.status_message_lock:
+            self.status_message += msg + '\n'
+
     def set_focus(self, focus: float):
         # Ajusta o foco da câmera
         self.focus = focus
@@ -61,6 +67,7 @@ class LocalPiZeroClient:
         # Ajusta a exposição da câmera
         self.exposure = exposure
         self.picam2.set_controls({"ExposureTime": exposure})
+        self.send_debug_message(f'Set Exposição: {self.exposure}us')
 
     def reset_exposure(self):
         self.set_exposure(self.default_exposure)
@@ -84,11 +91,15 @@ class LocalPiZeroClient:
             temp = file.read()
             temp = int(temp) / 1000
 
-        status = {
-            'imu': self.imu_enabled,
-            'camera': len(Picamera2.global_camera_info()) > 0,
-            'rpi0': { 'temp': temp, 'progress': self.calibration_progress }
-        }
+        with self.status_message_lock:
+            status = {
+                'imu': self.imu_enabled,
+                'camera': len(Picamera2.global_camera_info()) > 0,
+                'rpi0': { 'temp': temp, 'progress': self.calibration_progress },
+                'msg': self.status_message
+            }
+
+            self.status_message = ''
 
         return status
 
@@ -148,8 +159,10 @@ class LocalPiZeroClient:
     def pause_stream(self):
         self.streaming_enabled = False
         self.picam2.stop()
+        self.send_debug_message('Video Streaming: Desativado')
 
     def resume_stream(self):
         self.streaming_enabled = True
         self.picam2.start()
+        self.send_debug_message('Video Streaming: reativado')
 

@@ -1,6 +1,6 @@
 from os import makedirs
 from datetime import datetime
-from os.path import isfile, isdir
+from os.path import isfile, isdir, getsize
 from cv2 import imwrite
 
 import threading, csv, time, shutil, queue
@@ -72,21 +72,36 @@ class Logger:
         self.ensaio_reason = reason
 
         if reason is None or len(reason) == 0:
-            self.save_dir = f'{self.root_dir}/{self.ensaio_number}'
+            ensaio_name = f'{self.ensaio_number}'
         else:
-            self.save_dir = f'{self.root_dir}/{self.ensaio_number} {reason}'
+            ensaio_name = f'{self.ensaio_number} {reason}'
 
+        self.save_dir = f'{self.root_dir}/{ensaio_name}'
         if not isdir(self.save_dir):
             makedirs(self.save_dir)
             self._save_calibration_data()
 
+        self.client.send_debug_message(f'Aquisição iniciada: {ensaio_name}')
         self.enable_save = True
 
     def stop_acquisition(self):
+        def sizeof_fmt(num, suffix="B"):
+            for unit in ("", "Ki", "Mi", "Gi", "Ti", "Pi", "Ei", "Zi"):
+                if abs(num) < 1024.0:
+                    return f"{num:3.1f}{unit}{suffix}"
+                num /= 1024.0
+            return f"{num:.1f}Yi{suffix}"
+
         self.enable_save = False
         i = self.save_dir.rindex('/')
-        shutil.make_archive(f'{self.save_dir}', 'zip', self.save_dir[:i], self.save_dir[i+1:])
+        root_dir, base_dir = self.save_dir[:i], self.save_dir[i + 1:]
+
+        self.client.send_debug_message(f'Gravando aquisição: {base_dir}.zip, aguarde...')
+
+        shutil.make_archive(f'{self.save_dir}', 'zip', root_dir, base_dir)
         shutil.rmtree(self.save_dir)
+
+        self.client.send_debug_message(f'Aquisição gravada: {base_dir}.zip [{sizeof_fmt(getsize(self.save_dir+".zip"))}]')
 
     def start(self):
         threading.Thread(target=self._poll_rpi5_status, daemon=True).start()

@@ -23,12 +23,10 @@ def main():
     client.start_camera_stream()
     client.start_imu_stream()
 
-    # load_or_recalibrate(client)
     logger.start()
 
     server = Server(client)
     server.run()
-
 
 if __name__ == '__main__':
     main()

@@ -3,8 +3,22 @@ window.onload = () => {
     let draw_point = (x, y) => { };
     let clear_canvas = () => { };
 
+    function set_debounce_button(btn) {
+        btn.debounce_enabled = true;
+
+        if (btn.debounce_id !== null) {
+            clearTimeout(btn.debounce_id);
+        }
+
+        btn.debounce_id = setTimeout(() => {
+            btn.debounce_enabled = false;
+            btn.debounce_id = null;
+        }, 1000);
+    }
+
     async function next_estado(event) {
         event.target.disabled = true;
+        set_debounce_button(event.target);
 
         const method = 'POST';
         await fetch('/next_estado', { method });
@@ -12,6 +26,7 @@ window.onload = () => {
 
     async function next_estado_args(event, estado, pps, reason) {
         event.target.disabled = true;
+        set_debounce_button(event.target);
 
         const method = 'POST';
         await fetch(`/next_estado/${estado}/${pps}/${reason}`, { method });
@@ -19,6 +34,7 @@ window.onload = () => {
 
     async function next_modo(event, modo) {
         event.target.disabled = true;
+        set_debounce_button(event.target);
 
         const method = 'POST';
         await fetch(`/next_modo/${modo}`, { method });
@@ -36,6 +52,7 @@ window.onload = () => {
 
         for (let [_, btn] of Object.entries(window.btns)) {
             btn.disabled = true;
+            btn.debounce_id = null;
         }
 
         window.btns.enviar_expo = document.querySelector('.exposicao > button');
@@ -58,7 +75,10 @@ window.onload = () => {
         window.brightness_slider = document.querySelector('.brilho > input');
         window.brightness_slider.value = 1;
         window.brightness_slider.oninput = () => {
-            window.video_frame.style.filter = window.video_frame.style.filter.replace(/brightness(.*)/, `brightness(${window.brightness_slider.value})`);
+            window.video_frame.style.filter = window.video_frame.style.filter.replace(
+                /brightness(.*)/,
+                `brightness(${window.brightness_slider.value})`
+            );
         }
 
         window.rotation_slider = document.querySelector('.rotacao > input');
@@ -79,6 +99,7 @@ window.onload = () => {
         window.btns.desligar.addEventListener('click', event => next_modo(event, 'poweroff'));
 
         window.btns.enviar_expo.addEventListener('click', async event => {
+            set_debounce_button(event.target)
             const method = 'POST';
             await fetch(`/set_exposure/${window.exposicao.value}`, { method });
         });
@@ -105,8 +126,8 @@ window.onload = () => {
         window.status_watcher.rpi5.innerText = `RPi 5
 			Modo ${status.modo}
 			${status.rpi5 === false || status.modo === 'Download'? status.estado:
-            (status.estado === 'Calibrando'? `Calibrando ${status.rpi0.progress}%`: 'Estado' + status.estado)
-        }
+                (status.estado === 'Calibrando'? `Calibrando ${status.rpi0.progress}%`: 'Estado' + status.estado)
+            }
 			${status.rpi5 ? `IP: ${status.rpi5.ip}` : ''}
 			${status.rpi5? `Temp: ${status.rpi5.temp?.toFixed(2)} ℃`: ''}`
 
@@ -118,9 +139,9 @@ window.onload = () => {
         if (status.modo === 'Tempo' || status.modo === 'Odometro') {
             window.btns.iniciar_download.disabled = global_disable;
 
-            window.btns.calibracao.disabled = global_disable || status.estado !== 'Set';
-            window.btns.iniciar_aquisicao.disabled = global_disable || status.estado !== 'Ready';
-            window.btns.parar_aquisicao.disabled = global_disable || !status.estado.startsWith('Aquisicao');
+            window.btns.calibracao.disabled = window.btns.calibracao.debounce_enabled || global_disable || status.estado !== 'Set';
+            window.btns.iniciar_aquisicao.disabled = window.btns.iniciar_aquisicao.debounce_enabled || global_disable || status.estado !== 'Ready';
+            window.btns.parar_aquisicao.disabled = window.btns.parar_aquisicao.debounce_enabled || global_disable || !status.estado.startsWith('Aquisicao');
         }
         else if (status.modo === 'Autonomo') {
             window.btns.iniciar_download.disabled = global_disable;

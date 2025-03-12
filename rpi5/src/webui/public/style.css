@@ -9,11 +9,11 @@ body { margin: 0px; }
     height: 98vh;
     padding: 1vh 1vw;
 
-    grid-template-columns: max-content 168px;
+    grid-template-columns: max-content 168px auto;
     grid-template-rows: auto 240px;
     grid-template-areas:
-				"img       monitoramento"
-				"controles controles"
+				"img       monitoramento log"
+				"controles controles     log"
 }
 
 .monitoramento {
@@ -32,6 +32,42 @@ body { margin: 0px; }
     width: 100%;
     height: 100%;
 }
+
+.log {
+    display: flex;
+    flex-direction: column;
+    grid-area: log;
+    grid-gap: 4px;
+    width: 100%;
+    height: 98vh;
+}
+
+.log > button {
+    height: 48px;
+}
+
+.log-window {
+    overflow: scroll;
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    height: 100%;
+    border: 1px solid #aaaaaa;
+    box-sizing: border-box;
+}
+
+.log-line:nth-child(even) {
+    background-color: #c6c6c6;
+}
+
+.log-line {
+    font-family: mono, monospace;
+    font-size: 1.5em;
+    padding: 0.35em;
+    border-bottom: 1px solid #aaaaaa;
+    box-sizing: border-box;
+}
+
 
 img {
     object-fit: contain;

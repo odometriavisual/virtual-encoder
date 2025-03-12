@@ -57,6 +57,9 @@ window.onload = () => {
 
         window.btns.enviar_expo = document.querySelector('.exposicao > button');
 
+        window.log_text = document.querySelector('.log > .log-window');
+        window.log_clear = document.querySelector('.log > button');
+
         window.status_watcher = {
             rpi5: document.querySelector('.status.rpi5'),
             rpi0: document.querySelector('.status.rpi0'),
@@ -103,25 +106,29 @@ window.onload = () => {
             const method = 'POST';
             await fetch(`/set_exposure/${window.exposicao.value}`, { method });
         });
+
+        window.log_clear.addEventListener('click', () => window.log_text.innerText = '')
     }
 
-    function update_classname(div, stat) {
-        if (stat) div.className = div.className.replace('err', 'ok')
+    function set_ok(div, predicate) {
+        if (predicate) div.className = div.className.replace('err', 'ok')
         else div.className = div.className.replace('ok', 'err')
     }
 
-    function update_status(status) {
-        update_classname(window.status_watcher.rpi5, status.rpi5);
-        if (status.estado === 'Calibrando' || status.modo === 'Download') {
-            window.status_watcher.rpi5.classList.add('warn');
-        }
-        else {
-            window.status_watcher.rpi5.classList.remove('warn');
-        }
+    function set_warn(div, predicate) {
+        if (predicate) div.classList.add('warn')
+        else div.classList.remove('warn')
+    }
 
-        update_classname(window.status_watcher.rpi0, status.rpi0);
-        update_classname(window.status_watcher.camera, status.camera);
-        update_classname(window.status_watcher.imu, status.imu);
+    function update_status(status) {
+        set_ok(window.status_watcher.rpi5, status.rpi5);
+        set_warn(window.status_watcher.rpi5, status.estado === 'Calibrando' || status.modo === 'Download' || status.rpi5.temp > 80.0);
+
+        set_ok(window.status_watcher.rpi0, status.rpi0);
+        set_warn(window.status_watcher.rpi0, status.rpi0.temp > 80.0);
+
+        set_ok(window.status_watcher.camera, status.camera);
+        set_ok(window.status_watcher.imu, status.imu);
 
         window.status_watcher.rpi5.innerText = `RPi 5
 			Modo ${status.modo}
@@ -134,7 +141,7 @@ window.onload = () => {
         window.status_watcher.rpi0.innerText = `RPi Zero
 			${status.rpi0 ? `Temp: ${status.rpi0.temp?.toFixed(2)} ℃` : ''}`
 
-        const global_disable = status.estado === 'Calibrando'
+        const global_disable = status.estado === 'Calibrando';
 
         if (status.modo === 'Tempo' || status.modo === 'Odometro') {
             window.btns.iniciar_download.disabled = global_disable;
@@ -157,6 +164,11 @@ window.onload = () => {
             window.btns.iniciar_aquisicao.disabled = true;
             window.btns.parar_aquisicao.disabled = true;
         }
+        else if (status.modo === 'Desligado') {
+            for (let [_, btn] of Object.entries(window.btns)) {
+                btn.disabled = true;
+            }
+        }
 
         window.btns.reiniciar.disabled = global_disable || status.rpi5 === false;
         window.btns.desligar.disabled = global_disable || status.rpi5 === false;
@@ -166,7 +178,20 @@ window.onload = () => {
             set_cube_quat(x, y, z, w);
         }
 
+        if (status.msg.length > 0) {
+            for (const line of status.msg.split('\n')) {
+                if (line.length > 0) {
+                    window.log_text.innerHTML += `<div class="log-line">${line}</div>`;
+                    window.log_text.lastChild.scrollIntoView({behavior: 'smooth'});
+                }
+            }
+        }
+
         draw_point(status.pos.x, status.pos.y);
+    }
+
+    function sleep(millis) {
+        return new Promise(resolve => setTimeout(resolve, millis));
     }
 
     async function fetch_status_stream() {
@@ -177,31 +202,34 @@ window.onload = () => {
         const method = 'GET';
         const keepalive = true;
 
-        try {
-            const res = await fetch('/status', {headers, keepalive, method });
-            const decoder = new TextDecoder();
-            let result = '';
+        while (true) {
+            try {
+                const res = await fetch('/status', {headers, keepalive, method});
+                const decoder = new TextDecoder();
+                let result = '';
 
-            for await (const chunk of res.body) {
-                result += decoder.decode(chunk, {stream: true});
-                const lines = result.split('\n');
-                result = lines.pop() || '';
+                for await (const chunk of res.body) {
+                    result += decoder.decode(chunk, {stream: true});
+                    const lines = result.split('\n');
+                    result = lines.pop() || '';
 
-                for (const line of lines) {
-                    update_status(JSON.parse(line));
+                    for (const line of lines) {
+                        update_status(JSON.parse(line));
+                    }
                 }
+            } catch (err) {
+                update_status({
+                    rpi5: false, // { temp: 33., ip: '0.0.0.0', },
+                    rpi0: false, // { temp: 82.3, },
+                    camera: false,
+                    imu: false,
+                    pos: {x: 0., y: 0.},
+                    modo: 'Desligado',
+                    estado: '',
+                    msg: '',
+                });
+                await sleep(5000);
             }
-        }
-        catch (err) {
-            update_status({
-                rpi5: false, // { temp: 33., ip: '0.0.0.0', },
-                rpi0: false, // { temp: 82.3, },
-                camera: false,
-                imu: false,
-                pos: { x: 0., y: 0. },
-                modo: 'Desligado',
-                estado: '',
-            });
         }
     }
 

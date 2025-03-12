@@ -5,6 +5,7 @@ from abc import abstractmethod
 from ..pi_zero_client import PiZeroClient
 from ..pulse_generator import PulseGenerator
 from ..ihm.ihm import IHM
+from ..status import EncoderStatus
 
 class Estado:
     def stop(self):
@@ -15,28 +16,28 @@ class Estado:
         pass
 
 class EstadoSet(Estado):
-    def __init__(self, status: dict):
-        status['estado'] = 'Set'
+    def __init__(self, status: EncoderStatus):
+        status.set('estado', 'Set')
 
     def run(self):
         time.sleep(0.001)
 
 class EstadoReady(Estado):
-    def __init__(self, status: dict):
-        status['estado'] = 'Ready'
+    def __init__(self, status: EncoderStatus):
+        status.set('estado', 'Ready')
 
     def run(self):
         time.sleep(0.001)
 
 class EstadoAquisicaoTempo(Estado):
-    def __init__(self, client: PiZeroClient, status: dict, encoders: tuple[PulseGenerator, ...], pulses_frequency: int, reason: str):
+    def __init__(self, client: PiZeroClient, status: EncoderStatus, encoders: tuple[PulseGenerator, ...], pulses_frequency: int, reason: str):
         self.encoders = encoders
         self.client = client
 
         timestamp_ns = time.time_ns()
         self.client.start_acquisition(timestamp_ns, reason)
 
-        status['estado'] = 'Aquisicao'
+        status.set('estado', 'Aquisicao')
 
         self.period = 1_000_000_000 // pulses_frequency
         self.next_time = time.time_ns() + self.period
@@ -55,10 +56,10 @@ class EstadoAquisicaoTempo(Estado):
         time.sleep(0.001)
 
 class EstadoErro(Estado):
-    def __init__(self, ihm: IHM, status: dict, message):
+    def __init__(self, ihm: IHM, status: EncoderStatus, message):
         self.ihm = ihm
 
-        status['estado'] = message
+        status.set('estado', message)
 
         self.time_now = time.time_ns()
         self.time_exit = self.time_now + int(5e9)

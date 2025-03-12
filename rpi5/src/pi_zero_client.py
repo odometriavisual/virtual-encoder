@@ -8,12 +8,14 @@ import numpy as np
 import requests
 from requests.exceptions import RequestException
 
+from .status import EncoderStatus
+
 PIZERO_HOST = 'rpi0'
 WEBSERVER_PORT = 7123
 STREAM_PORT = 7100
 
 class PiZeroClient:
-    def __init__(self, status: dict):
+    def __init__(self, status: EncoderStatus):
         self.status = status
 
         self.vid_lock = threading.Lock()
@@ -85,7 +87,7 @@ class PiZeroClient:
 
     def get_status(self):
         try:
-            return requests.get(f'http://{PIZERO_HOST}:{WEBSERVER_PORT}/status?rpi5status={self.status["estado"]}', timeout=1.0).json()
+            return requests.get(f'http://{PIZERO_HOST}:{WEBSERVER_PORT}/status?rpi5status={self.status.get("estado")}', timeout=1.0).json()
         except RequestException:
             return False
 

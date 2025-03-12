@@ -4,9 +4,10 @@ from ..ihm.ihm import IHM
 from ..download import Downloader
 from ..mount_device_manager import MountDeviceManager
 from ..pi_zero_client import PiZeroClient
+from ..status import EncoderStatus
 
 class ModoDownload:
-    def __init__(self, client: PiZeroClient, ihm: IHM, status: dict, mount_manager: MountDeviceManager):
+    def __init__(self, client: PiZeroClient, ihm: IHM, status: EncoderStatus, mount_manager: MountDeviceManager):
         self.client = client
         self.ihm = ihm
         self.status = status
@@ -14,15 +15,15 @@ class ModoDownload:
 
         self.dowloader = Downloader()
 
-        self.status['modo'] = 'Download'
-        self.status['estado'] = 'Inicializando...'
+        self.status.set('modo', 'Download')
+        self.status.set('estado', 'Inicializando...')
 
         self.transfered_files = 0
 
         self.file_count = client.get_file_count()
 
         if self.file_count == 0:
-            self.status['estado'] = 'Nenhum ensaio salvo'
+            self.status.set('estado', 'Nenhum ensaio salvo')
             time.sleep(5)
             self.ihm.send_event(('next_modo', 'Tempo'))
             return
@@ -39,7 +40,7 @@ class ModoDownload:
         is_downloading = self.dowloader.start()
 
         if not is_downloading:
-            self.status['estado'] = 'Erro no download'
+            self.status.set('estado', 'Erro no download')
             time.sleep(5)
             self.ihm.send_event(('next_modo', 'Tempo'))
 
@@ -51,7 +52,7 @@ class ModoDownload:
             case True | False:
                 self.dowloader.stop()
                 self.ssd_manager.unmount()
-                self.status['estado'] = 'Concluida' if status else 'Erro'
+                self.status.set('estado', 'Concluida' if status else 'Erro')
                 self.ihm.send_event(('next_modo', 'Tempo'))
                 time.sleep(5)
 
@@ -60,7 +61,7 @@ class ModoDownload:
                     self.transfered_files += 1
                     percent = self.transfered_files / (self.file_count+1)
                     percent = 99.99 if percent >= 100. else 100. * percent
-                    self.status['estado'] = f'{percent:.2f} %'
+                    self.status.set('estado', f'{percent:.2f} %')
                 time.sleep(0.1)
 
     def handle_event(self, ev):

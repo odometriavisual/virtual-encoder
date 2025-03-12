@@ -8,26 +8,9 @@ from src.pi_zero_client import PiZeroClient
 from src.pulse_generator import PulseGenerator
 from src.mount_device_manager import MountDeviceManager
 from src.logger import Logger
+from src.status import EncoderStatus
 
 from src.modos import *
-
-status = {
-    'rpi5': {
-        'temp': 0.,
-        'ip': '0.0.0.0',
-    },
-    'rpi0': {
-        'temp': 0.,
-    },
-    'camera': False,
-    'imu': False,
-    'pos': {
-        'x': 0,
-        'y': 0
-    },
-    'modo': 'Iniciando',
-    'estado': '',
-}
 
 def main():
     """
@@ -47,6 +30,7 @@ def main():
         PulseGenerator(PIN_A=5,PIN_B=6)
     )
 
+    status = EncoderStatus()
     client = PiZeroClient(status)
     ihm = IHM(client.get_img, status)
 
@@ -68,7 +52,7 @@ def main():
 
     def _get_ip():
         while True:
-            status['rpi5']['ip'] = net_manager.get_ip('eth1')
+            status.get('rpi5')['ip'] = net_manager.get_ip('eth1')
             time.sleep(30)
     threading.Thread(target=_get_ip, daemon=True).start()
 
@@ -76,7 +60,7 @@ def main():
         while True:
             with open('/sys/class/thermal/thermal_zone0/temp', 'r') as file:
                 temp = file.read()
-            status['rpi5']['temp'] = int(temp) / 1000
+            status.get('rpi5')['temp'] = int(temp) / 1000
             time.sleep(1)
     threading.Thread(target=_get_temp, daemon=True).start()
 
@@ -85,8 +69,8 @@ def main():
             time.sleep(1.0)
             rpi0_status = client.get_status()
             if rpi0_status:
-                status['rpi0'] = rpi0_status['rpi0']
-                status['camera'] = rpi0_status['camera']
+                status.set('rpi0', rpi0_status['rpi0'])
+                status.set('camera', rpi0_status['camera'])
             ihm.update_display()
     threading.Thread(target=_get_rpi0_status, daemon=True).start()
 
@@ -105,9 +89,9 @@ def main():
                         d = sum([x*x for x in imu])
 
                         if 0.999 < d < 1.001:
-                            status['imu'] = imu
+                            status.set('imu', imu)
                     else:
-                        status['imu'] = False
+                        status.set('imu', False)
                 except:
                     pass
     threading.Thread(target=_get_imu_status, daemon=True).start()

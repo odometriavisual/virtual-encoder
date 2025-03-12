@@ -4,9 +4,10 @@ from flask import Flask, Response, request
 from werkzeug.serving import BaseWSGIServer
 
 from ..ihm.ihm import IHM
+from ..status import EncoderStatus
 
 class WebuiApp:
-    def __init__(self, ihm: IHM, status: dict, host='0.0.0.0', port=5000):
+    def __init__(self, ihm: IHM, status: EncoderStatus, host='0.0.0.0', port=5000):
         self.ihm = ihm
         self.status = status
 
@@ -54,7 +55,7 @@ class WebuiApp:
             def generate_status():
                 while True:
                     time.sleep(0.05)
-                    yield ''.join([json.dumps(self.status), '\n'])
+                    yield ''.join([json.dumps(self.status.get_status()), '\n'])
             return Response(generate_status(), content_type="application/json")
 
         @self.app.route('/set_focus/<focus>', methods=['POST'])

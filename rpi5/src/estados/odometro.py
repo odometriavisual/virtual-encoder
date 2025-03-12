@@ -8,6 +8,7 @@ from ..ihm.ihm import IHM
 from ..pi_zero_client import PiZeroClient
 from ..pulse_generator import PulseGenerator
 from ..logger import Logger
+from ..status import EncoderStatus
 
 from ..estados import Estado
 
@@ -15,7 +16,7 @@ def to_grayscale(img):
     return np.asarray(ImageOps.grayscale(Image.fromarray(img)))
 
 class EstadoAquisicaoOdometro(Estado):
-    def __init__(self, client: PiZeroClient, ihm: IHM, status: dict, encoders: tuple[PulseGenerator, ...], odometer: VisualOdometer, logger: Logger, reason: str):
+    def __init__(self, client: PiZeroClient, ihm: IHM, status: EncoderStatus, encoders: tuple[PulseGenerator, ...], odometer: VisualOdometer, logger: Logger, reason: str):
         self.client = client
         self.ihm = ihm
         self.status = status
@@ -27,7 +28,7 @@ class EstadoAquisicaoOdometro(Estado):
         self.client.start_acquisition(timestamp_ns, reason)
         self.logger.start(timestamp_ns)
 
-        self.status['estado'] = 'Aquisicao'
+        self.status.set('estado', 'Aquisicao')
 
         img = to_grayscale(self.client.get_img())
         self.odometer.feed_image(img)
@@ -67,9 +68,8 @@ class EstadoAquisicaoOdometro(Estado):
 
                 if self.is_running:
                     # Checking again to avoid setting status after is_running was set to False
-                    self.status['estado'] = f'Aquisicao Deslocamento: {acc[0]:.2f}, {acc[1]:.2f}'
-                    self.status['pos']['x'] = acc[0]
-                    self.status['pos']['y'] = acc[1]
+                    self.status.set('estado', f'Aquisicao Deslocamento: {acc[0]:.2f}, {acc[1]:.2f}')
+                    self.status.set('pos', { 'x': acc[0], 'y': acc[1] })
                     print(f'fps {1/(time.time()-t0):06.02f}, acumulado {acc[0]: 6.02f} {acc[1]: 6.02f}')
 
                 with self.pulses_lock:

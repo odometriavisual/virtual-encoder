@@ -6,6 +6,7 @@ from ..ihm.ihm import IHM
 from ..pi_zero_client import PiZeroClient
 from ..pulse_generator import PulseGenerator
 from ..logger import Logger
+from ..status import EncoderStatus
 
 from ..estados import EstadoSet, EstadoReady, EstadoErro, EstadoCalibracao, EstadoAquisicaoOdometro
 
@@ -13,14 +14,14 @@ def to_grayscale(img):
     return np.asarray(ImageOps.grayscale(Image.fromarray(img)))
 
 class ModoOdometro:
-    def __init__(self, client: PiZeroClient, ihm: IHM, status: dict, encoders: tuple[PulseGenerator, ...], logger: Logger):
+    def __init__(self, client: PiZeroClient, ihm: IHM, status: EncoderStatus, encoders: tuple[PulseGenerator, ...], logger: Logger):
         self.client = client
         self.ihm = ihm
         self.status = status
         self.encoders = encoders
         self.logger = logger
 
-        self.status['modo'] = 'Odometro'
+        self.status.set('modo', 'Odometro')
 
         self.estado = EstadoSet(self.status)
         self.odometer = VisualOdometer((480, 640))

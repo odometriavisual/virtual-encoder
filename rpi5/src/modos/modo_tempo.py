@@ -1,17 +1,18 @@
 from ..ihm.ihm import IHM
 from ..pi_zero_client import PiZeroClient
 from ..pulse_generator import PulseGenerator
+from ..status import EncoderStatus
 
 from ..estados import *
 
 class ModoTempo:
-    def __init__(self, client: PiZeroClient, ihm: IHM, status: dict, encoders: tuple[PulseGenerator, ...]):
+    def __init__(self, client: PiZeroClient, ihm: IHM, status: EncoderStatus, encoders: tuple[PulseGenerator, ...]):
         self.client = client
         self.ihm = ihm
         self.status = status
         self.encoders = encoders
 
-        self.status['modo'] = 'Tempo'
+        self.status.set('modo', 'Tempo')
 
         self.estado = EstadoSet(self.status)
 

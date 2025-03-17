@@ -17,11 +17,11 @@ image_folder = filedialog.askdirectory(title="Selecione a pasta de imagens")
 imu_file = os.path.join(image_folder, "imu.csv")
 numpy_filename = "displacements_data.npz"
 numpy_folder = os.path.join(image_folder, numpy_filename)
+
 if os.path.exists(numpy_folder):
     txt_file = "last_npz_directory.txt"
     with open(txt_file, "w") as f:
         f.write(numpy_folder)
-
     print(f"Arquivo NPZ já existe. Caminho atualizado no arquivo de texto: {txt_file}")
 
 else:

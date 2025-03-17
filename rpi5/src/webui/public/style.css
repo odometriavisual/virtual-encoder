@@ -86,31 +86,30 @@ img {
     display: grid;
     grid-gap: 4px;
 
-    grid-template-columns: repeat(13, 1fr);
-    grid-template-rows: 24px 24px 48px 48px 48px;
-    grid-template-areas:
-				"brilho brilho brilho brilho brilho brilho brilho brilho brilho brilho brilho brilho brilho"
-				"rota rota rota rota rota rota rota rota rota rota rota rota rota"
-				"expo   expo   expo   expo   expo   .      .      .      .      .      shutd  shutd  shutd"
-				"pps    pps    pps    pps    pps    reason reason reason reason .      init-d init-d init-d"
-			    "calib  calib  calib  init-a init-a init-a stop-a stop-a stop-a .      reboot reboot reboot"
+    grid-template-columns: repeat(14, 1fr);
+    grid-template-rows: 24px 24px 1fr 1fr 1fr;
 }
 
-.brilho { grid-area: brilho; grid-auto-columns: 70px auto; }
-.rotacao { grid-area: rota; grid-auto-columns: 70px auto; }
-.calibracao { grid-area: calib; }
-.iniciar-aquisicao { grid-area: init-a; }
-.parar-aquisicao { grid-area: stop-a; }
-.iniciar-download { grid-area: init-d; }
-.modo-tempo { grid-area: modo-t; }
-.modo-odometro { grid-area: modo-o; }
-.modo-autonomo { grid-area: modo-a; }
-.reiniciar { grid-area: reboot; }
-.desligar { grid-area: shutd; }
+.brilho { grid-area: 1 / 1 / span 1 / span 14; }
+.rotacao { grid-area: 2 / 1 / span 1 / span 14; }
+.brilho, .rotacao { display: flex; gap: 8px; }
 
-.exposicao { grid-area: expo; }
-.pulsos-por-segundo { grid-area: pps; }
-.motivo { grid-area: reason; }
+.calibracao { grid-area: 5 / 1 / span 1 / span 3; }
+.iniciar-aquisicao { grid-area: 5 / auto / span 1 / span 3; }
+.parar-aquisicao { grid-area: 5 / auto / span 1 / span 3; }
+
+.modo-tempo { grid-area: auto / auto / span 1 / span 3; }
+.modo-odometro { grid-area: auto / auto / span 1 / span 3; }
+.modo-autonomo { grid-area: auto / auto / span 1 / span 3; }
+
+.iniciar-download { grid-area: 3 / 12 / span 1 / span 3; }
+.reiniciar { grid-area: 4 / 12 / span 1 / span 3; }
+.desligar { grid-area: 5 / 12 / span 1 / span 3; }
+
+.exposicao { grid-area: 3 / 1 / span 1 / span 3; }
+.pulsos-por-segundo { grid-area: 3 / 5 / span 1 / span 3; }
+.motivo { grid-area: 3 / 9 / span 1 / span 3; }
+
 /* Chrome, Safari, Edge, Opera */
 input::-webkit-outer-spin-button,
 input::-webkit-inner-spin-button {
@@ -123,9 +122,12 @@ input[type=number] {
     -moz-appearance: textfield;
 }
 
-label { display: grid; gap: 8px; grid-auto-flow: column; }
 label > div { align-self: center; }
-label > input { flex-grow: 1; min-width: 1px;}
+.exposicao > input { flex-grow: 1;}
+.brilho > input,
+.rotacao > input,
+.pulsos-por-segundo > input,
+.motivo > input { flex-grow: 1; width: 100%;}
 
 .monitoramento > div {
     display: flex;

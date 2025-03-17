@@ -55,7 +55,6 @@ window.onload = () => {
             btn.debounce_id = null;
         }
 
-        window.btns.enviar_expo = document.querySelector('.exposicao > button');
 
         window.log_text = document.querySelector('.log > .log-window');
         window.log_clear = document.querySelector('.log > button');
@@ -101,7 +100,7 @@ window.onload = () => {
         window.btns.reiniciar.addEventListener('click', event => next_modo(event, 'reboot'));
         window.btns.desligar.addEventListener('click', event => next_modo(event, 'poweroff'));
 
-        window.btns.enviar_expo.addEventListener('click', async event => {
+        document.querySelector('.exposicao > button').addEventListener('click', async event => {
             set_debounce_button(event.target)
             const method = 'POST';
             await fetch(`/set_exposure/${window.exposicao.value}`, { method });
@@ -204,6 +203,8 @@ window.onload = () => {
 
         while (true) {
             try {
+                window.video_frame.src = '/video_feed';
+
                 const res = await fetch('/status', {headers, keepalive, method});
                 const decoder = new TextDecoder();
                 let result = '';

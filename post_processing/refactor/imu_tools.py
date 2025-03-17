@@ -1,5 +1,5 @@
-import os
 import csv
+import numpy as np
 
 def load_imu_data(imu_file):
     imu_data = []
@@ -17,3 +17,11 @@ def load_imu_data(imu_file):
 
 def find_closest_imu_data(imu_data, img_timestamp):
     return min(imu_data, key=lambda x: abs(x['timestamp'] - img_timestamp))
+
+def cross(x, y):
+    return np.array((x[1] * y[2] - x[2] * y[1], x[2] * y[0] - x[0] * y[2], x[0] * y[1] - x[1] * y[0]))
+
+def fast_rot(q, v):
+    t = 2 * cross(q[1:], v[1:])
+    R = v[1:] + q[0] * t + cross(q[1:], t)
+    return R

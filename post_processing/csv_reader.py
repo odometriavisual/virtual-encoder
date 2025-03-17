@@ -4,7 +4,8 @@ from mpl_toolkits.mplot3d.art3d import Poly3DCollection
 import pandas as pd
 import numpy as np
 import time
-
+import tkinter as tk
+from tkinter import filedialog
 
 def mult(x, y):
     return np.array([
@@ -163,6 +164,39 @@ def animate_cube(data):
 
     plt.show()
 
-# Ler o arquivo CSV e iniciar a animação
-data = pd.read_csv('C:/Users/Demarky/Documents/Ensaios de referencia/12.02.2025/1lanterna_rapida_750us/28_20250212T153944/imu.csv')
-animate_cube(data)
+
+
+
+
+# Função para abrir o diálogo de seleção de arquivo
+def selecionar_arquivo():
+    root = tk.Tk()
+    root.withdraw()  # Esconde a janela principal do tkinter
+
+    # Abre o diálogo para selecionar arquivo
+    caminho_arquivo = filedialog.askopenfilename(
+        title="Selecione o arquivo IMU CSV",
+        filetypes=[("Arquivos CSV", "*.csv")]
+    )
+
+    return caminho_arquivo
+
+
+# Função principal
+def main():
+    # Solicita ao usuário que selecione o arquivo
+    arquivo_csv = selecionar_arquivo()
+
+    # Verifica se um arquivo foi selecionado
+    if arquivo_csv:
+        print(f"Arquivo selecionado: {arquivo_csv}")
+        # Ler o arquivo CSV e iniciar a animação
+        data = pd.read_csv(arquivo_csv)
+        animate_cube(data)
+    else:
+        print("Nenhum arquivo foi selecionado. Encerrando o programa.")
+
+
+# Executar a função principal
+if __name__ == "__main__":
+    main()

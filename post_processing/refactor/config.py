@@ -1,5 +1,5 @@
 
-skip_frames = True
+skip_frames = False
 skip_min_distance = 10
 phase_windowing = "central"
 

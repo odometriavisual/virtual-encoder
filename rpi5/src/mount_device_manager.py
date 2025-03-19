@@ -16,7 +16,7 @@ class MountDeviceManager:
                 subprocess.run(["sudo", "mount", self.device])
 
             time.sleep(.5)
-            return True
+            return self.is_mounted()
         except SubprocessError:
             return False
 

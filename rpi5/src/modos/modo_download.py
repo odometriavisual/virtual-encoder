@@ -25,19 +25,20 @@ class ModoDownload:
         if self.file_count == 0:
             self.status.set('estado', 'Nenhum ensaio salvo')
             self.status.add_message('Download: Nenhuma aquisicao salva')
-            time.sleep(5)
+            time.sleep(1)
             self.ihm.send_event(('next_modo', 'Tempo'))
             return
-
-        self.client.pause_stream()
 
         is_mounted = self.ssd_manager.mount()
 
         if not is_mounted:
             self.ihm.estado = 'Erro SSD não encontrado'
             self.status.add_message('Download: SSD não encontrado')
-            time.sleep(5)
+            time.sleep(1)
             self.ihm.send_event(('next_modo', 'Tempo'))
+            return
+
+        self.client.pause_stream()
 
         is_downloading = self.dowloader.start()
         self.status.add_message('Download: Iniciando...')
@@ -45,8 +46,9 @@ class ModoDownload:
         if not is_downloading:
             self.status.set('estado', 'Erro no download')
             self.status.add_message('Download: Erro de conexao')
-            time.sleep(5)
+            time.sleep(1)
             self.ihm.send_event(('next_modo', 'Tempo'))
+            return
 
     def stop(self):
         self.client.resume_stream()
@@ -59,7 +61,7 @@ class ModoDownload:
                 self.status.set('estado', 'Concluida' if status else 'Erro')
                 self.ihm.send_event(('next_modo', 'Tempo'))
                 self.status.add_message('Download: Finalizado')
-                time.sleep(5)
+                time.sleep(1)
 
             case line:
                 if line.find('.zip') > 0:

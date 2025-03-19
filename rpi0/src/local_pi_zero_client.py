@@ -76,9 +76,13 @@ class LocalPiZeroClient:
         if self.imu_enabled is True:
             time_now = time.time_ns()
             quat = self.imu.quaternion
+
+            if any(q is None for q in quat):
+                return None
+
             return [time_now, quat[0], quat[1], quat[2], quat[3]]
         else:
-            return [0, 0.0, 0.0, 0.0, 0.0]
+            return None
 
     def get_img(self):
         # Retorna o frame mais recente capturado
@@ -131,14 +135,23 @@ class LocalPiZeroClient:
 
     def start_imu_stream(self):
         def _start():
+            next_time = time.monotonic_ns()
+            T = 1e9 / 100
             while True:
+                t0 = time.monotonic_ns()
+                if t0 < next_time:
+                    time.sleep(0.001)
+                    continue
+
+                next_time += T
+
                 if self.streaming_enabled:
                     with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as sock:
                         sock.connect(("rpi5", 7101))
                         measure = self.get_orientation()
-                        self.logger.orientations_queue.put(measure, block=False)
-                        sock.send(json.dumps(measure).encode('utf-8'))
-                time.sleep(0.02)
+                        if measure is not None:
+                            self.logger.orientations_queue.put(measure, block=False)
+                            sock.send(json.dumps(measure).encode('utf-8'))
 
         threading.Thread(target=_start, daemon=True).start()
 

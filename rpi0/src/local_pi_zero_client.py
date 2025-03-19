@@ -162,7 +162,8 @@ class LocalPiZeroClient:
         self.send_debug_message('Video Streaming: Desativado')
 
     def resume_stream(self):
-        self.streaming_enabled = True
-        self.picam2.start()
-        self.send_debug_message('Video Streaming: reativado')
+        if not self.streaming_enabled:
+            self.streaming_enabled = True
+            self.picam2.start()
+            self.send_debug_message('Video Streaming: Reativado')
 

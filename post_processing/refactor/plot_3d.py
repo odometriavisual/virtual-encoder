@@ -11,16 +11,16 @@ import math
 from scipy.spatial.transform import Rotation as R
 
 def plot3DFromData(list_displacements, list_quaternions):
-    reorganized_quaternions = np.zeros_like(list_quaternions)
+    plt.ion()
 
     # Lista com as variações de deslocamento
     variations = [
         #[1, 2],
-        #[1, 3],
+        [1, 3],
         #[2, 1],
         #[2, 3],
         #[3, 2],
-        [3, 1]
+        #[3, 1]
     ]
 
     # Mapeamento para exibir dx, dy e 0 nos títulos
@@ -158,3 +158,5 @@ def plot3DFromData(list_displacements, list_quaternions):
     # Ajustar layout e mostrar o gráfico
     plt.tight_layout()
     plt.show()
+
+    plt.ioff()

@@ -54,7 +54,7 @@ class EstadoAquisicaoTempo(Estado):
             for encoder in self.encoders:
                 encoder.send_pulses(count=1)
 
-            self.client.start_acquisition(timestamp_ns, self.reason)
+            self.client.start_acquisition(timestamp_ns, self.reason, self.period)
             self.next_time = timestamp_ns + self.period
         else:
             current_time = time.time_ns()

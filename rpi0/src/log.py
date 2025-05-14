@@ -60,14 +60,14 @@ class Logger:
                         writer = csv.writer(file)
                         writer.writerow(list(measure))
 
-    def _save_calibration_data(self, timestamp_ns):
+    def _save_calibration_data(self, timestamp_ns, pulses_period_ns):
         path = f'{self.save_dir}/calibration_data.csv'
         with open(path, mode='w', newline='') as file:
             writer = csv.writer(file)
-            writer.writerow(["first_pulse_timestamp", "exposure", "px_p_mm"])
-            writer.writerow([timestamp_ns, self.client.exposure, self.px_p_mm])
+            writer.writerow(["first_pulse_timestamp", "exposure", "px_p_mm", "pulses_period_ns"])
+            writer.writerow([timestamp_ns, self.client.exposure, self.px_p_mm, pulses_period_ns])
 
-    def start_acquisition(self, timestamp_ns, reason):
+    def start_acquisition(self, timestamp_ns, reason, pulses_period_ns):
         datenow = datetime.fromtimestamp(timestamp_ns // 1_000_000_000).strftime('%Y%m%dT%H%M%S')
 
         self.ensaio_number = f'{self.boot_num}_{datenow}'
@@ -81,7 +81,7 @@ class Logger:
         self.save_dir = f'{self.root_dir}/{ensaio_name}'
         if not isdir(self.save_dir):
             makedirs(self.save_dir)
-            self._save_calibration_data(timestamp_ns)
+            self._save_calibration_data(timestamp_ns, pulses_period_ns)
 
         self.client.send_debug_message(f'Aquisição iniciada: {ensaio_name}')
         self.enable_save = True

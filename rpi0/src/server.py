@@ -64,7 +64,8 @@ class Server:
                 query_params = parse_qs(urlparse(self.path).query)
                 timestamp = int(query_params['ts'][0])
                 reason = query_params.get('r') and query_params['r'][0]
-                self.client.start_acquisition(timestamp, reason)
+                pulses_period_ns = query_params.get('p') and query_params['p'][0]
+                self.client.start_acquisition(timestamp, reason, pulses_period_ns)
             elif self.path == '/stop_acquisition':
                 self.client.stop_acquititions()
 

@@ -1,9 +1,12 @@
+import matplotlib
 import matplotlib.pyplot as plt
 import numpy as np
 from numpy.linalg import pinv
 import cv2 as cv
 import time
 from random import randint
+
+matplotlib.use('qtagg')
 
 # Radial Basis Function U:
 def U(r):
@@ -47,28 +50,45 @@ def distortion_random(x_true, y_true):
     return x_distort, y_distort
 
 if __name__ == '__main__':
-    x_true, y_true = np.meshgrid(np.linspace(0, 320, 5), np.linspace(0, 240, 5))
-    dim = x_true.shape # Save this to reshape the residual later
-    x_true = x_true.ravel()
-    y_true = y_true.ravel()
+    # img = cv.imread('/home/fernando/Downloads/ensaios_encoder/calib_ar_xadrez/1745960645637934760.jpg')
+    # img = cv.imread('/home/fernando/Downloads/ensaios_encoder/calib_ar_xadrez/1745960642343975825.jpg')
+    img, patternSize = cv.imread('/home/fernando/Documents/camera calibration/19_20250507T162316 circles/1746645809886753153.jpg'), (7, 5)
 
-    x_distort, y_distort = distortion_random(x_true, y_true)
+    gray = cv.cvtColor(img, cv.COLOR_BGR2GRAY)
+    ret, centers = cv.findCirclesGrid(gray, patternSize)
 
-    N = len(x_true)
+    x_measured, y_measured = np.array(centers[:,0,0]), np.array(centers[:,0,1])
+
+    origin = (x_measured[4], y_measured[3])
+    dx = centers[3 * patternSize[0] + 4 + 1][0][0] - centers[3 * patternSize[0] + 4][0][0]
+    dy = centers[(3 + 1) * patternSize[0] + 4][0][1] - centers[3 * patternSize[0] + 4][0][1]
+
+    print(f'{dx=}, {dy=}')
+
+    h, w = img.shape[:2]
+    x_expected = [ ]
+    y_expected = [ ]
+
+    for i in range(patternSize[1]):
+        for j in range(patternSize[0]):
+            x_expected.append(w/2 + (j+1 - 4) * dx)
+            y_expected.append(h/2 + (i+1 - 3) * dy)
+
+    N = len(x_expected)
     D = 2 # number of spatial dimensions
 
-    K = np.zeros((len(x_true), len(x_true)), dtype=float)
-    for i in range(len(x_true)):
-      for j in range(len(x_true)):
-        pt0 = (x_true[i], y_true[i])
-        pt1 = (x_true[j], y_true[j])
+    K = np.zeros((len(x_expected), len(x_expected)), dtype=float)
+    for i in range(len(x_expected)):
+      for j in range(len(x_expected)):
+        pt0 = (x_expected[i], y_expected[i])
+        pt1 = (x_expected[j], y_expected[j])
         K[i, j] = U(dist(pt0, pt1))
 
-    P = np.zeros((len(x_true), D + 1))
-    for i in range(len(x_true)):
+    P = np.zeros((len(x_expected), D + 1))
+    for i in range(len(x_expected)):
       P[i, 0] = 1
-      P[i, 1] = x_true[i]
-      P[i, 2] = y_true[i]
+      P[i, 1] = x_expected[i]
+      P[i, 2] = y_expected[i]
 
     L = np.zeros((N + D + 1, N + D + 1))
     L[:N, :N] = K
@@ -77,7 +97,7 @@ if __name__ == '__main__':
 
     vo = np.zeros((N + D + 1, 1), dtype=float)
     for i in range(N):
-      vo[i] = x_distort[i]
+      vo[i] = x_measured[i]
 
     L_inv = pinv(L.transpose() @ L) @ L.transpose()
     wa_x = L_inv @ vo
@@ -85,58 +105,34 @@ if __name__ == '__main__':
     def f_x(x, y):
       result = wa_x[N] + wa_x[N + 1] * x + wa_x[N + 2] * y
       for i in range(N):
-        result += wa_x[i] * U(dist((x_true[i], y_true[i]), (x, y)))
+        result += wa_x[i] * U(dist((x_expected[i], y_expected[i]), (x, y)))
       return result
 
     f_x_synth = np.zeros((N, 1))
     for i in range(N):
-      f_x_synth[i] = f_x(x_true[i], y_true[i])
+      f_x_synth[i] = f_x(x_expected[i], y_expected[i])
 
     vo_y = np.zeros((N + D + 1, 1), dtype=float)
     for i in range(N):
-      vo_y[i] = y_distort[i]
+      vo_y[i] = y_measured[i]
 
     wa_y = L_inv @ vo_y
 
     def f_y(x, y):
       result = wa_y[N] + wa_y[N + 1] * x + wa_y[N + 2] * y
       for i in range(N):
-        result += wa_y[i] * U(dist((x_true[i], y_true[i]), (x, y)))
+        result += wa_y[i] * U(dist((x_expected[i], y_expected[i]), (x, y)))
       return result
 
     f_y_synth = np.zeros((N, 1))
     for i in range(N):
-      f_y_synth[i] = f_y(x_true[i], y_true[i])
+      f_y_synth[i] = f_y(x_expected[i], y_expected[i])
 
     x_TPS = np.zeros((N, 1))
     y_TPS = np.zeros((N, 1))
     for i in range(N):
-      x_TPS[i] = f_x(x_true[i], y_true[i])
-      y_TPS[i] = f_y(x_true[i], y_true[i])
-
-    plt.figure(figsize=(8, 5))
-
-    plt.subplot(1, 2, 1)
-    plt.scatter(x_true, y_true, marker='o', color='C0')
-    plt.scatter(x_distort, y_distort, marker='x', color='red')
-    ax = plt.gca()
-    ax.set_aspect('equal')
-    plt.title('Original distortion')
-    axis = plt.axis()
-    plt.grid()
-
-    plt.subplot(1, 2, 2)
-    plt.scatter(x_true, y_true, marker='o', color='C0')
-    plt.scatter(x_TPS, y_TPS, marker='x', color='red')
-    ax = plt.gca()
-    ax.set_aspect('equal')
-    plt.title('TPS-modelled distortion (only training set)')
-    plt.axis(axis)
-    plt.grid()
-
-    plt.show()
-
-    img = cv.imread('/home/fernando/Documents/opencv/samples/data/min_left01.jpg')
+      x_TPS[i] = f_x(x_expected[i], y_expected[i])
+      y_TPS[i] = f_y(x_expected[i], y_expected[i])
 
     map_x = np.zeros(img.shape[0:2], dtype=np.float32)
     map_y = np.zeros(img.shape[0:2], dtype=np.float32)
@@ -157,8 +153,11 @@ if __name__ == '__main__':
     print(f'ellapsed time: {time.time() - t0}s')
 
     plt.subplot(1, 2, 1)
+    gray = cv.cvtColor(img, cv.COLOR_BGR2GRAY)
     plt.imshow(img)
-    plt.subplot(1, 2, 2)
-    plt.imshow(img_out)
-    plt.show()
 
+    plt.subplot(1, 2, 2)
+    gray = cv.cvtColor(img_out, cv.COLOR_BGR2GRAY)
+    plt.imshow(img_out)
+
+    plt.show()

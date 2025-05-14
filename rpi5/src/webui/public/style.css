@@ -90,9 +90,10 @@ img {
     grid-template-rows: 24px 24px 1fr 1fr 1fr;
 }
 
-.brilho { grid-area: 1 / 1 / span 1 / span 14; }
-.rotacao { grid-area: 2 / 1 / span 1 / span 14; }
+.brilho { grid-area: 1 / 1 / span 1 / span 14; user-select: none; }
+.rotacao { grid-area: 2 / 1 / span 1 / span 14; user-select: none; }
 .brilho, .rotacao { display: flex; gap: 8px; }
+.brilho > input[type="button"] { flex-shrink: 10; }
 
 .calibracao { grid-area: 5 / 1 / span 1 / span 3; }
 .iniciar-aquisicao { grid-area: 5 / auto / span 1 / span 3; }

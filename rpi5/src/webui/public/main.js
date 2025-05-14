@@ -74,13 +74,18 @@ window.onload = () => {
         window.video_frame.src = '/video_feed';
         window.video_frame.style = 'filter: brightness(1.0)';
 
-        window.brightness_slider = document.querySelector('.brilho > input');
+        window.brightness_slider = document.querySelector('.brilho > input[type="range"]');
         window.brightness_slider.value = 1;
         window.brightness_slider.oninput = () => {
             window.video_frame.style.filter = window.video_frame.style.filter.replace(
                 /brightness(.*)/,
                 `brightness(${window.brightness_slider.value})`
             );
+        }
+        window.brightness_reset = document.querySelector('.brilho > input[type="button"]');
+        window.brightness_reset.onclick = () => {
+            window.video_frame.style = 'filter: brightness(1.0)';
+            window.brightness_slider.value = 1;
         }
 
         window.rotation_slider = document.querySelector('.rotacao > input');

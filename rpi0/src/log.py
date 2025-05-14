@@ -10,6 +10,9 @@ class Logger:
         with open('/home/pi/boot-count.txt') as file:
             self.boot_num = file.read().strip()
 
+        with open('/home/pi/px_p_mm.txt') as file:
+            self.px_p_mm = file.read().strip()
+
         time_now = time.time_ns()
         datenow = datetime.fromtimestamp(time_now // 1_000_000_000).strftime('%Y%m%dT%H%M%S')
         self.root_dir = f'/home/pi/picam_imgs'
@@ -57,13 +60,12 @@ class Logger:
                         writer = csv.writer(file)
                         writer.writerow(list(measure))
 
-    def _save_calibration_data(self):
+    def _save_calibration_data(self, timestamp_ns):
         path = f'{self.save_dir}/calibration_data.csv'
-        time_now = time.time_ns()
         with open(path, mode='w', newline='') as file:
             writer = csv.writer(file)
-            writer.writerow(["timestamp", "exposure", "focus"])
-            writer.writerow([time_now, self.client.exposure, self.client.focus])
+            writer.writerow(["first_pulse_timestamp", "exposure", "px_p_mm"])
+            writer.writerow([timestamp_ns, self.client.exposure, self.px_p_mm])
 
     def start_acquisition(self, timestamp_ns, reason):
         datenow = datetime.fromtimestamp(timestamp_ns // 1_000_000_000).strftime('%Y%m%dT%H%M%S')

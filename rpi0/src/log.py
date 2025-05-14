@@ -81,7 +81,7 @@ class Logger:
         self.save_dir = f'{self.root_dir}/{ensaio_name}'
         if not isdir(self.save_dir):
             makedirs(self.save_dir)
-            self._save_calibration_data()
+            self._save_calibration_data(timestamp_ns)
 
         self.client.send_debug_message(f'Aquisição iniciada: {ensaio_name}')
         self.enable_save = True

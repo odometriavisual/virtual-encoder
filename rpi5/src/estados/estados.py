@@ -33,9 +33,9 @@ class EstadoAquisicaoTempo(Estado):
     def __init__(self, client: PiZeroClient, status: EncoderStatus, encoders: tuple[PulseGenerator, ...], pulses_frequency: int, reason: str):
         self.encoders = encoders
         self.client = client
+        self.reason = reason
 
-        timestamp_ns = time.time_ns()
-        self.client.start_acquisition(timestamp_ns, reason)
+        self.is_first_pulse = True
 
         status.set('estado', 'Aquisicao')
         status.add_message(f'Aquisição: {reason} {pulses_frequency} pulsos/s')
@@ -47,14 +47,24 @@ class EstadoAquisicaoTempo(Estado):
         self.client.stop_acquisition()
 
     def run(self):
-        current_time = time.time_ns()
-        if current_time > self.next_time:
+        if self.is_first_pulse:
+            self.is_first_pulse = False
+
+            timestamp_ns = time.time_ns()
             for encoder in self.encoders:
                 encoder.send_pulses(count=1)
 
-            self.next_time = current_time + self.period
+            self.client.start_acquisition(timestamp_ns, self.reason)
+            self.next_time = timestamp_ns + self.period
+        else:
+            current_time = time.time_ns()
+            if current_time > self.next_time:
+                for encoder in self.encoders:
+                    encoder.send_pulses(count=1)
 
-        time.sleep(0.001)
+                self.next_time = self.next_time + self.period
+
+        time.sleep(0.0001)
 
 class EstadoErro(Estado):
     def __init__(self, ihm: IHM, status: EncoderStatus, message):

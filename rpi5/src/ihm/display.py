@@ -23,8 +23,7 @@ class Screen:
         self.oled = adafruit_ssd1306.SSD1306_I2C(width, height, i2c, addr=addr)
 
         # Limpa o display
-        self.oled.fill(0)
-        self.oled.show()
+        self.clear()
 
         # Cria a imagem em branco para desenhar
         self.image = Image.new("1", (self.oled.width, self.oled.height))
@@ -32,6 +31,10 @@ class Screen:
 
         # Carrega a fonte padrão
         self.font = ImageFont.load_default()
+
+    def clear(self):
+        self.oled.fill(0)
+        self.oled.show()
 
     def drawLine(self, line: int, text: str, align: str = 'left'):
         line_height = 12  # Altura da linha em pixels (ajustável)

@@ -18,16 +18,16 @@ def main():
           3 (SCL)
 
                 A,  B
-    Encoder 1: 19, 13
-    Encoder 2: 26, 23
-    Encoder 3:  5,  6
+    Encoder 1: 26, 19
+    Encoder 2:  5, 23
+    Encoder 3:  6, 13
 
     Rele: 25
     """
     encoders = (
-        PulseGenerator(PIN_A=19,PIN_B=13),
-        PulseGenerator(PIN_A=26,PIN_B=23),
-        PulseGenerator(PIN_A=5,PIN_B=6)
+        PulseGenerator(PIN_A=26, PIN_B=19),
+        PulseGenerator(PIN_A=5, PIN_B=23),
+        PulseGenerator(PIN_A=6, PIN_B=13)
     )
 
     status = EncoderStatus()

@@ -88,10 +88,6 @@ window.onload = () => {
             window.brightness_slider.value = 1;
         }
 
-        window.rotation_slider = document.querySelector('.rotacao > input');
-        window.rotation_slider.value = 0;
-        window.rotation_slider.oninput = () => window.rotation_offset = window.rotation_slider.value;
-
         window.btns.calibracao.addEventListener('click', next_estado);
         window.btns.iniciar_aquisicao.addEventListener('click', event => {
             clear_canvas()
@@ -109,6 +105,14 @@ window.onload = () => {
             set_debounce_button(event.target)
             const method = 'POST';
             await fetch(`/set_exposure/${window.exposicao.value}`, { method });
+        });
+
+        window.exposicao.addEventListener("keyup", async event => {
+            if (event.key === "Enter") {
+                set_debounce_button(event.target)
+                const method = 'POST';
+                await fetch(`/set_exposure/${window.exposicao.value}`, { method });
+            }
         });
 
         window.log_clear.addEventListener('click', () => window.log_text.innerText = '')

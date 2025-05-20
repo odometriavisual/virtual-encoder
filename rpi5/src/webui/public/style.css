@@ -115,8 +115,7 @@ img {
 }
 
 .brilho { grid-area: 1 / 1 / span 1 / span 14; user-select: none; }
-.rotacao { grid-area: 2 / 1 / span 1 / span 14; user-select: none; }
-.brilho, .rotacao { display: flex; gap: 8px; }
+.brilho { display: flex; gap: 8px; }
 .brilho > input[type="button"] { flex-shrink: 10; }
 
 .calibracao { grid-area: 5 / 1 / span 1 / span 3; }
@@ -150,7 +149,6 @@ input[type=number] {
 label > div { align-self: center; }
 .exposicao > input { flex-grow: 1;}
 .brilho > input,
-.rotacao > input,
 .pulsos-por-segundo > input,
 .motivo > input { flex-grow: 1; width: 100%;}
 

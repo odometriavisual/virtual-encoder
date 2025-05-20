@@ -7,9 +7,7 @@ class EncoderStatus:
                 'temp': 0.,
                 'ip': '0.0.0.0',
             },
-            'rpi0': {
-                'temp': 0.,
-            },
+            'rpi0': False,
             'camera': False,
             'imu': False,
             'pos': {

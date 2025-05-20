@@ -16,6 +16,18 @@ body { margin: 0px; }
 				"controles controles     log"
 }
 
+@media (width <= 1200px) {
+    .wrapper {
+        grid-template-columns: auto 168px;
+        grid-template-rows: auto 240px;
+        grid-template-areas:
+                    "img       monitoramento"
+                    "controles controles    "
+    }
+
+    .log { display: none !important; }
+}
+
 .monitoramento {
     grid-area: monitoramento;
 

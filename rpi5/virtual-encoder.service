@@ -2,6 +2,7 @@
 Description=Virtual Encoder
 After=multi-user.target
 Requires=before-virtual-encoder.service
+Requires=before-shutdown.service
 
 [Service]
 Type=exec

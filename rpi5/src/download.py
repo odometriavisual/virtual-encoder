@@ -30,7 +30,7 @@ class Downloader:
     def generate_runlist(self, src_name="rpi0", dest_name="ssd"):
         src = f"""{self.devices[src_name]["username"]}@{self.devices[src_name]["ip"]}:{self.devices[src_name]["path"]}"""
         dest = f"""{self.devices[dest_name]["path"]}"""
-        return ["sshpass", "-p", self.devices["rpi0"]["password"], "rsync", "-r", "-v", "--bwlimit=5000", src, dest]
+        return ["sshpass", "-p", self.devices["rpi0"]["password"], "rsync", "-r", "-v", "--include=*.zip", "--bwlimit=5000", src, dest]
 
     def start(self, runlist=None):
         try:

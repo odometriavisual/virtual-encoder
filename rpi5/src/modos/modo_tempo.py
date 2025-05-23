@@ -36,3 +36,6 @@ class ModoTempo:
             case EstadoAquisicaoTempo(), 'next_estado':
                 self.estado.stop()
                 self.estado = EstadoReady(self.status)
+
+            case _, 'toggle_stream':
+                self.client.toggle_stream()

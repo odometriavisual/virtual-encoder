@@ -101,7 +101,12 @@ window.onload = () => {
         window.btns.reiniciar.addEventListener('click', event => next_modo(event, 'reboot'));
         window.btns.desligar.addEventListener('click', event => next_modo(event, 'poweroff'));
 
-        window.toggle_streaming.addEventListener('click', event => {});
+        window.toggle_streaming.addEventListener('click', async event => {
+            set_debounce_button(event.target)
+            const method = 'POST';
+            await fetch('/toggle_stream', { method });
+        });
+
         window.toggle_calibracao.addEventListener('click', event =>
             document.querySelectorAll('.crosshair').forEach(e => e.classList.toggle('hidden'))
         );
@@ -180,6 +185,7 @@ window.onload = () => {
             }
         }
 
+        window.toggle_streaming.disabled = window.toggle_streaming.debounce_enabled || global_disable;
         window.btns.reiniciar.disabled = global_disable || status.rpi5 === false;
         window.btns.desligar.disabled = global_disable || status.rpi5 === false;
 

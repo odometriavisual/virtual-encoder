@@ -58,6 +58,11 @@ class WebuiApp:
                     yield ''.join([json.dumps(self.status.get_status()), '\n'])
             return Response(generate_status(), content_type="application/json")
 
+        @self.app.route('/toggle_stream', methods=['POST'])
+        def toggle_stream():
+            self.ihm.send_event('toggle_stream')
+            return "Ok"
+
         @self.app.route('/set_focus/<focus>', methods=['POST'])
         def set_focus(focus):
             self.ihm.send_event(('set_focus', focus))

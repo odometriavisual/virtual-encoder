@@ -19,8 +19,8 @@ class ModoDownload:
         self.status.set('estado', 'Inicializando...')
 
         self.transfered_files = 0
-
         self.file_count = client.get_file_count()
+        self.stream_was_enabled = self.client.stream_enabled
 
         if self.file_count == 0:
             self.status.set('estado', 'Nenhum ensaio salvo')
@@ -51,7 +51,8 @@ class ModoDownload:
             return
 
     def stop(self):
-        self.client.resume_stream()
+        if self.stream_was_enabled:
+            self.client.resume_stream()
 
     def run(self):
         match status := self.dowloader.get_status():

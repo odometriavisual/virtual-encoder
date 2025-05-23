@@ -25,6 +25,8 @@ class PiZeroClient:
         self.frame_lock = threading.Lock()
         self.frame = cv2.Mat(np.array([0x000000AA], dtype=np.float32))
 
+        self.stream_enabled = True
+
         def update():
             while True:
                 time.sleep(0.001)
@@ -45,6 +47,7 @@ class PiZeroClient:
                     else:
                         self.vid.open(f'udp://{PIZERO_HOST}:{STREAM_PORT}')
                         self.vid.set(cv2.CAP_PROP_BUFFERSIZE, 1)
+                        self.stream_enabled = False
                         time.sleep(1)
 
         self.vid_thread = threading.Thread(daemon=True, target=update)
@@ -134,9 +137,17 @@ class PiZeroClient:
         except SubprocessError:
             pass
 
+    def toggle_stream(self):
+        if self.stream_enabled:
+            self.pause_stream()
+        else:
+            self.resume_stream()
+        self.stream_enabled = not self.stream_enabled
+
     def pause_stream(self):
         try:
             requests.get(f'http://{PIZERO_HOST}:{WEBSERVER_PORT}/pause_stream', timeout=1.0)
+            self.stream_enabled = False
         except RequestException:
             pass
 

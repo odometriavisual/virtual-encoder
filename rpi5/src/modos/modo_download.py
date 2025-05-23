@@ -32,8 +32,8 @@ class ModoDownload:
         is_mounted = self.ssd_manager.mount()
 
         if not is_mounted:
-            self.ihm.estado = 'Erro SSD não encontrado'
-            self.status.add_message('Download: SSD não encontrado')
+            self.ihm.estado = 'ERRO: SSD não encontrado'
+            self.status.add_message('ERRO: SSD não encontrado')
             time.sleep(1)
             self.ihm.send_event(('next_modo', 'Tempo'))
             return
@@ -45,7 +45,7 @@ class ModoDownload:
 
         if not is_downloading:
             self.status.set('estado', 'Erro no download')
-            self.status.add_message('Download: Erro de conexao')
+            self.status.add_message('ERRO: Erro de conexao')
             time.sleep(1)
             self.ihm.send_event(('next_modo', 'Tempo'))
             return

@@ -14,7 +14,7 @@ class ModoTempo:
 
         self.status.set('modo', 'Tempo')
 
-        self.estado = EstadoSet(self.status)
+        self.estado = EstadoReady(self.status)
 
     def stop(self):
         self.estado.stop()
@@ -28,12 +28,6 @@ class ModoTempo:
                 self.estado = EstadoErro(self.ihm, self.status, message)
 
             case EstadoErro(), 'next_estado':
-                self.estado = EstadoSet(self.status)
-
-            case EstadoSet(), 'next_estado':
-                self.estado = EstadoCalibracao(self.ihm, self.status, self.client)
-
-            case EstadoCalibracao(), 'fim_calibracao':
                 self.estado = EstadoReady(self.status)
 
             case EstadoReady(), ('next_estado', _, pulses_frequency, reason):
@@ -41,4 +35,4 @@ class ModoTempo:
 
             case EstadoAquisicaoTempo(), 'next_estado':
                 self.estado.stop()
-                self.estado = EstadoSet(self.status)
+                self.estado = EstadoReady(self.status)

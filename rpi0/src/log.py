@@ -1,4 +1,4 @@
-from os import makedirs
+from os import makedirs, listdir
 from datetime import datetime
 from os.path import isfile, isdir, getsize
 from cv2 import imwrite
@@ -87,13 +87,6 @@ class Logger:
         self.enable_save = True
 
     def stop_acquisition(self):
-        def sizeof_fmt(num, suffix="B"):
-            for unit in ("", "Ki", "Mi", "Gi", "Ti", "Pi", "Ei", "Zi"):
-                if abs(num) < 1024.0:
-                    return f"{num:3.1f}{unit}{suffix}"
-                num /= 1024.0
-            return f"{num:.1f}Yi{suffix}"
-
         self.enable_save = False
         i = self.save_dir.rindex('/')
         root_dir, base_dir = self.save_dir[:i], self.save_dir[i + 1:]
@@ -103,9 +96,27 @@ class Logger:
         shutil.make_archive(f'{self.save_dir}', 'zip', root_dir, base_dir)
         shutil.rmtree(self.save_dir)
 
-        self.client.send_debug_message(f'Aquisição gravada: {base_dir}.zip [{sizeof_fmt(getsize(self.save_dir+".zip"))}]')
+        self.client.send_debug_message(f'Aquisição gravada: {base_dir}.zip [{self.sizeof_fmt(getsize(self.save_dir+".zip"))}]')
+
+        self.fix_unzipped_dirs()
+
+    def fix_unzipped_dirs(self):
+        unzipped_dirs = [dir for dir in listdir(self.root_dir) if dir.find('.zip') == -1]
+        for base_dir in unzipped_dirs:
+            shutil.make_archive(f'{self.root_dir}/{base_dir}', 'zip', self.root_dir, base_dir)
+            shutil.rmtree(f'{self.root_dir}/{base_dir}')
+            self.client.send_debug_message(f'Aquisição gravada: {base_dir}.zip [{self.sizeof_fmt(getsize(f"{self.root_dir}/{base_dir}.zip"))}]')
+
+    def sizeof_fmt(self, num, suffix="B"):
+        for unit in ("", "Ki", "Mi", "Gi", "Ti", "Pi", "Ei", "Zi"):
+            if abs(num) < 1024.0:
+                return f"{num:3.1f}{unit}{suffix}"
+            num /= 1024.0
+        return f"{num:.1f}Yi{suffix}"
 
     def start(self):
+        self.fix_unzipped_dirs()
+
         threading.Thread(target=self._poll_rpi5_status, daemon=True).start()
         threading.Thread(target=self._save_imgs, daemon=True).start()
         threading.Thread(target=self._save_orientations, daemon=True).start()

@@ -42,7 +42,6 @@ window.onload = () => {
 
     function init() {
         window.btns = {
-            calibracao: document.querySelector('button.calibracao'),
             iniciar_aquisicao: document.querySelector('button.iniciar-aquisicao'),
             parar_aquisicao: document.querySelector('button.parar-aquisicao'),
             iniciar_download: document.querySelector('button.iniciar-download'),
@@ -55,6 +54,8 @@ window.onload = () => {
             btn.debounce_id = null;
         }
 
+        window.toggle_streaming = document.querySelector('button.toggle-streaming');
+        window.toggle_calibracao = document.querySelector('button.toggle-calibracao');
 
         window.log_text = document.querySelector('.log > .log-window');
         window.log_clear = document.querySelector('.log > button');
@@ -88,7 +89,6 @@ window.onload = () => {
             window.brightness_slider.value = 1;
         }
 
-        window.btns.calibracao.addEventListener('click', next_estado);
         window.btns.iniciar_aquisicao.addEventListener('click', event => {
             clear_canvas()
             const pps = parseInt(window.pulsos_por_segundo.value);
@@ -100,6 +100,11 @@ window.onload = () => {
         window.btns.iniciar_download.addEventListener('click', event => next_modo(event, 'Download'));
         window.btns.reiniciar.addEventListener('click', event => next_modo(event, 'reboot'));
         window.btns.desligar.addEventListener('click', event => next_modo(event, 'poweroff'));
+
+        window.toggle_streaming.addEventListener('click', event => {});
+        window.toggle_calibracao.addEventListener('click', event =>
+            document.querySelectorAll('.crosshair').forEach(e => e.classList.toggle('hidden'))
+        );
 
         document.querySelector('.exposicao > button').addEventListener('click', async event => {
             set_debounce_button(event.target)
@@ -154,21 +159,18 @@ window.onload = () => {
         if (status.modo === 'Tempo' || status.modo === 'Odometro') {
             window.btns.iniciar_download.disabled = global_disable;
 
-            window.btns.calibracao.disabled = window.btns.calibracao.debounce_enabled || global_disable || status.estado !== 'Set';
             window.btns.iniciar_aquisicao.disabled = window.btns.iniciar_aquisicao.debounce_enabled || global_disable || status.estado !== 'Ready';
             window.btns.parar_aquisicao.disabled = window.btns.parar_aquisicao.debounce_enabled || global_disable || !status.estado.startsWith('Aquisicao');
         }
         else if (status.modo === 'Autonomo') {
             window.btns.iniciar_download.disabled = global_disable;
 
-            window.btns.calibracao.disabled = true;
             window.btns.iniciar_aquisicao.disabled = true;
             window.btns.parar_aquisicao.disabled = true;
         }
         else if (status.modo === 'Download') {
             window.btns.iniciar_download.disabled = true;
 
-            window.btns.calibracao.disabled = true;
             window.btns.iniciar_aquisicao.disabled = true;
             window.btns.parar_aquisicao.disabled = true;
         }

@@ -1,4 +1,5 @@
 import time
+from threading import Thread
 
 from abc import abstractmethod
 
@@ -51,10 +52,16 @@ class EstadoAquisicaoTempo(Estado):
             self.is_first_pulse = False
 
             timestamp_ns = time.time_ns()
+            def start_acquisition_helper():
+                self.client.start_acquisition(timestamp_ns, self.reason, self.period)
+            req_thread = Thread(target=start_acquisition_helper, daemon=True)
+
+            timestamp_ns = time.time_ns()
             for encoder in self.encoders:
                 encoder.send_pulses(count=1)
 
-            self.client.start_acquisition(timestamp_ns, self.reason, self.period)
+            req_thread.start()
+
             self.next_time = timestamp_ns + self.period
         else:
             current_time = time.time_ns()

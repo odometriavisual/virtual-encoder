@@ -4,160 +4,170 @@ import numpy as np
 from numpy.linalg import pinv
 import cv2 as cv
 import time
-from random import randint
+from math import ceil
+from tqdm.contrib.itertools import product as tqdm_product
 
 matplotlib.use('qtagg')
 
-# Radial Basis Function U:
 def U(r):
+    """
+    Radial Basis Function U
+    """
     if r <= 0.:
         return 0
     else:
-        return r**2 * np.log(r)
+        return np.power(r, 2) * np.log(r)
+
+def U_np(r):
+    r[r <= 0.] = 0.0000000000001
+    ret = r ** 2 * np.log(r)
+    return ret
 
 def dist(pt0, pt1):
-    return np.sqrt((pt0[0] - pt1[0])**2 + (pt0[1] - pt1[1])**2)
+    pt0 = np.array(pt0)
+    pt1 = np.array(pt1)
+    return np.linalg.norm(pt1 - pt0)
 
-def distortion_exp(x_true, y_true):
-    center_x = 0.
-    center_y = 0.
-    angles = np.arctan2((y_true - center_y), (x_true - center_x))
-    radii = np.sqrt((y_true - center_y) ** 2 + (x_true - center_x) ** 2)
-    radii_distort = (radii / radii.max()) ** 1.7 * radii.max()
-    x_distort = center_x + radii_distort * np.cos(angles)
-    y_distort = center_y + radii_distort * np.sin(angles)
-    return x_distort, y_distort
+def create_tps(x_expected, y_expected, x_measured, y_measured):
+    """
+    Creates fx and fy that models distortion
+    """
+    N = len(x_expected)
+    D = 2 # number of spatial dimensions
 
-def distortion_center(x_true, y_true):
-    c = np.array((320//2, 240//2))
-    x_distort = np.zeros_like(x_true)
-    y_distort = np.zeros_like(y_true)
+    K = np.zeros((len(x_expected), len(x_expected)), dtype=np.float32)
+    for i in range(len(x_expected)):
+        for j in range(len(x_expected)):
+            pt0 = (x_expected[i], y_expected[i])
+            pt1 = (x_expected[j], y_expected[j])
+            K[i, j] = U(dist(pt0, pt1))
 
-    for i in range(len(x_true)):
-        x_distort[i] = x_true[i] - np.square(0.03 * (x_true[i] - c[0])) * np.sign(x_true[i]-c[0])
-        y_distort[i] = y_true[i] - np.square(0.03 * (y_true[i] - c[1])) * np.sign(y_true[i]-c[1])
+    P = np.zeros((len(x_expected), D + 1))
+    for i in range(len(x_expected)):
+        P[i, 0] = 1
+        P[i, 1] = x_expected[i]
+        P[i, 2] = y_expected[i]
 
-    return x_distort, y_distort
+    L = np.zeros((N + D + 1, N + D + 1))
+    L[:N, :N] = K
+    L[:N, N:] = P
+    L[N:, :N] = P.transpose()
+    L_inv = pinv(L.transpose() @ L) @ L.transpose()
 
-def distortion_random(x_true, y_true):
-    x_distort = np.zeros_like(x_true)
-    y_distort = np.zeros_like(y_true)
+    vo_x = np.zeros((N + D + 1, 1), dtype=np.float32)
+    for i in range(N):
+        vo_x[i] = x_measured[i]
+    wa_x = L_inv @ vo_x
 
-    for i in range(len(x_true)):
-        x_distort[i] = x_true[i] + randint(-30, 30)
-        y_distort[i] = y_true[i] + randint(-30, 30)
+    vo_y = np.zeros((N + D + 1, 1), dtype=np.float32)
+    for i in range(N):
+        vo_y[i] = y_measured[i]
+    wa_y = L_inv @ vo_y
 
-    return x_distort, y_distort
+    def f(x, y):
+        result_x = wa_x[N] + wa_x[N + 1] * x + wa_x[N + 2] * y
+        result_y = wa_y[N] + wa_y[N + 1] * x + wa_y[N + 2] * y
+
+        points = np.array([p for p in zip(x_expected, y_expected)])
+        d = np.reshape(np.linalg.norm(points - np.array([x, y]), axis=1), (-1, 1))
+        i = np.arange(N)
+        result_x += np.sum(wa_x[i] * U_np(d))
+        result_y += np.sum(wa_y[i] * U_np(d))
+
+        return result_x[0], result_y[0]
+
+    return f
+
+def create_remap(img_shape, sample_transformation):
+    """
+    Creates map for opencv's remap function sampling values from sample_transformation
+    """
+    n_rows, n_cols = img_shape[:2]
+    map_x = np.zeros([n_rows, n_cols], dtype=np.float32)
+    map_y = np.zeros([n_rows, n_cols], dtype=np.float32)
+
+    for y, x in tqdm_product(range(n_rows), range(n_cols), desc='Creating TPS map'):
+        # A ordem dos indices aqui é ao contrario mesmo
+        #   1o indice é linha (y) e segundo a coluna (x)
+        map_x[y, x], map_y[y, x] = sample_transformation(x, y)
+
+    return map_x, map_y
+
+def save_map(map_x, map_y, file='distortion_calibration_map.npz'):
+    np.savez(file, map_x=map_x, map_y=map_y, allow_pickle=True)
+
+def load_map(file='distortion_calibration_map.npz'):
+    data = np.load(file, allow_pickle=True)
+    return data['map_x'], data['map_y']
 
 if __name__ == '__main__':
-    # img = cv.imread('/home/fernando/Downloads/ensaios_encoder/calib_ar_xadrez/1745960645637934760.jpg')
-    # img = cv.imread('/home/fernando/Downloads/ensaios_encoder/calib_ar_xadrez/1745960642343975825.jpg')
-    img, patternSize = cv.imread('/home/fernando/Documents/camera calibration/19_20250507T162316 circles/1746645809886753153.jpg'), (7, 5)
+    # img, patternSize = cv.imread('/home/fernando/Documents/encoder/tests camera calibration/19_20250507T162316 circles/1746645809886753153.jpg'), (7, 5)
+    img, patternSize = cv.imread('/home/fernando/Documents/encoder/tests camera calibration/lab agua nova camera/a.jpg'), (13, 11)
+
+    # Intended distance between circles in px
+    dx_intended, dy_intended = 20, 20
+
+    # True: create a new calibration map, False: Load last map
+    create_map = False
+
+    # Show detected circles before map creation
+    debug_circles = True
 
     gray = cv.cvtColor(img, cv.COLOR_BGR2GRAY)
     ret, centers = cv.findCirclesGrid(gray, patternSize)
 
     x_measured, y_measured = np.array(centers[:,0,0]), np.array(centers[:,0,1])
 
-    origin = (x_measured[4], y_measured[3])
-    dx = centers[3 * patternSize[0] + 4 + 1][0][0] - centers[3 * patternSize[0] + 4][0][0]
-    dy = centers[(3 + 1) * patternSize[0] + 4][0][1] - centers[3 * patternSize[0] + 4][0][1]
+    cx = ceil(patternSize[0]/2)
+    cy = ceil(patternSize[1]/2)
+    print(f'{cx=} {cy=}')
+    origin = (x_measured[cx], y_measured[cy])
+    dx = centers[cy * patternSize[0] + cx + 1][0][0] - centers[cy * patternSize[0] + cx][0][0]
+    dy = centers[(cy + 1) * patternSize[0] + cx][0][1] - centers[cy * patternSize[0] + cx][0][1]
 
-    print(f'{dx=}, {dy=}')
+    print(f'measured: {dx=}, {dy=}')
+    print(f'intended: {dx_intended=}, {dy_intended=}')
+    dx, dy = dx_intended, dy_intended
 
     h, w = img.shape[:2]
-    x_expected = [ ]
-    y_expected = [ ]
+    x_expected = np.array([w/2 + (j+1 - cx) * dx for i in range(patternSize[1]) for j in range(patternSize[0])])
+    y_expected = np.array([h/2 + (i+1 - cy) * dy for i in range(patternSize[1]) for j in range(patternSize[0])])
 
-    for i in range(patternSize[1]):
-        for j in range(patternSize[0]):
-            x_expected.append(w/2 + (j+1 - 4) * dx)
-            y_expected.append(h/2 + (i+1 - 3) * dy)
+    if debug_circles:
+        img1 = img.copy()
+        img2 = img.copy()
+        centers2 = np.array([[[x, y]] for x, y in zip(x_expected, y_expected)], dtype=np.float32)
 
-    N = len(x_expected)
-    D = 2 # number of spatial dimensions
+        cv.drawChessboardCorners(img1, patternSize, centers, ret)
+        cv.drawChessboardCorners(img2, patternSize, centers2, ret)
 
-    K = np.zeros((len(x_expected), len(x_expected)), dtype=float)
-    for i in range(len(x_expected)):
-      for j in range(len(x_expected)):
-        pt0 = (x_expected[i], y_expected[i])
-        pt1 = (x_expected[j], y_expected[j])
-        K[i, j] = U(dist(pt0, pt1))
+        plt.subplot(1, 2, 1)
+        plt.title('Circles found')
+        plt.imshow(img1)
 
-    P = np.zeros((len(x_expected), D + 1))
-    for i in range(len(x_expected)):
-      P[i, 0] = 1
-      P[i, 1] = x_expected[i]
-      P[i, 2] = y_expected[i]
+        plt.subplot(1, 2, 2)
+        plt.title('Expected circles after calibration')
+        plt.imshow(img2)
+        plt.show()
 
-    L = np.zeros((N + D + 1, N + D + 1))
-    L[:N, :N] = K
-    L[:N, N:] = P
-    L[N:, :N] = P.transpose()
+    if create_map:
+        t0 = time.time()
+        sample_tps = create_tps(x_expected, y_expected, x_measured, y_measured)
+        map_x, map_y = create_remap(img.shape, sample_tps)
+        save_map(map_x, map_y)
+        print(f'Map creation time: {time.time() - t0:.2f}s')
 
-    vo = np.zeros((N + D + 1, 1), dtype=float)
-    for i in range(N):
-      vo[i] = x_measured[i]
-
-    L_inv = pinv(L.transpose() @ L) @ L.transpose()
-    wa_x = L_inv @ vo
-
-    def f_x(x, y):
-      result = wa_x[N] + wa_x[N + 1] * x + wa_x[N + 2] * y
-      for i in range(N):
-        result += wa_x[i] * U(dist((x_expected[i], y_expected[i]), (x, y)))
-      return result
-
-    f_x_synth = np.zeros((N, 1))
-    for i in range(N):
-      f_x_synth[i] = f_x(x_expected[i], y_expected[i])
-
-    vo_y = np.zeros((N + D + 1, 1), dtype=float)
-    for i in range(N):
-      vo_y[i] = y_measured[i]
-
-    wa_y = L_inv @ vo_y
-
-    def f_y(x, y):
-      result = wa_y[N] + wa_y[N + 1] * x + wa_y[N + 2] * y
-      for i in range(N):
-        result += wa_y[i] * U(dist((x_expected[i], y_expected[i]), (x, y)))
-      return result
-
-    f_y_synth = np.zeros((N, 1))
-    for i in range(N):
-      f_y_synth[i] = f_y(x_expected[i], y_expected[i])
-
-    x_TPS = np.zeros((N, 1))
-    y_TPS = np.zeros((N, 1))
-    for i in range(N):
-      x_TPS[i] = f_x(x_expected[i], y_expected[i])
-      y_TPS[i] = f_y(x_expected[i], y_expected[i])
-
-    map_x = np.zeros(img.shape[0:2], dtype=np.float32)
-    map_y = np.zeros(img.shape[0:2], dtype=np.float32)
-
-    def sample_transformation(row, col):
-        return f_x(col, row)[0], f_y(col, row)[0]
-
-    print('sampling transformation...')
     t0 = time.time()
-    for row in range(map_x.shape[0]):
-        for col in range(map_x.shape[1]):
-            map_x[row, col], map_y[row, col] = sample_transformation(row, col)
-    print(f'ellapsed time: {time.time() - t0}s')
-
-    print('remapping...')
-    t0 = time.time()
+    map_x, map_y = load_map()
     img_out = cv.remap(img, map_x, map_y, cv.INTER_LINEAR)
-    print(f'ellapsed time: {time.time() - t0}s')
+    print(f'Remap time: {(time.time() - t0)*1000:.2f}ms')
 
-    plt.subplot(1, 2, 1)
-    gray = cv.cvtColor(img, cv.COLOR_BGR2GRAY)
+    plt.figure()
+    plt.title('Original image')
     plt.imshow(img)
 
-    plt.subplot(1, 2, 2)
-    gray = cv.cvtColor(img_out, cv.COLOR_BGR2GRAY)
+    plt.figure()
+    plt.title('Calibrated image')
     plt.imshow(img_out)
 
     plt.show()

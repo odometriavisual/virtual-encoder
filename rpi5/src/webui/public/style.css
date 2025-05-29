@@ -129,9 +129,9 @@ img {
 .modo-odometro { grid-area: auto / auto / span 1 / span 3; }
 .modo-autonomo { grid-area: auto / auto / span 1 / span 3; }
 
-.iniciar-download { grid-area: 3 / 12 / span 1 / span 3; }
-.reiniciar { grid-area: 4 / 12 / span 1 / span 3; }
-.desligar { grid-area: 5 / 12 / span 1 / span 3; }
+.iniciar-download { grid-area: 4 / 12 / span 1 / span 3; }
+.reiniciar { grid-area: 5 / 12 / span 1 / span 3; }
+.desligar { display: none; grid-area: 3 / 12 / span 1 / span 3; }
 
 .exposicao { grid-area: 3 / 1 / span 1 / span 3; }
 .pulsos-por-segundo { grid-area: 3 / 5 / span 1 / span 3; }

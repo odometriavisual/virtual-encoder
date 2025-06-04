@@ -92,7 +92,7 @@ def main():
                     if imu:
                         imu = [float(x) for x in imu[1:]]
 
-                        d = sum([x*x for x in imu])
+                        d = sum([x*x for x in imu[:4]])
 
                         if 0.999 < d < 1.001:
                             status.set('imu', imu)

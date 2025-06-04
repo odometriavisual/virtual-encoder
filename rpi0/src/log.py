@@ -18,6 +18,7 @@ class Logger:
         self.root_dir = f'/home/pi/picam_imgs'
         self.ensaio_number = f'{self.boot_num}_{datenow}'
         self.save_dir = f'{self.root_dir}/{self.ensaio_number}'
+        self.imu_file = None
         self.ensaio_reason = 'timeout'
 
         self.client = None
@@ -49,16 +50,9 @@ class Logger:
             measure = self.orientations_queue.get(True)
 
             if self.enable_save:
-                path = f'{self.save_dir}/imu.csv'
-                if not isfile(path):
-                    with open(path, mode='w', newline='') as file:
-                        writer = csv.writer(file)
-                        writer.writerow(["timestamp", "qw", "qx", "qy", "qz"])
-
                 if measure[0] > 0:
-                    with open(path, mode='a', newline='') as file:
-                        writer = csv.writer(file)
-                        writer.writerow(list(measure))
+                    writer = csv.writer(self.imu_file)
+                    writer.writerow(list(measure))
 
     def _save_calibration_data(self, timestamp_ns, pulses_period_ns):
         path = f'{self.save_dir}/calibration_data.csv'
@@ -81,6 +75,17 @@ class Logger:
         self.save_dir = f'{self.root_dir}/{ensaio_name}'
         if not isdir(self.save_dir):
             makedirs(self.save_dir)
+
+            imu_path = f'{self.save_dir}/imu.csv'
+            with open(imu_path, mode='w', newline='') as file:
+                writer = csv.writer(file)
+                writer.writerow([
+                    "timestamp",
+                    "qw", "qx", "qy", "qz",
+                    "acc_x", "acc_y", "acc_z",
+                ])
+            self.imu_file = open(imu_path, mode='a', newline='')
+
             self._save_calibration_data(timestamp_ns, pulses_period_ns)
 
         self.client.send_debug_message(f'Aquisição iniciada: {ensaio_name}')
@@ -90,6 +95,9 @@ class Logger:
         self.enable_save = False
         i = self.save_dir.rindex('/')
         root_dir, base_dir = self.save_dir[:i], self.save_dir[i + 1:]
+
+        self.imu_file.close()
+        self.imu_file = None
 
         self.client.send_debug_message(f'Gravando aquisição: {base_dir}.zip, aguarde...')
 

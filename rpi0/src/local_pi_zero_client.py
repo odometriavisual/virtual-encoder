@@ -4,6 +4,7 @@ import socket
 import subprocess
 import threading
 import time
+from adafruit_bno055 import BNO055_I2C
 from libcamera import controls
 from picamera2 import Picamera2
 from picamera2.encoders import MJPEGEncoder
@@ -12,7 +13,7 @@ from picamera2.outputs import FileOutput
 from .log import Logger
 
 class LocalPiZeroClient:
-    def __init__(self, picam: Picamera2, imu, logger: Logger):
+    def __init__(self, picam: Picamera2, imu: BNO055_I2C, logger: Logger):
         # Inicializa a câmera
         self.picam2 = picam
 
@@ -72,15 +73,21 @@ class LocalPiZeroClient:
     def reset_exposure(self):
         self.set_exposure(self.default_exposure)
 
-    def get_orientation(self) -> [int, float, float, float, float]:
+    def get_orientation(self):
         if self.imu_enabled is True:
             time_now = time.time_ns()
+
             quat = self.imu.quaternion
+            acc = self.imu.acceleration
 
             if any(q is None for q in quat):
                 return None
 
-            return [time_now, quat[0], quat[1], quat[2], quat[3]]
+            return [
+                time_now,
+                quat[0], quat[1], quat[2], quat[3],
+                acc[0], acc[1], acc[2],
+            ]
         else:
             return None
 

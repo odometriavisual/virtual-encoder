@@ -11,7 +11,7 @@ def load_imu_data(imu_file):
                 'qx': float(row['qx']) if row['qx'] else 0.0,
                 'qy': float(row['qy']) if row['qy'] else 0.0,
                 'qz': float(row['qz']) if row['qz'] else 0.0,
-                'qw': float(row['qw']) if row['qw'] else 0.0
+                'qw': float(row['qw']) if row['qw'] else 0.0,
             })
     return imu_data
 

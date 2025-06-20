@@ -6,7 +6,7 @@ sys.path.insert(0, parent_dir)
 
 import numpy as np
 import matplotlib.pyplot as plt
-from imu_tools import fast_rot, rotate_vector
+from post_processing.utils.imu_tools import fast_rot, rotate_vector
 import math
 from scipy.spatial.transform import Rotation as R
 

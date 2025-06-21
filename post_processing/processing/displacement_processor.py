@@ -6,12 +6,13 @@ import numpy as np
 from tkinter import Tk, filedialog
 from post_processing.utils.img_tools import extract_timestamp_from_txt
 from post_processing.utils.imu_tools import load_imu_data, find_closest_imu_data
+from visual_odometer.visual_odometer import DEFAULT_CONFIG
 from visual_odometer import VisualOdometer
 from PIL import Image, ImageOps
 import cv2
 
 
-def load_img_grayscale(filename, apply_clahe=False, apply_denoise=False):
+def load_img_grayscale(filename, apply_clahe=True, apply_denoise=True):
     """
     Carrega a imagem como grayscale, aplica CLAHE e denoise (opcionalmente).
     """
@@ -29,7 +30,7 @@ def load_img_grayscale(filename, apply_clahe=False, apply_denoise=False):
     return img_np
 
 
-def process_displacements(image_folder, force_reprocessing = False):
+def process_displacements(image_folder, config, force_reprocessing = False):
     """
     Processa as imagens da pasta e calcula os deslocamentos e dados do IMU associados.
 
@@ -47,7 +48,8 @@ def process_displacements(image_folder, force_reprocessing = False):
         return {
             'displacements': data['displacements'],
             'quaternions': data['quaternions'],
-            'timestamps': data['timestamps']
+            'timestamps': data['timestamps'],
+            "image_folder": image_folder
         }
 
     if not os.path.exists(imu_file):
@@ -62,6 +64,7 @@ def process_displacements(image_folder, force_reprocessing = False):
     print(f"Processando {len(image_files)} imagens...")
 
     odometer = VisualOdometer(img_size=(640, 480))
+    odometer.configs = config
     displacements, quaternions, timestamps = [], [], []
 
     for i, img_file in enumerate(image_files):
@@ -93,17 +96,20 @@ def process_displacements(image_folder, force_reprocessing = False):
     return {
         'displacements': displacements,
         'quaternions': quaternions,
-        'timestamps': timestamps
+        'timestamps': timestamps,
+        'image_folder': image_folder
     }
 
 
-def select_and_process_folder(force_reprocessing=False):
+def select_and_process_folder(config= None, force_reprocessing=False):
     """Abre um seletor de pasta e processa os deslocamentos"""
     Tk().withdraw()
     folder = filedialog.askdirectory(title="Selecione a pasta de imagens")
     if not folder:
         print("Nenhuma pasta selecionada.")
         return None
-    return process_displacements(folder, force_reprocessing)
+    if config is None:
+        config = DEFAULT_CONFIG
+    return process_displacements(folder, config, force_reprocessing)
 
 

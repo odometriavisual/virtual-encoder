@@ -2,10 +2,9 @@
 import numpy as np
 import matplotlib.pyplot as plt
 
-def plot2DFromData(list_displacements):
+def plot2DFromData(list_displacements, fig_dir="plot2d.png"):
     # Converter para coordenadas acumuladas (trajetória)
     trajectory = np.cumsum(list_displacements, axis=0)
-
 
     # Plotar o gráfico 2D
     plt.figure(figsize=(10, 6))
@@ -16,5 +15,6 @@ def plot2DFromData(list_displacements):
     plt.grid(True)
     plt.legend()
     plt.axis('equal')
-    plt.show()
+    #plt.show()
+    plt.savefig(fig_dir)
 

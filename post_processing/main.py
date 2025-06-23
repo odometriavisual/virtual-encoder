@@ -1,9 +1,12 @@
 #main.py
-from menu_interface import show_main_menu
-
-def main():
-    """Função principal que inicia a interface do menu"""
-    show_main_menu()
+import traceback
 
 if __name__ == "__main__":
-    main()
+    try:
+        from menu_interface import show_main_menu
+        show_main_menu()
+        input("Pressione Enter para sair...")
+    except Exception as e:
+        print(e)
+        traceback.print_exc()  # Mostra arquivo, linha, função
+        input("Pressione Enter para sair...")

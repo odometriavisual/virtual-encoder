@@ -10,7 +10,7 @@ from utils.imu_tools import fast_rot, rotate_vector
 import math
 from scipy.spatial.transform import Rotation as R
 
-def plot3DFromData(list_displacements, list_quaternions):
+def plot3DFromData(list_displacements, list_quaternions, px_p_mm):
     plt.ion()
 
     # Lista com as variações de deslocamento
@@ -112,17 +112,17 @@ def plot3DFromData(list_displacements, list_quaternions):
         ax.set_ylim([y_min - max_range * 0.1, y_max + max_range * 0.1])
         ax.set_zlim([z_min - max_range * 0.1, z_max + max_range * 0.1])
 
-        ax.set_xlabel('X')
-        ax.set_ylabel('Y')
-        ax.set_zlabel('Z')
+        ax.set_xlabel('X (mm)')
+        ax.set_ylabel('Y (mm)')
+        ax.set_zlabel('Z (mm)')
         ax.set_title(title)
         ax.legend()
 
-        # Mostrar o deslocamento total (última posição)
-        final_position = position
+        # Mostrar o deslocamento total (última posição) em mm
+        final_position = position * px_p_mm
         ax.text(
             final_position[0], final_position[1], final_position[2],
-            f'({final_position[0]:.1f}, {final_position[1]:.1f}, {final_position[2]:.1f})',
+            f'({final_position[0]:.1f} mm, {final_position[1]:.1f} mm, {final_position[2]:.1f} mm)',
             color='red'
         )
 

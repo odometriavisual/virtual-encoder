@@ -248,6 +248,18 @@ class MainMenuInterface:
             return None
 
         data_file = os.path.join(self.current_folder, "displacements_data.npz")
+        calibration_file = os.path.join(self.current_folder, "calibration_data.csv")
+
+        px_p_mm = 1.0  # valor padrão caso não tenha calibração
+        if os.path.exists(calibration_file):
+            try:
+                import csv
+                with open(calibration_file, 'r') as f:
+                    reader = csv.DictReader(f)
+                    row = next(reader)
+                    px_p_mm = float(row['px_p_mm'])
+            except Exception as e:
+                print(f"Erro ao ler calibration_data.csv: {e}")
 
         if os.path.exists(data_file):
             try:
@@ -256,7 +268,8 @@ class MainMenuInterface:
                     'displacements': data['displacements'],
                     'quaternions': data['quaternions'],
                     'timestamps': data['timestamps'],
-                    'image_folder': self.current_folder
+                    'image_folder': self.current_folder,
+                    'px_p_mm': px_p_mm
                 }
             except Exception as e:
                 print(f"Erro ao carregar dados existentes: {e}")
@@ -459,38 +472,64 @@ class MainMenuInterface:
 
         data_file = os.path.join(image_folder, "displacements_data.npz")
 
+        # Tentar carregar dados existentes (caso não seja forçado)
         if os.path.exists(data_file) and not force_reprocessing:
             data = np.load(data_file, allow_pickle=True)
+
+            # Leitura do px_p_mm mesmo se não for necessário reprocesar
+            calibration_file = os.path.join(image_folder, "calibration_data.csv")
+            px_p_mm = 1.0
+            if os.path.exists(calibration_file):
+                try:
+                    import csv
+                    with open(calibration_file, 'r') as f:
+                        reader = csv.DictReader(f)
+                        row = next(reader)
+                        px_p_mm = float(row['px_p_mm'])
+                except Exception as e:
+                    print(f"Erro ao ler calibration_data.csv: {e}")
+
             return {
                 'displacements': data['displacements'],
                 'quaternions': data['quaternions'],
                 'timestamps': data['timestamps'],
-                'image_folder': image_folder
+                'image_folder': image_folder,
+                'px_p_mm': px_p_mm
             }
 
+        # Carregar IMU
         imu_file = os.path.join(image_folder, "imu.csv")
         imu_data = load_imu_data(imu_file)
         image_files = sorted(glob.glob(os.path.join(image_folder, '*.jpg')))
 
+        # Leitura do calibration_data.csv
+        calibration_file = os.path.join(image_folder, "calibration_data.csv")
+        px_p_mm = 1.0
+        if os.path.exists(calibration_file):
+            try:
+                import csv
+                with open(calibration_file, 'r') as f:
+                    reader = csv.DictReader(f)
+                    row = next(reader)
+                    px_p_mm = float(row['px_p_mm'])
+            except Exception as e:
+                print(f"Erro ao ler calibration_data.csv: {e}")
+
+        # Inicializar odômetro
         odometer = VisualOdometer(img_size=(640, 480))
         odometer.configs = config
         displacements, quaternions, timestamps = [], [], []
 
         for i, img_file in enumerate(image_files):
-            # Atualizar progresso
             progress_callback(i + 1, len(image_files), img_file)
 
             img_timestamp = extract_timestamp_from_txt(img_file)
             quaternion = find_closest_imu_data(imu_data, img_timestamp)
             q_array = [quaternion['qw'], quaternion['qx'], quaternion['qy'], quaternion['qz']]
 
-            # CORREÇÃO: Verificar se a seção 'Image Processing' existe na configuração
-            apply_clahe = False
-            apply_denoise = False
-
-            if "Image Processing" in config:
-                apply_clahe = config["Image Processing"].get("apply_clahe", False)
-                apply_denoise = config["Image Processing"].get("apply_denoise", False)
+            # Aplicar configurações de pré-processamento
+            apply_clahe = config.get("Image Processing", {}).get("apply_clahe", False)
+            apply_denoise = config.get("Image Processing", {}).get("apply_denoise", False)
 
             img_processed = load_img_grayscale(img_file, apply_clahe, apply_denoise)
             odometer.feed_image(img_processed)
@@ -504,6 +543,7 @@ class MainMenuInterface:
         quaternions = np.array(quaternions)
         timestamps = np.array(timestamps)
 
+        # Salvar dados
         np.savez(data_file,
                  displacements=displacements,
                  quaternions=quaternions,
@@ -513,7 +553,8 @@ class MainMenuInterface:
             'displacements': displacements,
             'quaternions': quaternions,
             'timestamps': timestamps,
-            'image_folder': image_folder
+            'image_folder': image_folder,
+            'px_p_mm': px_p_mm
         }
 
     def show_2d_plot(self):
@@ -536,7 +577,7 @@ class MainMenuInterface:
                 return
 
         try:
-            plot2DFromData(self.processed_data["displacements"])
+            plot2DFromData(self.processed_data["displacements"], self.processed_data.get("px_p_mm", 1.0))
         except Exception as e:
             messagebox.showerror("Erro", f"Erro ao gerar gráfico 2D:\n{str(e)}")
 
@@ -560,7 +601,7 @@ class MainMenuInterface:
                 return
 
         try:
-            plot3DFromData(self.processed_data["displacements"],self.processed_data["quaternions"])
+            plot3DFromData(self.processed_data["displacements"],self.processed_data["quaternions"],self.processed_data.get("px_p_mm", 1.0))
 
         except Exception as e:
             messagebox.showerror("Erro", f"Erro ao gerar gráfico 3D:\n{str(e)}")

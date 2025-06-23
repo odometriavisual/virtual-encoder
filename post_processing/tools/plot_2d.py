@@ -2,21 +2,24 @@
 import numpy as np
 import matplotlib.pyplot as plt
 
-def plot2DFromData(list_displacements):
+def plot2DFromData(list_displacements, px_p_mm):
     plt.ion()
+
     # Converter para coordenadas acumuladas (trajetória)
-    trajectory = np.cumsum(list_displacements, axis=0)
+    trajectory_px = np.cumsum(list_displacements, axis=0)
+
+    # Converter de pixels para milímetros
+    trajectory_mm = trajectory_px / px_p_mm
 
     # Plotar o gráfico 2D
     plt.figure(figsize=(10, 6))
-    plt.plot(trajectory[:, 0], trajectory[:, 1], label='Trajetória')
-    plt.xlabel('Deslocamento X')
-    plt.ylabel('Deslocamento Y')
-    plt.title('Trajetória 2D')
+    plt.plot(trajectory_mm[:, 0], trajectory_mm[:, 1], label='Trajetória')
+    plt.xlabel('Deslocamento X (mm)')
+    plt.ylabel('Deslocamento Y (mm)')
+    plt.title('Trajetória 2D (em mm)')
     plt.grid(True)
     plt.legend()
     plt.axis('equal')
     plt.show()
-    #plt.savefig(fig_dir)
-    plt.ioff()
 
+    plt.ioff()

@@ -7,7 +7,7 @@ def select_folder():
     folder = filedialog.askdirectory(title="Selecione a pasta de imagens")
     if not folder:
         print("Nenhuma pasta selecionada.")
-        sys.exit(0)  # Encerra o programa com sucesso
+        return None  # Encerra o programa com sucesso
     return folder
 
 def get_config_label(config: dict) -> str:

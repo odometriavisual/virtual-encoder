@@ -1,3 +1,4 @@
+
 import os
 import glob
 import numpy as np
@@ -96,13 +97,7 @@ def create_trajectory_overlay_centered(img, trajectory_points, current_idx, scal
 
     return img_with_overlay
 
-def create_side_by_side_video():
-    Tk().withdraw()
-    image_folder = filedialog.askdirectory(title="Selecione a pasta de imagens")
-    if not image_folder:
-        print("Nenhuma pasta selecionada.")
-        return
-
+def create_side_by_side_video(image_folder):
     data_path = os.path.join(image_folder, "displacements_data.npz")
     if not os.path.exists(data_path):
         print("Arquivo de deslocamento não encontrado.")

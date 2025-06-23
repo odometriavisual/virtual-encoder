@@ -1,4 +1,3 @@
-from tools.video_overlay import create_video_with_trajectory_overlay
 from tools.plot_2d import plot2DFromData
 from processing.displacement_processor import select_and_process_folder
 from visual_odometer.visual_odometer import DEFAULT_CONFIG
@@ -19,7 +18,6 @@ def get_config_label(config: dict) -> str:
     reprocess = "reprocess" if disp_config["reprocess_displacement"] else "noreprocess"
     skip = "skip" if disp_config["skip_frames"] else "noskip"
     threshold = disp_config["params"].get("skip_frames_threshold", "na")
-
     return f"{method}_{reprocess}_{skip}_{threshold}"
 
 def main():

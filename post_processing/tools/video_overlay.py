@@ -69,101 +69,128 @@ def create_trajectory_overlay_centered(img, trajectory_points, current_idx, scal
     current_pos = trajectory_points[current_idx]
 
     img_with_overlay = draw_moving_grid_with_4_colors(
-        img_with_overlay, current_pos, center,
-        scale_factor=scale_factor, spacing=spacing,
-        highlight_square_origin=highlight_square_origin
+        img_with_overlay,
+        current_pos,
+        center,
+        scale_factor=scale_factor,
+        spacing=spacing,
+        highlight_square_origin=highlight_square_origin,
     )
 
-    for i in range(1, current_idx + 1):
-        pt1 = trajectory_points[i - 1]
-        pt2 = trajectory_points[i]
-        rel_x1 = int(center[0] - (pt1[0] - current_pos[0]) * scale_factor)
-        rel_y1 = int(center[1] - (pt1[1] - current_pos[1]) * scale_factor)
-        rel_x2 = int(center[0] - (pt2[0] - current_pos[0]) * scale_factor)
-        rel_y2 = int(center[1] - (pt2[1] - current_pos[1]) * scale_factor)
-        cv2.line(img_with_overlay, (rel_x1, rel_y1), (rel_x2, rel_y2), (255, 100, 100), 2)
+    points_to_draw = []
+    for i in range(0, current_idx + 1):
+        point = trajectory_points[i]
+        rel_x = int(center[0] - (point[0] - current_pos[0]) * scale_factor)
+        rel_y = int(center[1] - (point[1] - current_pos[1]) * scale_factor)
+        points_to_draw.append((rel_x, rel_y))
+
+    for i in range(1, len(points_to_draw)):
+        x1, y1 = points_to_draw[i - 1]
+        x2, y2 = points_to_draw[i]
+        color_ratio = i / max(len(points_to_draw) - 1, 1)
+        color = (int(255 * (1 - color_ratio)), int(255 * color_ratio), 100)
+        cv2.line(img_with_overlay, (x1, y1), (x2, y2), color, thickness=2)
 
     cv2.circle(img_with_overlay, center, 6, (0, 0, 255), -1)
-    return img_with_overlay
+    cv2.circle(img_with_overlay, center, 8, (255, 255, 255), 1)
 
-def square_in_image(xc, yc, patch_sz, img_w, img_h):
-    return (xc - patch_sz // 2 >= 0 and xc + patch_sz // 2 <= img_w and
-            yc - patch_sz // 2 >= 0 and yc + patch_sz // 2 <= img_h)
+    return img_with_overlay
 
 def create_side_by_side_video():
     Tk().withdraw()
-    folder = filedialog.askdirectory(title="Selecione a pasta")
-    if not folder:
+    image_folder = filedialog.askdirectory(title="Selecione a pasta de imagens")
+    if not image_folder:
+        print("Nenhuma pasta selecionada.")
         return
 
-    data = np.load(os.path.join(folder, "displacements_data.npz"))
+    data_path = os.path.join(image_folder, "displacements_data.npz")
+    if not os.path.exists(data_path):
+        print("Arquivo de deslocamento não encontrado.")
+        return
+
+    data = np.load(data_path, allow_pickle=True)
     displacements = data["displacements"]
     trajectory = np.cumsum(displacements, axis=0)
 
-    imgs = sorted(glob.glob(os.path.join(folder, "*.jpg")))
-    imgs = imgs[:len(trajectory)]
+    image_files = sorted(glob.glob(os.path.join(image_folder, "*.jpg")))
+    num_frames = min(len(image_files), len(trajectory))
+    trajectory = trajectory[:num_frames]
+    image_files = image_files[:num_frames]
 
-    first_img = cv2.imread(imgs[0])
+    first_img = cv2.imread(image_files[0])
     height, width = first_img.shape[:2]
     spacing = 100
     patch_size = spacing
-    out = cv2.VideoWriter(os.path.join(folder, "output_patch_follow.mp4"), cv2.VideoWriter_fourcc(*"mp4v"), 30, (2 * width, height))
 
-    current_square_origin = np.floor(trajectory[0] / spacing) * spacing
+    current_square_origin = np.copy(trajectory[0])
 
-    for i in range(len(imgs)):
-        img = cv2.imread(imgs[i])
+    out = cv2.VideoWriter(
+        os.path.join(image_folder, "comparacao_lado_a_lado2.mp4"),
+        cv2.VideoWriter_fourcc(*"mp4v"),
+        60,
+        (width * 2, height)
+    )
+
+    for i in range(num_frames):
+        img = cv2.imread(image_files[i])
+        if img is None:
+            continue
+
         img = adjust_brightness_adaptively(img)
-        pos = trajectory[i]
+        current_pos = trajectory[i]
 
-        dx = current_square_origin[0] - pos[0]
-        dy = current_square_origin[1] - pos[1]
-        cx = width // 2 - int(dx)
-        cy = height // 2 - int(dy)
+        img_main = create_trajectory_overlay_centered(
+            img, trajectory, i, scale_factor=1.0, spacing=spacing, highlight_square_origin=current_square_origin
+        )
+
+        dx_world = current_square_origin[0] - current_pos[0]
+        dy_world = current_square_origin[1] - current_pos[1]
+        cx = width // 2 - int(dx_world)
+        cy = height // 2 - int(dy_world)
+
+        def square_in_image(xc, yc, patch_sz, img_w, img_h):
+            return (xc - patch_sz // 2 >= 0 and
+                    xc + patch_sz // 2 <= img_w and
+                    yc - patch_sz // 2 >= 0 and
+                    yc + patch_sz // 2 <= img_h)
 
         if not square_in_image(cx, cy, patch_size, width, height):
             if i > 0:
-                move_vec = trajectory[i] - trajectory[i - 1]
+                delta = trajectory[i] - trajectory[i - 1]
             else:
-                move_vec = np.array([1.0, 0.0])
+                delta = np.array([0.0, 0.0])
 
-            norm = np.linalg.norm(move_vec)
-            move_dir = move_vec / norm if norm != 0 else np.array([1.0, 0.0])
+            delta = delta / (np.linalg.norm(delta) + 1e-6)
+            offset_x = (width // 2 - patch_size // 2) * delta[0]
+            offset_y = (height // 2 - patch_size // 2) * delta[1]
+            current_square_origin = current_pos + np.array([offset_x, offset_y])
 
-            edge_offset = width // 2 - patch_size // 2 - 2
-            x_off = int(np.clip(move_dir[0], -1, 1) * edge_offset)
-            y_off = int(np.clip(move_dir[1], -1, 1) * edge_offset)
-
-            new_cx = width // 2 + x_off
-            new_cy = height // 2 + y_off
-            new_origin_x = pos[0] + (width // 2 - new_cx)
-            new_origin_y = pos[1] + (height // 2 - new_cy)
-            current_square_origin = np.array([new_origin_x, new_origin_y])
-            cx = new_cx
-            cy = new_cy
+            dx_world = current_square_origin[0] - current_pos[0]
+            dy_world = current_square_origin[1] - current_pos[1]
+            cx = width // 2 - int(dx_world)
+            cy = height // 2 - int(dy_world)
 
         x1 = cx - patch_size // 2
         x2 = cx + patch_size // 2
         y1 = cy - patch_size // 2
         y2 = cy + patch_size // 2
-        patch = img[y1:y2, x1:x2] if square_in_image(cx, cy, patch_size, width, height) else np.zeros((patch_size, patch_size, 3), dtype=np.uint8)
+        patch = img[y1:y2, x1:x2]
 
         patch_frame = np.zeros_like(img)
-        x_off = width // 2 - patch_size // 2
-        y_off = height // 2 - patch_size // 2
-        patch_frame[y_off:y_off+patch_size, x_off:x_off+patch_size] = patch
+        if patch.shape[0] == patch_size and patch.shape[1] == patch_size:
+            y_off = height // 2 - patch_size // 2
+            x_off = width // 2 - patch_size // 2
+            patch_frame[y_off:y_off+patch_size, x_off:x_off+patch_size] = patch
 
-        img_main = create_trajectory_overlay_centered(img, trajectory, i, spacing=spacing, highlight_square_origin=current_square_origin)
-
-        combined = np.zeros((height, 2 * width, 3), dtype=np.uint8)
+        combined = np.zeros((height, width * 2, 3), dtype=np.uint8)
         combined[:, :width] = img_main
         combined[:, width:] = patch_frame
 
         out.write(combined)
-        print(f"Frame {i+1}/{len(imgs)} processado...")
+        print(f"Frame {i+1}/{num_frames} processado...")
 
     out.release()
-    print("Vídeo salvo!")
+    print(f"Vídeo lado a lado salvo em: {os.path.join(image_folder, 'comparacao_lado_a_lado2.mp4')}")
 
 if __name__ == "__main__":
     create_side_by_side_video()

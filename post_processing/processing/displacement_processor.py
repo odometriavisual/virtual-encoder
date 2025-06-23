@@ -11,7 +11,6 @@ from visual_odometer import VisualOdometer
 from PIL import Image, ImageOps
 import cv2
 
-
 def load_img_grayscale(filename, apply_clahe=True, apply_denoise=True):
     """
     Carrega a imagem como grayscale, aplica CLAHE e denoise (opcionalmente).
@@ -21,7 +20,7 @@ def load_img_grayscale(filename, apply_clahe=True, apply_denoise=True):
     img_np = np.array(img_gray)
 
     if apply_clahe:
-        clahe = cv2.createCLAHE(clipLimit=2.0, tileGridSize=(8, 8))
+        clahe = cv2.createCLAHE(clipLimit=10.0, tileGridSize=(8, 8))
         img_np = clahe.apply(img_np)
 
     if apply_denoise:
@@ -53,13 +52,16 @@ def process_displacements(image_folder, config, force_reprocessing = False):
         }
 
     if not os.path.exists(imu_file):
-        raise FileNotFoundError(f"Arquivo IMU não encontrado em: {imu_file}")
+        print(f"Arquivo IMU não encontrado em: {imu_file}")
+        sys.exit(0)  # Encerra o programa com sucesso
+
 
     imu_data = load_imu_data(imu_file)
     image_files = sorted(glob.glob(os.path.join(image_folder, '*.jpg')))
 
     if not image_files:
-        raise FileNotFoundError("Nenhuma imagem JPG encontrada na pasta.")
+        print("Nenhuma imagem JPG encontrada na pasta.")
+        sys.exit(0)  # Encerra o programa com sucesso
 
     print(f"Processando {len(image_files)} imagens...")
 
@@ -101,15 +103,14 @@ def process_displacements(image_folder, config, force_reprocessing = False):
     }
 
 
-def select_and_process_folder(config= None, force_reprocessing=False):
-    """Abre um seletor de pasta e processa os deslocamentos"""
-    Tk().withdraw()
-    folder = filedialog.askdirectory(title="Selecione a pasta de imagens")
-    if not folder:
-        print("Nenhuma pasta selecionada.")
-        return None
-    if config is None:
-        config = DEFAULT_CONFIG
-    return process_displacements(folder, config, force_reprocessing)
-
+# def select_and_process_folder(config= None, force_reprocessing=False):
+#     """Abre um seletor de pasta e processa os deslocamentos"""
+#     Tk().withdraw()
+#     folder = filedialog.askdirectory(title="Selecione a pasta de imagens")
+#     if not folder:
+#         print("Nenhuma pasta selecionada.")
+#         return None
+#     if config is None:
+#         config = DEFAULT_CONFIG
+#     return process_displacements(folder, config, force_reprocessing)
 

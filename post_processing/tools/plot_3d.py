@@ -6,7 +6,7 @@ sys.path.insert(0, parent_dir)
 
 import numpy as np
 import matplotlib.pyplot as plt
-from post_processing.utils.imu_tools import fast_rot, rotate_vector
+from utils.imu_tools import fast_rot, rotate_vector
 import math
 from scipy.spatial.transform import Rotation as R
 
@@ -127,12 +127,12 @@ def plot3DFromData(list_displacements, list_quaternions):
         )
 
         # Calcular o erro normalizado
-        error = np.linalg.norm(final_position) / 100
-        ax.text(
-            -50, -500, 0.0,  # Posição do texto abaixo do título
-            f'Erro normalizado: {error:.2f}%',  # Texto com o erro normalizado, agora com 2 casas decimais
-            color='blue', ha='center', va='center', transform=ax.transAxes
-        )
+        # error = np.linalg.norm(final_position) / 100
+        # ax.text(
+        #     -50, -500, 0.0,  # Posição do texto abaixo do título
+        #     f'Erro normalizado: {error:.2f}%',  # Texto com o erro normalizado, agora com 2 casas decimais
+        #     color='blue', ha='center', va='center', transform=ax.transAxes
+        # )
 
     num_variations = len(variations)
     cols = math.ceil(math.sqrt(num_variations))  # Define o número de colunas como a raiz arredondada para cima

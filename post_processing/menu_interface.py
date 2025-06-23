@@ -8,10 +8,12 @@ import numpy as np
 import glob
 from tools.video_overlay import create_side_by_side_video
 from tools.plot_2d import plot2DFromData
+from tools.plot_3d import plot3DFromData
 from processing.displacement_processor import process_displacements
 from config_interface import show_config_interface
 from visual_odometer.visual_odometer import DEFAULT_CONFIG
 from post_processing.utils.file_tools import select_folder, get_config_label
+import traceback
 
 
 class MainMenuInterface:
@@ -157,6 +159,13 @@ class MainMenuInterface:
             viz_frame,
             "📊 Ver Trajetória 2D",
             self.show_2d_plot,
+            '#27ae60'
+        )
+
+        self.create_button(
+            viz_frame,
+            "📊 Ver Trajetória 3D",
+            self.show_3d_plot,
             '#27ae60'
         )
 
@@ -438,6 +447,7 @@ class MainMenuInterface:
             if 'progress_window' in locals():
                 progress_window.destroy()
             print(e)
+            traceback.print_exc()
             messagebox.showerror("Erro", f"Erro no processamento:\n{str(e)}")
 
     def process_displacements_with_progress(self, image_folder, config, progress_callback, force_reprocessing=False):
@@ -526,23 +536,35 @@ class MainMenuInterface:
                 return
 
         try:
-            label = get_config_label(self.current_config)
-            filename = f'{self.processed_data["image_folder"]}/{label}.png'
-            plot2DFromData(self.processed_data["displacements"], filename)
-
-            # Tentar abrir o arquivo gerado
-            if os.path.exists(filename):
-                if sys.platform.startswith('win'):
-                    os.startfile(filename)
-                elif sys.platform.startswith('darwin'):
-                    subprocess.run(['open', filename])
-                else:
-                    subprocess.run(['xdg-open', filename])
-
-            #messagebox.showinfo("Sucesso", f"Gráfico 2D salvo e aberto:\n{os.path.basename(filename)}")
-
+            plot2DFromData(self.processed_data["displacements"])
         except Exception as e:
             messagebox.showerror("Erro", f"Erro ao gerar gráfico 2D:\n{str(e)}")
+
+    def show_3d_plot(self):
+        """Mostra o gráfico 2D da trajetória"""
+        if not self.current_folder:
+            messagebox.showwarning("Aviso", "Selecione uma pasta de imagens primeiro!")
+            return
+
+        # Tentar carregar dados existentes se não estiverem em memória
+        if not self.processed_data:
+            self.processed_data = self.load_existing_data()
+
+        if not self.processed_data:
+            if messagebox.askyesno("Dados não encontrados",
+                                   "Nenhum dado processado encontrado.\n\nDeseja processar os dados agora?"):
+                self.process_data()
+                if not self.processed_data:
+                    return
+            else:
+                return
+
+        try:
+            plot3DFromData(self.processed_data["displacements"],self.processed_data["quaternions"])
+
+        except Exception as e:
+            messagebox.showerror("Erro", f"Erro ao gerar gráfico 3D:\n{str(e)}")
+
 
     def view_video(self):
         """Ver vídeo - cria se não existir, abre se já existir"""

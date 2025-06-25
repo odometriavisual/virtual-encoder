@@ -42,9 +42,6 @@
 			<button>Enviar</button>
 		</label>
 
-		<button class="toggle-streaming">Toggle Streaming</button>
-		<button class="toggle-calibracao">Toggle Calibração</button>
-
 		<label class="pulsos-por-segundo">
 			<div>Pulsos/s:</div>
 			<input type="number" value="10" />
@@ -57,10 +54,33 @@
 
 		<button class="iniciar-aquisicao" disabled>Iniciar Aquisição</button>
 		<button class="parar-aquisicao" disabled>Parar Aquisição</button>
-
 		<button class="iniciar-download" disabled>Iniciar Download</button>
+
+		<button class="toggle-streaming">Toggle Streaming</button>
+		<button class="toggle-calibracao">Toggle Calibração</button>
+
 		<button class="reiniciar" disabled>Reiniciar</button>
 		<button class="desligar" disabled>Desligar</button>
+	</div>
+
+	<div class="modal modal-desligar">
+		<div class="modal-content">
+			<span class="modal-titulo">Confirme qual componente você deseja desligar:</span>
+			<span class="modal-close">&times;</span>
+			<button class="encoder">Desligar encoder</button>
+			<button class="camera-subsea">Desligar câmera subsea</button>
+			<button class="rele">Desligar câmera subsea por relê</button>
+		</div>
+	</div>
+
+	<div class="modal modal-reiniciar">
+		<div class="modal-content">
+			<span class="modal-titulo">Confirme qual componente você deseja reiniciar:</span>
+			<span class="modal-close">&times;</span>
+			<button class="encoder">Reiniciar encoder</button>
+			<button class="camera-subsea">Reiniciar câmera subsea</button>
+			<button class="rele">Reiniciar câmera subsea por relê</button>
+		</div>
 	</div>
 </div>
 </body>

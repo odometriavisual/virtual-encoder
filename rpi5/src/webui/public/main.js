@@ -13,6 +13,7 @@ window.onload = () => {
         btn.debounce_id = setTimeout(() => {
             btn.debounce_enabled = false;
             btn.debounce_id = null;
+            btn.disabled = false;
         }, 1000);
     }
 
@@ -47,6 +48,22 @@ window.onload = () => {
             iniciar_download: document.querySelector('button.iniciar-download'),
             reiniciar: document.querySelector('button.reiniciar'),
             desligar: document.querySelector('button.desligar'),
+        };
+
+        window.modal_desligar = {
+            modal: document.querySelector('.modal-desligar'),
+            close: document.querySelector('.modal-desligar .modal-close'),
+            encoder: document.querySelector('.modal-desligar .encoder'),
+            camera_subsea: document.querySelector('.modal-desligar .camera-subsea'),
+            rele: document.querySelector('.modal-desligar .rele'),
+        };
+
+        window.modal_reiniciar = {
+            modal: document.querySelector('.modal-reiniciar'),
+            close: document.querySelector('.modal-reiniciar .modal-close'),
+            encoder: document.querySelector('.modal-reiniciar .encoder'),
+            camera_subsea: document.querySelector('.modal-reiniciar .camera-subsea'),
+            rele: document.querySelector('.modal-reiniciar .rele'),
         };
 
         for (let [_, btn] of Object.entries(window.btns)) {
@@ -98,8 +115,45 @@ window.onload = () => {
         window.btns.parar_aquisicao.addEventListener('click', next_estado);
 
         window.btns.iniciar_download.addEventListener('click', event => next_modo(event, 'Download'));
-        window.btns.reiniciar.addEventListener('click', event => next_modo(event, 'reboot'));
-        window.btns.desligar.addEventListener('click', event => next_modo(event, 'poweroff'));
+        window.btns.desligar.addEventListener('click', event => window.modal_desligar.modal.style.display = 'block');
+        window.btns.reiniciar.addEventListener('click', event => window.modal_reiniciar.modal.style.display = 'block');
+
+        window.modal_desligar.close.addEventListener('click', event => window.modal_desligar.modal.style.display = 'none')
+        window.modal_reiniciar.close.addEventListener('click', event => window.modal_reiniciar.modal.style.display = 'none')
+        window.onclick = function(event) {
+            if (event.target == window.modal_desligar.modal) {
+                window.modal_desligar.modal.style.display = 'none';
+            }
+            else if (event.target == window.modal_reiniciar.modal) {
+                window.modal_reiniciar.modal.style.display = 'none';
+                console.log('bbbb')
+            }
+        }
+
+        window.modal_desligar.encoder.addEventListener('click', event => {
+            window.modal_desligar.modal.style.display = 'none';
+            next_modo(event, 'poweroff');
+        })
+        window.modal_reiniciar.encoder.addEventListener('click', event => {
+            window.modal_reiniciar.modal.style.display = 'none';
+            next_modo(event, 'reboot');
+        })
+        window.modal_desligar.camera_subsea.addEventListener('click', event => {
+            window.modal_desligar.modal.style.display = 'none';
+            next_modo(event, 'poweroff rpi0');
+        })
+        window.modal_reiniciar.camera_subsea.addEventListener('click', event => {
+            window.modal_reiniciar.modal.style.display = 'none';
+            next_modo(event, 'reboot rpi0');
+        })
+        window.modal_desligar.rele.addEventListener('click', event => {
+            window.modal_desligar.modal.style.display = 'none';
+            next_modo(event, 'poweroff relay');
+        })
+        window.modal_reiniciar.rele.addEventListener('click', event => {
+            window.modal_reiniciar.modal.style.display = 'none';
+            next_modo(event, 'reboot relay');
+        })
 
         window.toggle_streaming.addEventListener('click', async event => {
             set_debounce_button(event.target)

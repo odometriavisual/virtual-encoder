@@ -120,8 +120,16 @@ def main():
 
                 case _, ('next_modo', 'poweroff'):
                     client.poweroff()
+                case _, ('next_modo', 'poweroff rpi0'):
+                    client.poweroff_rpi0()
+                case _, ('next_modo', 'poweroff relay'):
+                    client.poweroff_relay()
                 case _, ('next_modo', 'reboot'):
                     client.reboot()
+                case _, ('next_modo', 'reboot rpi0'):
+                    client.reboot_rpi0()
+                case _, ('next_modo', 'reboot relay'):
+                    client.reboot_relay()
 
                 case _, ('set_focus', focus):
                     client.set_focus(focus)

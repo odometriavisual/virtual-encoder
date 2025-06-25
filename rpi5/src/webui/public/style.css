@@ -92,10 +92,65 @@ body { margin: 0px; }
     box-sizing: border-box;
 }
 
-
 img {
     object-fit: contain;
     height: 100%;
+}
+
+.modal {
+    display: none;
+    position: fixed;
+    z-index: 1;
+    padding-top: 100px;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+    background-color: rgba(0,0,0,0.4);
+}
+
+.modal-content {
+    background-color: #fefefe;
+    margin: auto;
+    padding: 20px;
+    border: 1px solid #888;
+    width: 80%;
+
+    display: grid;
+    grid-template-rows: min(64px, auto) auto;
+    grid-template-columns: repeat(3, 1fr);
+    grid-gap: 16px;
+}
+
+.modal-close {
+    justify-self: end;
+    grid-area: 1 / 3;
+
+    user-select: none;
+    font-size: 42px;
+    font-weight: bold;
+    color: #aaaaaa;
+}
+
+.modal-close:hover,
+.modal-close:focus {
+    color: #000;
+    text-decoration: none;
+    cursor: pointer;
+}
+
+.modal-content > button {
+    grid-area: 2;
+    height: 150px;
+}
+
+.modal-content > .modal-titulo {
+    grid-area: 1 / span 2;
+
+    user-select: none;
+    font-size: 36px;
+    font-weight: bold;
 }
 
 .visualization > canvas {
@@ -118,20 +173,20 @@ img {
 .brilho { display: flex; gap: 8px; }
 .brilho > input[type="button"] { flex-shrink: 10; }
 
-.toggle-streaming { grid-area: 4 / 9 / span 1 / span 3; }
-.toggle-calibracao { grid-area: 5 / 9 / span 1 / span 3; }
+.toggle-streaming { grid-area: 5 / 8 / span 1 / span 2; }
+.toggle-calibracao { grid-area: 5 / auto / span 1 / span 2; }
 
-.calibracao { grid-area: 5 / 1 / span 1 / span 3; }
-.iniciar-aquisicao { grid-area: 5 / auto / span 1 / span 3; }
-.parar-aquisicao { grid-area: 5 / auto / span 1 / span 3; }
+.calibracao { grid-area: 5 / 1 / span 1 / span 2; }
+.iniciar-aquisicao { grid-area: 5 / auto / span 1 / span 2; }
+.parar-aquisicao { grid-area: 5 / auto / span 1 / span 2; }
 
-.modo-tempo { grid-area: auto / auto / span 1 / span 3; }
-.modo-odometro { grid-area: auto / auto / span 1 / span 3; }
-.modo-autonomo { grid-area: auto / auto / span 1 / span 3; }
+.modo-tempo { grid-area: auto / auto / span 1 / span 2; }
+.modo-odometro { grid-area: auto / auto / span 1 / span 2; }
+.modo-autonomo { grid-area: auto / auto / span 1 / span 2; }
 
-.iniciar-download { grid-area: 4 / 12 / span 1 / span 3; }
-.reiniciar { grid-area: 5 / 12 / span 1 / span 3; }
-.desligar { display: none; grid-area: 3 / 12 / span 1 / span 3; }
+.iniciar-download { grid-area: 5 / auto / span 1 / span 2; }
+.reiniciar { grid-area: 5 / 13 / span 1 / span 2; }
+.desligar { grid-area: 4 / 13 / span 1 / span 2; }
 
 .exposicao { grid-area: 3 / 1 / span 1 / span 3; }
 .pulsos-por-segundo { grid-area: 3 / 5 / span 1 / span 3; }

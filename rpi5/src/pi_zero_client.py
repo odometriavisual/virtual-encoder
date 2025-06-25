@@ -9,6 +9,7 @@ import requests
 from requests.exceptions import RequestException
 
 from .status import EncoderStatus
+from .pi_zero_power_supply import PiZeroPowerSupplySwitch
 
 PIZERO_HOST = 'rpi0'
 WEBSERVER_PORT = 7123
@@ -24,6 +25,8 @@ class PiZeroClient:
 
         self.frame_lock = threading.Lock()
         self.frame = cv2.Mat(np.array([0x000000AA], dtype=np.float32))
+
+        self.relay = PiZeroPowerSupplySwitch()
 
         self.stream_enabled = True
 
@@ -116,26 +119,40 @@ class PiZeroClient:
             return False
 
     def poweroff(self):
-        try:
-            requests.get(f'http://{PIZERO_HOST}:{WEBSERVER_PORT}/poweroff', timeout=1.0)
-        except RequestException:
-            pass
+        self.poweroff_rpi0()
 
         try:
             subprocess.run(['sudo', 'poweroff'])
         except SubprocessError:
             pass
 
-    def reboot(self):
+    def poweroff_rpi0(self):
         try:
-            requests.get(f'http://{PIZERO_HOST}:{WEBSERVER_PORT}/reboot', timeout=1.0)
+            requests.get(f'http://{PIZERO_HOST}:{WEBSERVER_PORT}/poweroff', timeout=1.0)
         except RequestException:
             pass
+
+    def poweroff_relay(self):
+        self.relay.turn_off()
+
+    def reboot(self):
+        self.reboot_rpi0()
 
         try:
             subprocess.run(['sudo', 'reboot'])
         except SubprocessError:
             pass
+
+    def reboot_rpi0(self):
+        try:
+            requests.get(f'http://{PIZERO_HOST}:{WEBSERVER_PORT}/reboot', timeout=1.0)
+        except RequestException:
+            pass
+
+    def reboot_relay(self):
+        self.relay.turn_off()
+        time.sleep(10)
+        self.relay.turn_on()
 
     def toggle_stream(self):
         if self.stream_enabled:

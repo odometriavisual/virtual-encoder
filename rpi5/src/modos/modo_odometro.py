@@ -5,26 +5,30 @@ import numpy as np
 from ..ihm.ihm import IHM
 from ..pi_zero_client import PiZeroClient
 from ..pulse_generator import PulseGenerator
-from ..logger import Logger
 from ..status import EncoderStatus
 
-from ..estados import EstadoSet, EstadoReady, EstadoErro, EstadoCalibracao, EstadoAquisicaoOdometro
+from ..estados import EstadoReady, EstadoErro, EstadoAquisicaoOdometro
 
 def to_grayscale(img):
     return np.asarray(ImageOps.grayscale(Image.fromarray(img)))
 
 class ModoOdometro:
-    def __init__(self, client: PiZeroClient, ihm: IHM, status: EncoderStatus, encoders: tuple[PulseGenerator, ...], logger: Logger):
+    def __init__(self, client: PiZeroClient, ihm: IHM, status: EncoderStatus, encoders: tuple[PulseGenerator, ...]):
         self.client = client
         self.ihm = ihm
         self.status = status
         self.encoders = encoders
-        self.logger = logger
 
         self.status.set('modo', 'Odometro')
 
-        self.estado = EstadoSet(self.status)
-        self.odometer = VisualOdometer((480, 640))
+        self.estado = EstadoReady(self.status)
+
+        img = to_grayscale(self.client.get_img())
+        self.odometer = VisualOdometer(img.shape)
+
+        # Fill odometer buffers
+        self.odometer.feed_image(img)
+        self.odometer.feed_image(img)
 
     def stop(self):
         self.estado.stop()
@@ -38,17 +42,11 @@ class ModoOdometro:
                 self.estado = EstadoErro(self.ihm, self.status, message)
 
             case EstadoErro(), 'next_estado':
-                self.estado = EstadoSet(self.status)
-
-            case EstadoSet(), 'next_estado':
-                self.estado = EstadoCalibracao(self.ihm, self.status, self.client)
-
-            case EstadoCalibracao(), 'fim_calibracao':
                 self.estado = EstadoReady(self.status)
 
             case EstadoReady(), ('next_estado', _, _, reason): # next_estado, ESTADO, PULSOS P/ SEG, REASON
-                self.estado = EstadoAquisicaoOdometro(self.client, self.ihm, self.status, self.encoders, self.odometer, self.logger, reason)
+                self.estado = EstadoAquisicaoOdometro(self.client, self.ihm, self.status, self.encoders, self.odometer, reason)
 
             case EstadoAquisicaoOdometro(), 'next_estado':
                 self.estado.stop()
-                self.estado = EstadoSet(self.status)
+                self.estado = EstadoReady(self.status)

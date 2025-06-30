@@ -7,7 +7,6 @@ from PIL import Image, ImageOps
 from ..ihm.ihm import IHM
 from ..pi_zero_client import PiZeroClient
 from ..pulse_generator import PulseGenerator
-from ..logger import Logger
 from ..status import EncoderStatus
 
 from ..estados import Estado
@@ -16,23 +15,16 @@ def to_grayscale(img):
     return np.asarray(ImageOps.grayscale(Image.fromarray(img)))
 
 class EstadoAquisicaoOdometro(Estado):
-    def __init__(self, client: PiZeroClient, ihm: IHM, status: EncoderStatus, encoders: tuple[PulseGenerator, ...], odometer: VisualOdometer, logger: Logger, reason: str):
+    def __init__(self, client: PiZeroClient, ihm: IHM, status: EncoderStatus, encoders: tuple[PulseGenerator, ...], odometer: VisualOdometer, reason: str):
         self.client = client
         self.ihm = ihm
         self.status = status
         self.encoders = encoders
         self.odometer = odometer
-        self.logger = logger
-
-        timestamp_ns = time.time_ns()
-        self.client.start_acquisition(timestamp_ns, reason)
-        self.logger.start(timestamp_ns)
+        self.reason = reason
 
         self.status.set('estado', 'Aquisicao')
-
-        img = to_grayscale(self.client.get_img())
-        self.odometer.feed_image(img)
-        self.odometer.feed_image(img)
+        status.add_message(f'Aquisição: {self.reason} estimativa tempo real')
 
         self.new_image_event = threading.Event()
 
@@ -40,17 +32,21 @@ class EstadoAquisicaoOdometro(Estado):
         self.pending_pulses = [0, 0]
 
         self.is_running = True
+        self.is_first_pulse = True
 
         def _preprocess_last_img():
+            last_t = time.time()
             while self.is_running:
                 self.client.vid_event.wait()
                 self.client.vid_event.clear()
 
                 self.odometer.feed_image(to_grayscale(self.client.get_img()))
+                t1 = time.time()
+                dt = (t1-last_t)*1000
+                last_t = t1
+                print(f'camera {dt=:.3f} ms')
 
                 self.new_image_event.set()
-
-        self.preprocess_thread = threading.Thread(target=_preprocess_last_img, daemon=True).start()
 
         def _estimate_distance():
             self.new_image_event.clear()
@@ -65,12 +61,14 @@ class EstadoAquisicaoOdometro(Estado):
                     new_pulses = self.odometer.get_displacement()
                 except ValueError:
                     new_pulses = (0, 0)
+                t1 = time.time()
 
                 if self.is_running:
                     # Checking again to avoid setting status after is_running was set to False
                     self.status.set('estado', f'Aquisicao Deslocamento: {acc[0]:.2f}, {acc[1]:.2f}')
                     self.status.set('pos', { 'x': acc[0], 'y': acc[1] })
-                    print(f'fps {1/(time.time()-t0):06.02f}, acumulado {acc[0]: 6.02f} {acc[1]: 6.02f}')
+                    dt = (t1-t0)*1000
+                    print(f'deslocamento {dt=:.3f}, acumulado {acc[0]: 6.02f} {acc[1]: 6.02f}')
 
                 with self.pulses_lock:
                     self.pending_pulses[0] += new_pulses[0]
@@ -78,24 +76,37 @@ class EstadoAquisicaoOdometro(Estado):
 
                 acc[0] += new_pulses[0]
                 acc[1] += new_pulses[1]
-                self.logger.log(new_pulses)
+                # TODO: log pulses
 
+        self.preprocess_thread = threading.Thread(target=_preprocess_last_img, daemon=True).start()
         self.estimate_thread = threading.Thread(target=_estimate_distance, daemon=True).start()
 
     def stop(self):
         self.is_running = False
-        self.logger.reset()
         self.client.stop_acquisition()
 
     def run(self):
-        with self.pulses_lock:
-            if self.pending_pulses[0] > 1:
-                self.encoders[0].send_pulses(1)
-                self.pending_pulses[0] -= 1
+        if self.is_first_pulse:
+            self.is_first_pulse = False
 
-            if self.pending_pulses[1] > 1:
-                self.encoders[1].send_pulses(1)
-                self.pending_pulses[1] -= 1
+            timestamp_ns = time.time_ns()
+            def start_acquisition_helper():
+                self.client.start_acquisition(timestamp_ns, self.reason, 0)
+            req_thread = threading.Thread(target=start_acquisition_helper, daemon=True)
+
+            for encoder in self.encoders:
+                encoder.send_pulses(count=1)
+
+            req_thread.start()
+        else:
+            with self.pulses_lock:
+                if self.pending_pulses[0] > 1:
+                    self.encoders[0].send_pulses(1)
+                    self.pending_pulses[0] -= 1
+
+                if self.pending_pulses[1] > 1:
+                    self.encoders[1].send_pulses(1)
+                    self.pending_pulses[1] -= 1
 
         time.sleep(0.001)
 

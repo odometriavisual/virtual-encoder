@@ -1,5 +1,8 @@
 #!/usr/bin/env python
-import threading, time, json, socket
+import threading
+import time
+import json
+import socket
 
 from src.network_manager import NetworkManager
 from src.webui.server import WebuiApp
@@ -46,7 +49,8 @@ def main():
 
     time.sleep(1)
 
-    modo = ModoTempo(client, ihm, status, encoders)
+    # modo = ModoTempo(client, ihm, status, encoders)
+    modo = ModoOdometro(client, ihm, status, encoders)
 
     logger = Logger(modo)
 
@@ -110,7 +114,7 @@ def main():
                     modo = ModoAutonomo(client, status, encoders)
                 case _, ('next_modo', 'Odometro'):
                     modo.stop()
-                    modo = ModoOdometro(client, ihm, status, encoders, logger)
+                    modo = ModoOdometro(client, ihm, status, encoders)
                 case _, ('next_modo', 'Tempo'):
                     modo.stop()
                     modo = ModoTempo(client, ihm, status, encoders)

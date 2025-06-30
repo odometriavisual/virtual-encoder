@@ -24,7 +24,7 @@ class PiZeroClient:
         self.vid = cv2.VideoCapture()
 
         self.frame_lock = threading.Lock()
-        self.frame = cv2.Mat(np.array([0x000000AA], dtype=np.float32))
+        self.frame = cv2.Mat(np.full((240, 320), 0x000000AA, dtype=np.float32))
 
         self.relay = PiZeroPowerSupplySwitch()
 

@@ -1,6 +1,7 @@
 import threading
 import time
 import subprocess
+from email.policy import default
 from subprocess import SubprocessError
 
 import cv2
@@ -24,7 +25,8 @@ class PiZeroClient:
         self.vid = cv2.VideoCapture()
 
         self.frame_lock = threading.Lock()
-        self.frame = cv2.Mat(np.full((240, 320), 0x000000AA, dtype=np.float32))
+        self.default_frame = np.full((240, 320, 3), (150, 150, 150), dtype=np.uint8)
+        self.frame = self.default_frame.copy()
 
         self.relay = PiZeroPowerSupplySwitch()
 
@@ -43,7 +45,7 @@ class PiZeroClient:
                                 self.frame = frame
                             self.vid_event.set()
                         else:
-                            self.frame = cv2.Mat(np.array([0x000000AA], dtype=np.float32))
+                            self.frame = self.default_frame.copy()
                             self.vid.release()
                             cv2.destroyAllWindows()
 

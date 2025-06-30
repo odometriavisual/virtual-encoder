@@ -1,6 +1,16 @@
 window.onload = () => {
+    window.canvas = document.querySelector('canvas')
+    const ctx = canvas.getContext('2d');
+    ctx.fillStyle = 'red';
+
     let set_cube_quat = (x, y, z, w) => { };
-    let draw_point = (x, y) => { };
+    let draw_point = (x, y) => {
+        const w = canvas.width;
+        const h = canvas.height;
+        const s = 0.01;
+        ctx.fillRect(x*s + w/2 - 1, y*s + h/2 - 1, 2, 2);
+
+    };
     let clear_canvas = () => { };
 
     function set_debounce_button(btn) {
@@ -214,6 +224,8 @@ window.onload = () => {
 			${status.rpi0 ? `Temp: ${status.rpi0.temp?.toFixed(2)} ℃` : ''}`
 
         const global_disable = status.estado === 'Calibrando';
+
+        window.canvas.style.display = status.modo === 'Odometro'? 'block': 'none';
 
         if (status.modo === 'Tempo' || status.modo === 'Odometro') {
             window.btns.iniciar_download.disabled = global_disable;

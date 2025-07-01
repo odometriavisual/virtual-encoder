@@ -11,7 +11,7 @@ from visual_odometer import VisualOdometer
 from PIL import Image, ImageOps
 import cv2
 
-def load_img_grayscale(filename, apply_clahe=True, apply_denoise=True):
+def load_img_grayscale(filename, apply_clahe=True, apply_denoise=True, dist_calib_map=None):
     """
     Carrega a imagem como grayscale, aplica CLAHE e denoise (opcionalmente).
     """
@@ -25,6 +25,9 @@ def load_img_grayscale(filename, apply_clahe=True, apply_denoise=True):
 
     if apply_denoise:
         img_np = cv2.fastNlMeansDenoising(img_np, h=10, templateWindowSize=7, searchWindowSize=21)
+
+    if dist_calib_map is not None:
+        img_np = cv2.remap(img_np, dist_calib_map['map_x'], dist_calib_map['map_y'], cv2.INTER_LINEAR)
 
     return img_np
 

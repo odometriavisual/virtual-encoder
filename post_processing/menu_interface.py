@@ -471,6 +471,7 @@ class MainMenuInterface:
         from post_processing.utils.imu_tools import load_imu_data, find_closest_imu_data
 
         data_file = os.path.join(image_folder, "displacements_data.npz")
+        dist_calib_file = os.path.join(image_folder, "distortion_calibration_map.npz")
 
         # Tentar carregar dados existentes (caso não seja forçado)
         if os.path.exists(data_file) and not force_reprocessing:
@@ -496,6 +497,11 @@ class MainMenuInterface:
                 'image_folder': image_folder,
                 'px_p_mm': px_p_mm
             }
+
+        if os.path.exists(dist_calib_file):
+            dist_calib_map = np.load(dist_calib_file, allow_pickle=True)
+        else:
+            dist_calib_map = None
 
         # Carregar IMU
         imu_file = os.path.join(image_folder, "imu.csv")
@@ -531,7 +537,7 @@ class MainMenuInterface:
             apply_clahe = config.get("Image Processing", {}).get("apply_clahe", False)
             apply_denoise = config.get("Image Processing", {}).get("apply_denoise", False)
 
-            img_processed = load_img_grayscale(img_file, apply_clahe, apply_denoise)
+            img_processed = load_img_grayscale(img_file, apply_clahe, apply_denoise, dist_calib_map)
             odometer.feed_image(img_processed)
 
             dx, dy = odometer.get_displacement()

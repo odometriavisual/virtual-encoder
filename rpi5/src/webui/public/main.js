@@ -56,6 +56,7 @@ window.onload = () => {
             iniciar_aquisicao: document.querySelector('button.iniciar-aquisicao'),
             parar_aquisicao: document.querySelector('button.parar-aquisicao'),
             iniciar_download: document.querySelector('button.iniciar-download'),
+            mudar_modo: document.querySelector('button.mudar-modo'),
             reiniciar: document.querySelector('button.reiniciar'),
             desligar: document.querySelector('button.desligar'),
         };
@@ -74,6 +75,13 @@ window.onload = () => {
             encoder: document.querySelector('.modal-reiniciar .encoder'),
             camera_subsea: document.querySelector('.modal-reiniciar .camera-subsea'),
             rele: document.querySelector('.modal-reiniciar .rele'),
+        };
+
+        window.modal_modos = {
+            modal: document.querySelector('.modal-modos'),
+            close: document.querySelector('.modal-modos .modal-close'),
+            modo_tempo: document.querySelector('.modal-modos .modo-tempo'),
+            modo_odometro: document.querySelector('.modal-modos .modo-odometro'),
         };
 
         for (let [_, btn] of Object.entries(window.btns)) {
@@ -125,45 +133,9 @@ window.onload = () => {
         window.btns.parar_aquisicao.addEventListener('click', next_estado);
 
         window.btns.iniciar_download.addEventListener('click', event => next_modo(event, 'Download'));
+        window.btns.mudar_modo.addEventListener('click', event => window.modal_modos.modal.style.display = 'block');
         window.btns.desligar.addEventListener('click', event => window.modal_desligar.modal.style.display = 'block');
         window.btns.reiniciar.addEventListener('click', event => window.modal_reiniciar.modal.style.display = 'block');
-
-        window.modal_desligar.close.addEventListener('click', event => window.modal_desligar.modal.style.display = 'none')
-        window.modal_reiniciar.close.addEventListener('click', event => window.modal_reiniciar.modal.style.display = 'none')
-        window.onclick = function(event) {
-            if (event.target == window.modal_desligar.modal) {
-                window.modal_desligar.modal.style.display = 'none';
-            }
-            else if (event.target == window.modal_reiniciar.modal) {
-                window.modal_reiniciar.modal.style.display = 'none';
-                console.log('bbbb')
-            }
-        }
-
-        window.modal_desligar.encoder.addEventListener('click', event => {
-            window.modal_desligar.modal.style.display = 'none';
-            next_modo(event, 'poweroff');
-        })
-        window.modal_reiniciar.encoder.addEventListener('click', event => {
-            window.modal_reiniciar.modal.style.display = 'none';
-            next_modo(event, 'reboot');
-        })
-        window.modal_desligar.camera_subsea.addEventListener('click', event => {
-            window.modal_desligar.modal.style.display = 'none';
-            next_modo(event, 'poweroff rpi0');
-        })
-        window.modal_reiniciar.camera_subsea.addEventListener('click', event => {
-            window.modal_reiniciar.modal.style.display = 'none';
-            next_modo(event, 'reboot rpi0');
-        })
-        window.modal_desligar.rele.addEventListener('click', event => {
-            window.modal_desligar.modal.style.display = 'none';
-            next_modo(event, 'poweroff relay');
-        })
-        window.modal_reiniciar.rele.addEventListener('click', event => {
-            window.modal_reiniciar.modal.style.display = 'none';
-            next_modo(event, 'reboot relay');
-        })
 
         window.toggle_streaming.addEventListener('click', async event => {
             set_debounce_button(event.target)
@@ -190,6 +162,56 @@ window.onload = () => {
         });
 
         window.log_clear.addEventListener('click', () => window.log_text.innerText = '')
+
+        window.modal_desligar.close.addEventListener('click', event => window.modal_desligar.modal.style.display = 'none');
+        window.modal_desligar.encoder.addEventListener('click', event => {
+            window.modal_desligar.modal.style.display = 'none';
+            next_modo(event, 'poweroff');
+        })
+        window.modal_desligar.camera_subsea.addEventListener('click', event => {
+            window.modal_desligar.modal.style.display = 'none';
+            next_modo(event, 'poweroff rpi0');
+        })
+        window.modal_desligar.rele.addEventListener('click', event => {
+            window.modal_desligar.modal.style.display = 'none';
+            next_modo(event, 'poweroff relay');
+        })
+
+        window.modal_reiniciar.close.addEventListener('click', event => window.modal_reiniciar.modal.style.display = 'none');
+        window.modal_reiniciar.encoder.addEventListener('click', event => {
+            window.modal_reiniciar.modal.style.display = 'none';
+            next_modo(event, 'reboot');
+        })
+        window.modal_reiniciar.camera_subsea.addEventListener('click', event => {
+            window.modal_reiniciar.modal.style.display = 'none';
+            next_modo(event, 'reboot rpi0');
+        })
+        window.modal_reiniciar.rele.addEventListener('click', event => {
+            window.modal_reiniciar.modal.style.display = 'none';
+            next_modo(event, 'reboot relay');
+        })
+
+        window.modal_modos.close.addEventListener('click', event => window.modal_modos.modal.style.display = 'none');
+        window.modal_modos.modo_tempo.addEventListener('click', event => {
+            window.modal_modos.modal.style.display = 'none';
+            next_modo(event, 'Tempo');
+        })
+        window.modal_modos.modo_odometro.addEventListener('click', event => {
+            window.modal_modos.modal.style.display = 'none';
+            next_modo(event, 'Odometro');
+        })
+
+        window.onclick = function(event) {
+            if (event.target === window.modal_desligar.modal) {
+                window.modal_desligar.modal.style.display = 'none';
+            }
+            else if (event.target === window.modal_reiniciar.modal) {
+                window.modal_reiniciar.modal.style.display = 'none';
+            }
+            else if (event.target === window.modal_modos.modal) {
+                window.modal_modos.modal.style.display = 'none';
+            }
+        }
     }
 
     function set_ok(div, predicate) {
@@ -252,6 +274,7 @@ window.onload = () => {
         }
 
         window.toggle_streaming.disabled = window.toggle_streaming.debounce_enabled || global_disable;
+        window.btns.mudar_modo.disabled = global_disable || status.estado !== 'Ready';
         window.btns.reiniciar.disabled = global_disable || status.rpi5 === false;
         window.btns.desligar.disabled = global_disable || status.rpi5 === false;
 

@@ -49,8 +49,8 @@ def main():
 
     time.sleep(1)
 
-    # modo = ModoTempo(client, ihm, status, encoders)
-    modo = ModoOdometro(client, ihm, status, encoders)
+    modo = ModoTempo(client, ihm, status, encoders)
+    # modo = ModoOdometro(client, ihm, status, encoders)
 
     logger = Logger(modo)
 

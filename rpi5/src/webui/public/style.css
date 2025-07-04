@@ -123,6 +123,15 @@ img {
     grid-gap: 16px;
 }
 
+.modal-modos > .modal-content {
+    width: 40%;
+
+    display: grid;
+    grid-template-rows: min(64px, auto) auto;
+    grid-template-columns: repeat(2, 1fr);
+    grid-gap: 16px;
+}
+
 .modal-close {
     justify-self: end;
     grid-area: 1 / 3;
@@ -131,6 +140,10 @@ img {
     font-size: 42px;
     font-weight: bold;
     color: #aaaaaa;
+}
+
+.modal-modos .modal-close {
+    grid-area: 1 / 2;
 }
 
 .modal-close:hover,
@@ -146,7 +159,7 @@ img {
 }
 
 .modal-content > .modal-titulo {
-    grid-area: 1 / span 2;
+    grid-area: 1 / 1 / 1 / span 2;
 
     user-select: none;
     font-size: 36px;
@@ -173,16 +186,12 @@ img {
 .brilho { display: flex; gap: 8px; }
 .brilho > input[type="button"] { flex-shrink: 10; }
 
-.toggle-streaming { grid-area: 5 / 8 / span 1 / span 2; }
-.toggle-calibracao { grid-area: 5 / auto / span 1 / span 2; }
-
-.calibracao { grid-area: 5 / 1 / span 1 / span 2; }
 .iniciar-aquisicao { grid-area: 5 / auto / span 1 / span 2; }
 .parar-aquisicao { grid-area: 5 / auto / span 1 / span 2; }
 
-.modo-tempo { grid-area: auto / auto / span 1 / span 2; }
-.modo-odometro { grid-area: auto / auto / span 1 / span 2; }
-.modo-autonomo { grid-area: auto / auto / span 1 / span 2; }
+.mudar-modo { grid-area: 5 / 7 / span 1 / span 2; }
+.toggle-streaming { grid-area: 4 / 10 / span 1 / span 2; }
+.toggle-calibracao { grid-area: 5 / 10 / span 1 / span 2; }
 
 .iniciar-download { grid-area: 5 / auto / span 1 / span 2; }
 .reiniciar { grid-area: 5 / 13 / span 1 / span 2; }

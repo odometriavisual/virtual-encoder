@@ -522,7 +522,7 @@ class MainMenuInterface:
                 print(f"Erro ao ler calibration_data.csv: {e}")
 
         # Inicializar odômetro
-        odometer = VisualOdometer(img_size=(640, 480))
+        odometer = VisualOdometer((640, 480))
         odometer.configs = config
         displacements, quaternions, timestamps = [], [], []
 

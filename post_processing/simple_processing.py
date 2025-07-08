@@ -8,7 +8,7 @@ file_img_2 = "C:/Users/Demarky/Downloads/Nova pasta/2.png"
 img_grascale_1 = load_img_grayscale(file_img_1, True, True)
 img_grascale_2 = load_img_grayscale(file_img_2, True, True)
 
-odometer = VisualOdometer(img_size=(320, 240))
+odometer = VisualOdometer((320, 240))
 odometer.feed_image(img_grascale_1)
 print(odometer.get_displacement())
 odometer.feed_image(img_grascale_2)

@@ -2,6 +2,20 @@ import cv2
 import os
 import numpy as np
 from tkinter import filedialog, Tk
+import glob
+import sys
+
+# Adiciona o caminho para importar as funções necessárias
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../../')))
+
+try:
+    from post_processing.utils.img_tools import extract_timestamp_from_txt
+    from post_processing.utils.imu_tools import load_imu_data, find_closest_imu_data
+except ImportError:
+    print("⚠️  Não foi possível importar as funções de IMU. Continuando sem dados de IMU.")
+    extract_timestamp_from_txt = None
+    load_imu_data = None
+    find_closest_imu_data = None
 
 ALPHA = 2  # Contraste mais forte
 BETA = 25  # Brilho extra
@@ -11,16 +25,23 @@ GRID_SPACING = 300
 
 
 class ManualDisplacementEstimator:
-    def __init__(self):
+    def __init__(self, force_reprocessing=False):
         self.image_paths = []
         self.current_index = 0
         self.left_point = None
         self.right_point = None
         self.displacements = []
-        self.original_size = None  # Para armazenar o tamanho original
+        self.quaternions = []
+        self.timestamps = []
+        self.original_size = None
+        self.folder = None
+        self.force_reprocessing = force_reprocessing
+        self.imu_data = None
+
         self.select_folder()
 
         if self.image_paths:
+            self.load_imu_data()
             self.run()
 
     def select_folder(self):
@@ -31,13 +52,80 @@ class ManualDisplacementEstimator:
             print("Nenhuma pasta selecionada.")
             return
 
-        self.image_paths = sorted([
-            os.path.join(folder, f) for f in os.listdir(folder)
-            if f.lower().endswith(('.jpg', '.jpeg', '.png'))
-        ])
         self.folder = folder
+        self.image_paths = sorted(glob.glob(os.path.join(folder, '*.jpg')))
+
+        if not self.image_paths:
+            print("❌ Nenhuma imagem JPG encontrada na pasta.")
+            return
+
+        print(f"📁 Encontradas {len(self.image_paths)} imagens JPG")
+
+    def load_imu_data(self):
+        """Carrega dados do IMU se disponível"""
+        if not (load_imu_data and find_closest_imu_data and extract_timestamp_from_txt):
+            print("⚠️  Funções de IMU não disponíveis. Continuando sem dados de orientação.")
+            return
+
+        imu_file = os.path.join(self.folder, "imu.csv")
+        if os.path.exists(imu_file):
+            try:
+                self.imu_data = load_imu_data(imu_file)
+                print(f"✅ Dados de IMU carregados: {imu_file}")
+            except Exception as e:
+                print(f"⚠️  Erro ao carregar IMU: {e}")
+                self.imu_data = None
+        else:
+            print(f"⚠️  Arquivo IMU não encontrado: {imu_file}")
+
+    def check_existing_data(self):
+        """Verifica se já existe arquivo de dados processados"""
+        data_file = os.path.join(self.folder, "displacements_data.npz")
+
+        if os.path.exists(data_file) and not self.force_reprocessing:
+            print(f"📂 Dados existentes encontrados: {data_file}")
+            response = input("Deseja reprocessar? (s/N): ").lower()
+            if response != 's':
+                print("Carregando dados existentes...")
+                return self.load_existing_data(data_file)
+
+        return None
+
+    def load_existing_data(self, data_file):
+        """Carrega dados existentes do arquivo NPZ"""
+        try:
+            data = np.load(data_file, allow_pickle=True)
+            return {
+                'displacements': data['displacements'],
+                'quaternions': data['quaternions'],
+                'timestamps': data['timestamps'],
+                'image_folder': self.folder
+            }
+        except Exception as e:
+            print(f"❌ Erro ao carregar dados existentes: {e}")
+            return None
+
+    def get_imu_data_for_image(self, img_file):
+        """Obtém dados de IMU para uma imagem específica"""
+        if not self.imu_data or not extract_timestamp_from_txt:
+            # Retorna quaternion identidade se não há dados de IMU
+            return [1.0, 0.0, 0.0, 0.0], 0.0
+
+        try:
+            img_timestamp = extract_timestamp_from_txt(img_file)
+            quaternion = find_closest_imu_data(self.imu_data, img_timestamp)
+            q_array = [quaternion['qw'], quaternion['qx'], quaternion['qy'], quaternion['qz']]
+            return q_array, img_timestamp
+        except Exception as e:
+            print(f"⚠️  Erro ao obter dados de IMU para {img_file}: {e}")
+            return [1.0, 0.0, 0.0, 0.0], 0.0
 
     def run(self):
+        # Verifica se já existem dados processados
+        existing_data = self.check_existing_data()
+        if existing_data:
+            return existing_data
+
         previous_right_point = None
 
         while self.current_index + 1 < len(self.image_paths):
@@ -49,7 +137,6 @@ class ManualDisplacementEstimator:
             if self.original_size is None:
                 self.original_size = (left_original.shape[1], left_original.shape[0])  # (width, height)
                 print(f"📐 Tamanho original das imagens: {self.original_size[0]}x{self.original_size[1]}")
-                print(f"📁 Total de {len(self.image_paths)} imagens para processar")
                 print(f"🔄 Serão feitas {len(self.image_paths) - 1} comparações frame-a-frame")
 
             # Aplica melhorias
@@ -62,7 +149,6 @@ class ManualDisplacementEstimator:
 
             # Se havia um ponto anterior à direita, converte para coordenadas da nova escala
             if previous_right_point:
-                # previous_right_point já está em coordenadas originais, precisa escalar para display
                 self.left_point = (int(previous_right_point[0] * SCALE), int(previous_right_point[1] * SCALE))
                 self.left_display = self.draw_marker(self.left_display, self.left_point)
                 print(
@@ -122,8 +208,7 @@ class ManualDisplacementEstimator:
 
                 if key == ord('q'):
                     cv2.destroyAllWindows()
-                    self.save_displacements()
-                    return
+                    return self.save_displacements()
 
                 elif key == ord('c') and self.left_point and self.right_point:
                     # Converte pontos para coordenadas originais
@@ -133,13 +218,13 @@ class ManualDisplacementEstimator:
                     dx = right_orig[0] - left_orig[0]
                     dy = right_orig[1] - left_orig[1]
 
-                    self.displacements.append({
-                        'from': self.image_paths[self.current_index],
-                        'to': self.image_paths[self.current_index + 1],
-                        'displacement': (dx, dy),
-                        'point1': left_orig,
-                        'point2': right_orig
-                    })
+                    # Adiciona deslocamento
+                    self.displacements.append([dx, dy])
+
+                    # Obtém dados de IMU para a imagem atual
+                    quaternion, timestamp = self.get_imu_data_for_image(self.image_paths[self.current_index])
+                    self.quaternions.append(quaternion)
+                    self.timestamps.append(timestamp)
 
                     print(f"✅ Deslocamento {len(self.displacements)} confirmado: ({dx:+d}, {dy:+d}) px")
 
@@ -155,7 +240,7 @@ class ManualDisplacementEstimator:
                     break
 
         cv2.destroyAllWindows()
-        self.save_displacements()
+        return self.save_displacements()
 
     def enhance_image(self, img):
         # Aplica CLAHE no canal V do HSV (preserva cor)
@@ -230,27 +315,64 @@ class ManualDisplacementEstimator:
     def save_displacements(self):
         if not self.displacements:
             print("❌ Nenhum deslocamento registrado.")
-            return
+            return None
 
-        save_path = os.path.join(self.folder, 'manual_displacements.npz')
-        dxs = [d['displacement'][0] for d in self.displacements]
-        dys = [d['displacement'][1] for d in self.displacements]
-        pts1 = [d['point1'] for d in self.displacements]
-        pts2 = [d['point2'] for d in self.displacements]
-        from_files = [d['from'] for d in self.displacements]
-        to_files = [d['to'] for d in self.displacements]
+        # Converte para arrays numpy no formato esperado
+        displacements = np.array(self.displacements)  # [N x 2]
+        quaternions = np.array(self.quaternions)  # [N x 4]
+        timestamps = np.array(self.timestamps)  # [N]
 
-        np.savez(save_path,
-                 dx=dxs, dy=dys,
-                 point1=pts1, point2=pts2,
-                 from_images=from_files,
-                 to_images=to_files)
+        # Salva no formato compatível com process_displacements
+        data_file = os.path.join(self.folder, "displacements_data.npz")
+        np.savez(data_file,
+                 displacements=displacements,
+                 quaternions=quaternions,
+                 timestamps=timestamps)
 
-        print(f"\n✅ {len(self.displacements)} deslocamento(s) salvos em: {save_path}")
+        print(f"\n✅ {len(self.displacements)} deslocamento(s) salvos em: {data_file}")
         print(f"📊 Estatísticas dos deslocamentos:")
-        print(f"   • dx: min={min(dxs):+d}, max={max(dxs):+d}, média={np.mean(dxs):+.1f}")
-        print(f"   • dy: min={min(dys):+d}, max={max(dys):+d}, média={np.mean(dys):+.1f}")
+
+        dxs = displacements[:, 0]
+        dys = displacements[:, 1]
+        print(f"   • dx: min={np.min(dxs):+.1f}, max={np.max(dxs):+.1f}, média={np.mean(dxs):+.1f}")
+        print(f"   • dy: min={np.min(dys):+.1f}, max={np.max(dys):+.1f}, média={np.mean(dys):+.1f}")
+
+        if self.imu_data:
+            print(f"   • {len(quaternions)} quaternions de orientação incluídos")
+            print(f"   • {len(timestamps)} timestamps incluídos")
+
+        # Retorna no formato esperado
+        return {
+            'displacements': displacements,
+            'quaternions': quaternions,
+            'timestamps': timestamps,
+            'image_folder': self.folder
+        }
+
+
+def select_and_process_manual_displacements(force_reprocessing=False):
+    """
+    Função utilitária para usar o estimador manual de forma similar ao process_displacements.
+
+    Args:
+        force_reprocessing (bool): Se True, força o reprocessamento mesmo se já existirem dados.
+
+    Returns:
+        dict: Dicionário com as mesmas chaves do process_displacements:
+            - displacements: np.ndarray [N x 2]
+            - quaternions: np.ndarray [N x 4]
+            - timestamps: np.ndarray [N]
+            - image_folder: str
+    """
+    estimator = ManualDisplacementEstimator(force_reprocessing=force_reprocessing)
+    return estimator.save_displacements()
 
 
 if __name__ == "__main__":
-    ManualDisplacementEstimator()
+    result = select_and_process_manual_displacements()
+    if result:
+        print("\n🎉 Processamento concluído com sucesso!")
+        print(f"📁 Pasta: {result['image_folder']}")
+        print(f"📐 Deslocamentos: {result['displacements'].shape}")
+        print(f"🧭 Quaternions: {result['quaternions'].shape}")
+        print(f"⏱️  Timestamps: {result['timestamps'].shape}")

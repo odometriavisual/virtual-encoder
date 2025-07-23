@@ -1,11 +1,11 @@
-from ..pi_zero_client import PiZeroClient
-from ..pulse_generator import PulseGenerator
-from ..status import EncoderStatus
-
 from ..estados import *
+from ..pi_zero_client import PiZeroClient
+from ..status import EncoderStatus
+from ..hal.encoder import EncoderNoop
+
 
 class ModoAutonomo:
-    def __init__(self, client: PiZeroClient, status: EncoderStatus, encoders: tuple[PulseGenerator, ...]):
+    def __init__(self, client: PiZeroClient, status: EncoderStatus, encoders: tuple[EncoderNoop, ...]):
         self.client = client
         self.status = status
         self.encoders = encoders

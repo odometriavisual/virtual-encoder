@@ -1,14 +1,14 @@
 from queue import Queue
-from .display import Screen
 
 from ..status import EncoderStatus
+from ..hal.display import DisplayNoop
 
 class IHM:
     def __init__(self, get_img, status: EncoderStatus):
         self._event_queue = Queue(4)
         self._threads = []
 
-        self.oled_screen = Screen()
+        self.oled_screen = DisplayNoop()
         self.get_img = get_img
 
         self.status = status
@@ -21,12 +21,12 @@ class IHM:
         rpi_zero = 'Ok' if self.status.get('rpi0') else 'Err.'
         imu = 'Ok' if self.status.get('imu') else 'Err.'
 
-        self.oled_screen.drawLine(0, f'MODO: {self.status.get("modo")}', 'center')
-        self.oled_screen.drawLine(1, f'ESTADO: {self.status.get("estado")}', 'center')
+        self.oled_screen.draw_line(0, f'MODO: {self.status.get("modo")}', 'center')
+        self.oled_screen.draw_line(1, f'ESTADO: {self.status.get("estado")}', 'center')
 
-        self.oled_screen.drawLine(2, f'IP: {self.status.get("rpi5")["ip"]}')
-        self.oled_screen.drawLine(3, f'CAM : {camera}')
-        self.oled_screen.drawLine(4, f'piZ: {rpi_zero} | IMU: {imu}')
+        self.oled_screen.draw_line(2, f'IP: {self.status.get("rpi5")["ip"]}')
+        self.oled_screen.draw_line(3, f'CAM : {camera}')
+        self.oled_screen.draw_line(4, f'piZ: {rpi_zero} | IMU: {imu}')
 
         self.oled_screen.update()
 

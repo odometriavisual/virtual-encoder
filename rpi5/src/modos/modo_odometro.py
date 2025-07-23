@@ -1,19 +1,19 @@
-from visual_odometer import VisualOdometer
-from PIL import Image, ImageOps
 import numpy as np
+from PIL import Image, ImageOps
+from visual_odometer import VisualOdometer
 
+from ..estados import EstadoAquisicaoOdometro, EstadoErro, EstadoReady
 from ..ihm.ihm import IHM
 from ..pi_zero_client import PiZeroClient
-from ..pulse_generator import PulseGenerator
+from ..hal.encoder import EncoderNoop
 from ..status import EncoderStatus
 
-from ..estados import EstadoReady, EstadoErro, EstadoAquisicaoOdometro
 
 def to_grayscale(img):
     return np.asarray(ImageOps.grayscale(Image.fromarray(img)))
 
 class ModoOdometro:
-    def __init__(self, client: PiZeroClient, ihm: IHM, status: EncoderStatus, encoders: tuple[PulseGenerator, ...]):
+    def __init__(self, client: PiZeroClient, ihm: IHM, status: EncoderStatus, encoders: tuple[EncoderNoop, ...]):
         self.client = client
         self.ihm = ihm
         self.status = status

@@ -1,12 +1,12 @@
 import time
+from abc import abstractmethod
 from threading import Thread
 
-from abc import abstractmethod
-
-from ..pi_zero_client import PiZeroClient
-from ..pulse_generator import PulseGenerator
+from ..hal.encoder import EncoderNoop
 from ..ihm.ihm import IHM
+from ..pi_zero_client import PiZeroClient
 from ..status import EncoderStatus
+
 
 class Estado:
     def stop(self):
@@ -31,7 +31,7 @@ class EstadoReady(Estado):
         time.sleep(0.001)
 
 class EstadoAquisicaoTempo(Estado):
-    def __init__(self, client: PiZeroClient, status: EncoderStatus, encoders: tuple[PulseGenerator, ...], pulses_frequency: int, reason: str):
+    def __init__(self, client: PiZeroClient, status: EncoderStatus, encoders: tuple[EncoderNoop, ...], pulses_frequency: int, reason: str):
         self.encoders = encoders
         self.client = client
         self.reason = reason
@@ -58,7 +58,7 @@ class EstadoAquisicaoTempo(Estado):
 
             timestamp_ns = time.time_ns()
             for encoder in self.encoders:
-                encoder.send_pulses(count=1)
+                encoder.send_pulse()
 
             req_thread.start()
 
@@ -67,7 +67,7 @@ class EstadoAquisicaoTempo(Estado):
             current_time = time.time_ns()
             if current_time > self.next_time:
                 for encoder in self.encoders:
-                    encoder.send_pulses(count=1)
+                    encoder.send_pulse()
 
                 self.next_time = self.next_time + self.period
 

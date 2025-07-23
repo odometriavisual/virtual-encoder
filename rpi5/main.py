@@ -4,16 +4,16 @@ import time
 import json
 import socket
 
-from src.network_manager import NetworkManager
 from src.webui.server import WebuiApp
 from src.ihm.ihm import IHM
 from src.pi_zero_client import PiZeroClient
-from src.pulse_generator import PulseGenerator
 from src.mount_device_manager import MountDeviceManager
-from src.logger import Logger
 from src.status import EncoderStatus
 
 from src.modos import *
+from src.hal.encoder import EncoderNoop
+from src.hal.network_interface import NetworkInterfaceNoop
+from src.hal.thermal_sensors import get_cpu_temp
 
 def main():
     """
@@ -28,20 +28,20 @@ def main():
     Rele: 25
     """
     encoders = (
-        PulseGenerator(PIN_A=26, PIN_B=19),
-        PulseGenerator(PIN_A=5, PIN_B=23),
-        PulseGenerator(PIN_A=6, PIN_B=13)
+        EncoderNoop(),
+        EncoderNoop(),
+        EncoderNoop()
     )
 
     status = EncoderStatus()
     client = PiZeroClient(status)
     ihm = IHM(client.get_img, status)
 
-    net_manager = NetworkManager()
+    network_interface = NetworkInterfaceNoop()
     ssd_manager = MountDeviceManager(device="/dev/sda1", mount_point="/media/usb-ssd")
 
     ssd_manager.mount()
-    net_manager.update_address()
+    network_interface.set_ip_address(None)
     ssd_manager.unmount()
 
     webui = WebuiApp(ihm, status)
@@ -52,18 +52,15 @@ def main():
     modo = ModoTempo(client, ihm, status, encoders)
     # modo = ModoOdometro(client, ihm, status, encoders)
 
-    logger = Logger(modo)
-
     def _get_ip():
         while True:
-            status.get('rpi5')['ip'] = net_manager.get_ip('eth1')
+            status.get('rpi5')['ip'] = network_interface.get_ip_address()
             time.sleep(30)
     threading.Thread(target=_get_ip, daemon=True).start()
 
     def _get_temp():
         while True:
-            with open('/sys/class/thermal/thermal_zone0/temp', 'r') as file:
-                temp = file.read()
+            temp = get_cpu_temp()
             status.get('rpi5')['temp'] = int(temp) / 1000
             time.sleep(1)
     threading.Thread(target=_get_temp, daemon=True).start()

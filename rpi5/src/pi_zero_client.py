@@ -1,16 +1,14 @@
-import threading
-import time
 import subprocess
-from email.policy import default
+import time
 from subprocess import SubprocessError
 
-import cv2
-import numpy as np
 import requests
 from requests.exceptions import RequestException
 
+from .hal.camera import CameraNoop
+from .hal.imu import ImuNoop
+from .hal.relay import RelayNoop
 from .status import EncoderStatus
-from .pi_zero_power_supply import PiZeroPowerSupplySwitch
 
 PIZERO_HOST = 'rpi0'
 WEBSERVER_PORT = 7123
@@ -20,78 +18,38 @@ class PiZeroClient:
     def __init__(self, status: EncoderStatus):
         self.status = status
 
-        self.vid_lock = threading.Lock()
-        self.vid_event = threading.Event()
-        self.vid = cv2.VideoCapture()
-
-        self.frame_lock = threading.Lock()
-        self.default_frame = np.full((240, 320, 3), (150, 150, 150), dtype=np.uint8)
-        self.frame = self.default_frame.copy()
-
-        self.relay = PiZeroPowerSupplySwitch()
+        self.camera = CameraNoop()
+        self.imu = ImuNoop()
+        self.relay = RelayNoop()
 
         self.stream_enabled = True
 
-        def update():
-            while True:
-                time.sleep(0.001)
-
-                with self.vid_lock:
-                    if self.vid.isOpened():
-                        ret, frame = self.vid.read()
-
-                        if ret:
-                            with self.frame_lock:
-                                self.frame = frame
-                            self.vid_event.set()
-                        else:
-                            self.frame = self.default_frame.copy()
-                            self.vid.release()
-                            cv2.destroyAllWindows()
-
-                    else:
-                        self.vid.open(f'udp://{PIZERO_HOST}:{STREAM_PORT}')
-                        self.vid.set(cv2.CAP_PROP_BUFFERSIZE, 1)
-                        self.stream_enabled = False
-                        time.sleep(1)
-
-        self.vid_thread = threading.Thread(daemon=True, target=update)
-        self.vid_thread.start()
-
-    def pizero_calibration(self):
-        try:
-            requests.get(f'http://{PIZERO_HOST}:{WEBSERVER_PORT}/run_autofocus', timeout=300.0)
-            return True
-        except RequestException:
-            return False
-
     def set_focus(self, focus: float):
-        try:
-            requests.get(f'http://{PIZERO_HOST}:{WEBSERVER_PORT}/focus/{focus}', timeout=1.0)
-            return True
-        except RequestException:
-            return False
+        self.camera.set_focus(focus)
 
     def set_exposure(self, exposure: int):
-        try:
-            requests.get(f'http://{PIZERO_HOST}:{WEBSERVER_PORT}/exposure/{exposure}', timeout=1.0)
-            return True
-        except RequestException:
-            return False
+        self.camera.set_exposure(exposure)
+
+    def get_img(self):
+        return self.camera.get_img()
+
+    def toggle_stream(self):
+        if self.stream_enabled:
+            self.pause_stream()
+        else:
+            self.resume_stream()
+        self.stream_enabled = not self.stream_enabled
+
+    def pause_stream(self):
+        self.camera.disable()
+        self.stream_enabled = False
+
+    def resume_stream(self):
+        self.camera.enable()
+        self.stream_enabled = True
 
     def get_orientation(self) -> [float, float, float, float, float]:
-        try:
-            res = requests.get(f'http://{PIZERO_HOST}:{WEBSERVER_PORT}/imu', timeout=1.0)
-            if res.status_code == 200:
-                return res.text.strip().split(',')
-        except (RequestException, ValueError):
-            return False
-
-    def get_img(self) -> cv2.Mat:
-        with self.frame_lock:
-            frame = self.frame.copy()
-
-        return frame
+        return [*self.imu.get_orientation(), 0]
 
     def get_status(self):
         try:
@@ -156,25 +114,3 @@ class PiZeroClient:
         time.sleep(10)
         self.relay.turn_on()
 
-    def toggle_stream(self):
-        if self.stream_enabled:
-            self.pause_stream()
-        else:
-            self.resume_stream()
-        self.stream_enabled = not self.stream_enabled
-
-    def pause_stream(self):
-        try:
-            requests.get(f'http://{PIZERO_HOST}:{WEBSERVER_PORT}/pause_stream', timeout=1.0)
-            self.stream_enabled = False
-        except RequestException:
-            pass
-
-        with self.frame_lock:
-            self.frame = cv2.Mat(np.array([0x000000AA], dtype=np.float32))
-
-    def resume_stream(self):
-        try:
-            requests.get(f'http://{PIZERO_HOST}:{WEBSERVER_PORT}/resume_stream', timeout=1.0)
-        except RequestException:
-            pass

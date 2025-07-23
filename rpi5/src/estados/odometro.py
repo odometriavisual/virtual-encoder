@@ -1,21 +1,18 @@
-from visual_odometer import VisualOdometer
-import time
+import multiprocessing
 import threading
-import numpy as np
-from PIL import Image, ImageOps
+import time
 
-from ..ihm.ihm import IHM
-from ..pi_zero_client import PiZeroClient
-from ..pulse_generator import PulseGenerator
-from ..status import EncoderStatus
+from visual_odometer import VisualOdometer
 
 from ..estados import Estado
+from ..ihm.ihm import IHM
+from ..pi_zero_client import PiZeroClient
+from ..hal.encoder import EncoderNoop
+from ..status import EncoderStatus
 
-def to_grayscale(img):
-    return np.asarray(ImageOps.grayscale(Image.fromarray(img)))
 
 class EstadoAquisicaoOdometro(Estado):
-    def __init__(self, client: PiZeroClient, ihm: IHM, status: EncoderStatus, encoders: tuple[PulseGenerator, ...], odometer: VisualOdometer, reason: str):
+    def __init__(self, client: PiZeroClient, ihm: IHM, status: EncoderStatus, encoders: tuple[EncoderNoop, ...], odometer: VisualOdometer, reason: str):
         self.client = client
         self.ihm = ihm
         self.status = status
@@ -26,7 +23,7 @@ class EstadoAquisicaoOdometro(Estado):
         self.status.set('estado', 'Aquisicao')
         status.add_message(f'Aquisição: {self.reason} estimativa tempo real')
 
-        self.new_image_event = threading.Event()
+        self.new_image_event = multiprocessing.Event()
 
         self.pulses_lock = threading.Lock()
         self.pending_pulses = [0, 0]
@@ -95,18 +92,26 @@ class EstadoAquisicaoOdometro(Estado):
             req_thread = threading.Thread(target=start_acquisition_helper, daemon=True)
 
             for encoder in self.encoders:
-                encoder.send_pulses(count=1)
+                encoder.send_pulse()
 
             req_thread.start()
         else:
             with self.pulses_lock:
                 if self.pending_pulses[0] > 1:
-                    self.encoders[0].send_pulses(1)
+                    self.encoders[0].send_pulse('+')
                     self.pending_pulses[0] -= 1
 
                 if self.pending_pulses[1] > 1:
-                    self.encoders[1].send_pulses(1)
+                    self.encoders[1].send_pulse('+')
                     self.pending_pulses[1] -= 1
+
+                if self.pending_pulses[0] < 1:
+                    self.encoders[0].send_pulse('-')
+                    self.pending_pulses[0] += 1
+
+                if self.pending_pulses[1] < 1:
+                    self.encoders[1].send_pulse('-')
+                    self.pending_pulses[1] += 1
 
         time.sleep(0.001)
 

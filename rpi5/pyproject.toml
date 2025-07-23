@@ -1,0 +1,15 @@
+[project]
+name = "rpi5"
+version = "0.1.0"
+description = "Virtual Encoder running on a RPi5"
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = [
+    "flask>=3.1.1",
+    "opencv-python>=4.11.0.86",
+    "requests>=2.32.4",
+    "visual-odometer",
+]
+
+[tool.uv.sources]
+visual-odometer = { path = "../../visual-odometer" }

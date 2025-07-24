@@ -7,10 +7,8 @@ from ..ihm.ihm import IHM
 from ..pi_zero_client import PiZeroClient
 from ..hal.encoder import EncoderNoop
 from ..status import EncoderStatus
+from ..dsp import to_grayscale
 
-
-def to_grayscale(img):
-    return np.asarray(ImageOps.grayscale(Image.fromarray(img)))
 
 class ModoOdometro:
     def __init__(self, client: PiZeroClient, ihm: IHM, status: EncoderStatus, encoders: tuple[EncoderNoop, ...]):

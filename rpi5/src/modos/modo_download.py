@@ -14,8 +14,8 @@ class ModoDownload:
         self.gs.set("estado", "Inicializando...")
 
         self.transfered_files = 0
-        self.file_count = self.gs.client.get_file_count()
-        self.stream_was_enabled = self.gs.client.stream_enabled
+        self.file_count = self.gs.pi_zero_api.get_file_count()
+        self.stream_was_enabled = self.gs.pi_zero_api.stream_enabled
 
         if self.file_count == 0:
             self.gs.set("estado", "Nenhum ensaio salvo")
@@ -33,7 +33,7 @@ class ModoDownload:
             self.gs.send_event(("next_modo", "Tempo"))
             return
 
-        self.gs.client.pause_stream()
+        self.gs.pi_zero_api.pause_stream()
 
         is_downloading = self.dowloader.start()
         self.gs.add_message("Download: Iniciando...")
@@ -47,7 +47,7 @@ class ModoDownload:
 
     def stop(self):
         if self.stream_was_enabled:
-            self.gs.client.resume_stream()
+            self.gs.pi_zero_api.resume_stream()
 
     def run(self):
         match status := self.dowloader.get_status():

@@ -3,6 +3,7 @@ import json
 import socket
 import threading
 import time
+import subprocess
 
 from src.modos import ModoAutonomo, ModoDownload, ModoOdometro, ModoTempo
 from src.encoder_gs import EncoderGS
@@ -25,7 +26,7 @@ def _get_temp(gs: EncoderGS):
 def _get_rpi0_status(gs: EncoderGS):
     while True:
         time.sleep(1.0)
-        rpi0_status = gs.client.get_status()
+        rpi0_status = gs.pi_zero_api.get_status()
         if rpi0_status:
             gs.set("rpi0", rpi0_status["rpi0"])
             gs.set("camera", rpi0_status["camera"])
@@ -106,22 +107,32 @@ def main():
                     gs.set_modo(ModoDownload(gs))
 
                 case _, ("next_modo", "poweroff"):
-                    gs.client.poweroff()
+                    gs.pi_zero_api.poweroff_rpi0()
+                    try:
+                        subprocess.run(["sudo", "poweroff"])
+                    except subprocess.SubprocessError:
+                        pass
                 case _, ("next_modo", "poweroff rpi0"):
-                    gs.client.poweroff_rpi0()
+                    gs.pi_zero_api.poweroff_rpi0()
                 case _, ("next_modo", "poweroff relay"):
-                    gs.client.poweroff_relay()
+                    gs.relay.turn_off()
                 case _, ("next_modo", "reboot"):
-                    gs.client.reboot()
+                    gs.pi_zero_api.reboot()
+                    try:
+                        subprocess.run(["sudo", "reboot"])
+                    except subprocess.SubprocessError:
+                        pass
                 case _, ("next_modo", "reboot rpi0"):
-                    gs.client.reboot_rpi0()
+                    gs.pi_zero_api.reboot_rpi0()
                 case _, ("next_modo", "reboot relay"):
-                    gs.client.reboot_relay()
+                    gs.relay.turn_off()
+                    time.sleep(5)
+                    gs.relay.turn_on()
 
                 case _, ("set_focus", focus):
-                    gs.client.set_focus(focus)
+                    gs.pi_zero_api.set_focus(focus)
                 case _, ("set_exposure", exposure):
-                    gs.client.set_exposure(exposure)
+                    gs.pi_zero_api.set_exposure(exposure)
 
                 case ModoTempo(), "next_modo":
                     gs.set_modo(ModoAutonomo(gs))

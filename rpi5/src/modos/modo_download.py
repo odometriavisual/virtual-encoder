@@ -1,76 +1,71 @@
 import time
 
-from ..ihm.ihm import IHM
 from ..download import Downloader
-from ..mount_device_manager import MountDeviceManager
-from ..pi_zero_client import PiZeroClient
-from ..status import EncoderStatus
+from ..encoder_gs import EncoderGS
+
 
 class ModoDownload:
-    def __init__(self, client: PiZeroClient, ihm: IHM, status: EncoderStatus, mount_manager: MountDeviceManager):
-        self.client = client
-        self.ihm = ihm
-        self.status = status
-        self.ssd_manager = mount_manager
+    def __init__(self, gs: EncoderGS):
+        self.gs = gs
 
         self.dowloader = Downloader()
 
-        self.status.set('modo', 'Download')
-        self.status.set('estado', 'Inicializando...')
+        self.gs.set("modo", "Download")
+        self.gs.set("estado", "Inicializando...")
 
         self.transfered_files = 0
-        self.file_count = client.get_file_count()
-        self.stream_was_enabled = self.client.stream_enabled
+        self.file_count = self.gs.client.get_file_count()
+        self.stream_was_enabled = self.gs.client.stream_enabled
 
         if self.file_count == 0:
-            self.status.set('estado', 'Nenhum ensaio salvo')
-            self.status.add_message('Download: Nenhuma aquisicao salva')
+            self.gs.set("estado", "Nenhum ensaio salvo")
+            self.gs.add_message("Download: Nenhuma aquisicao salva")
             time.sleep(1)
-            self.ihm.send_event(('next_modo', 'Tempo'))
+            self.gs.send_event(("next_modo", "Tempo"))
             return
 
-        is_mounted = self.ssd_manager.mount()
+        is_mounted = self.gs.ssd_manager.mount()
 
         if not is_mounted:
-            self.ihm.estado = 'ERRO: SSD não encontrado'
-            self.status.add_message('ERRO: SSD não encontrado')
+            self.gs.estado = "ERRO: SSD não encontrado"
+            self.gs.add_message("ERRO: SSD não encontrado")
             time.sleep(1)
-            self.ihm.send_event(('next_modo', 'Tempo'))
+            self.gs.send_event(("next_modo", "Tempo"))
             return
 
-        self.client.pause_stream()
+        self.gs.client.pause_stream()
 
         is_downloading = self.dowloader.start()
-        self.status.add_message('Download: Iniciando...')
+        self.gs.add_message("Download: Iniciando...")
 
         if not is_downloading:
-            self.status.set('estado', 'Erro no download')
-            self.status.add_message('ERRO: Erro de conexao')
+            self.gs.set("estado", "Erro no download")
+            self.gs.add_message("ERRO: Erro de conexao")
             time.sleep(1)
-            self.ihm.send_event(('next_modo', 'Tempo'))
+            self.gs.send_event(("next_modo", "Tempo"))
             return
 
     def stop(self):
         if self.stream_was_enabled:
-            self.client.resume_stream()
+            self.gs.client.resume_stream()
 
     def run(self):
         match status := self.dowloader.get_status():
             case True | False:
                 self.dowloader.stop()
-                self.ssd_manager.unmount()
-                self.status.set('estado', 'Concluida' if status else 'Erro')
-                self.ihm.send_event(('next_modo', 'Tempo'))
-                self.status.add_message('Download: Finalizado')
+                self.gs.ssd_manager.unmount()
+                self.gs.set("estado", "Concluida" if status else "Erro")
+                self.gs.send_event(("next_modo", "Tempo"))
+                self.gs.add_message("Download: Finalizado")
                 time.sleep(1)
 
             case line:
-                if line.find('.zip') > 0:
+                if line.find(".zip") > 0:
                     self.transfered_files += 1
-                    self.status.add_message(f'Download: {line}')
-                    percent = self.transfered_files / (self.file_count+1)
-                    percent = 99.99 if percent >= 100. else 100. * percent
-                    self.status.set('estado', f'{percent:.2f} %')
+                    self.gs.add_message(f"Download: {line}")
+                    percent = self.transfered_files / (self.file_count + 1)
+                    percent = 99.99 if percent >= 100.0 else 100.0 * percent
+                    self.gs.set("estado", f"{percent:.2f} %")
                 time.sleep(0.1)
 
     def handle_event(self, ev):

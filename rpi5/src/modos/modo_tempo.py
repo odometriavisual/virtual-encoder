@@ -1,20 +1,14 @@
-from ..estados import *
-from ..ihm.ihm import IHM
-from ..pi_zero_client import PiZeroClient
-from ..status import EncoderStatus
-from ..hal.encoder import EncoderNoop
+from ..estados import EstadoReady, EstadoErro, EstadoAquisicaoTempo
+from ..encoder_gs import EncoderGS
 
 
 class ModoTempo:
-    def __init__(self, client: PiZeroClient, ihm: IHM, status: EncoderStatus, encoders: tuple[EncoderNoop, ...]):
-        self.client = client
-        self.ihm = ihm
-        self.status = status
-        self.encoders = encoders
+    def __init__(self, gs: EncoderGS):
+        self.gs = gs
 
-        self.status.set('modo', 'Tempo')
+        self.gs.set("modo", "Tempo")
 
-        self.estado = EstadoReady(self.status)
+        self.estado = EstadoReady(self.gs)
 
     def stop(self):
         self.estado.stop()
@@ -24,18 +18,20 @@ class ModoTempo:
 
     def handle_event(self, ev):
         match self.estado, ev:
-            case _, ('Erro', message):
-                self.estado = EstadoErro(self.ihm, self.status, message)
+            case _, ("Erro", message):
+                self.estado = EstadoErro(self.gs, message)
 
-            case EstadoErro(), 'next_estado':
-                self.estado = EstadoReady(self.status)
+            case EstadoErro(), "next_estado":
+                self.estado = EstadoReady(self.gs)
 
-            case EstadoReady(), ('next_estado', _, pulses_frequency, reason):
-                self.estado = EstadoAquisicaoTempo(self.client, self.status, self.encoders, int(pulses_frequency), reason)
+            case EstadoReady(), ("next_estado", _, pulses_frequency, reason):
+                self.estado = EstadoAquisicaoTempo(
+                    self.gs, int(pulses_frequency), reason
+                )
 
-            case EstadoAquisicaoTempo(), 'next_estado':
+            case EstadoAquisicaoTempo(), "next_estado":
                 self.estado.stop()
-                self.estado = EstadoReady(self.status)
+                self.estado = EstadoReady(self.gs)
 
-            case _, 'toggle_stream':
-                self.client.toggle_stream()
+            case _, "toggle_stream":
+                self.gs.client.toggle_stream()

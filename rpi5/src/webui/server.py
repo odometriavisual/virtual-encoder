@@ -26,7 +26,7 @@ class WebuiApp:
 
             if time_now >= next_time:
                 next_time += period
-                frame = self.gs.camera.get_img()
+                frame = self.gs.camera.peek_img()
                 buffer = cv2.imencode(".jpg", frame)
                 buffer_bytes = buffer[1].tobytes()
                 yield (

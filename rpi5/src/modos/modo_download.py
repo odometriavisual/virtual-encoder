@@ -15,7 +15,7 @@ class ModoDownload:
 
         self.transfered_files = 0
         self.file_count = self.gs.pi_zero_api.get_file_count()
-        self.stream_was_enabled = self.gs.pi_zero_api.stream_enabled
+        self.stream_was_enabled = self.gs.camera.is_enabled
 
         if self.file_count == 0:
             self.gs.set("estado", "Nenhum ensaio salvo")

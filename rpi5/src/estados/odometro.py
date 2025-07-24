@@ -9,6 +9,7 @@ from ..ihm.ihm import IHM
 from ..pi_zero_client import PiZeroClient
 from ..hal.encoder import EncoderNoop
 from ..status import EncoderStatus
+from ..dsp import to_grayscale
 
 
 class EstadoAquisicaoOdometro(Estado):

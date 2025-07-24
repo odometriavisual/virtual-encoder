@@ -37,28 +37,6 @@ def _get_rpi0_status(gs: EncoderGS):
             gs.set("imu", False)
 
 
-def _get_imu_status(gs: EncoderGS):
-    with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as sock:
-        sock.bind(("", 7101))
-
-        while True:
-            message, address = sock.recvfrom(512)
-
-            try:
-                imu = json.loads(message)
-                if imu:
-                    imu = [float(x) for x in imu[1:]]
-
-                    d = sum([x * x for x in imu[:4]])
-
-                    if 0.999 < d < 1.001:
-                        gs.set("imu", imu)
-                else:
-                    gs.set("imu", False)
-            except Exception:
-                pass
-
-
 def main():
     """
     OLED: 2 (SDA)
@@ -78,7 +56,7 @@ def main():
 
     time.sleep(1)
 
-    for task in [_get_ip, _get_temp, _get_rpi0_status, _get_imu_status]:
+    for task in [_get_ip, _get_temp, _get_rpi0_status]:
         threading.Thread(target=task, daemon=True, args=(gs,)).start()
 
     while True:

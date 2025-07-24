@@ -18,8 +18,7 @@ def _get_ip(gs: EncoderGS):
 
 def _get_temp(gs: EncoderGS):
     while True:
-        temp = gs.thermal_sensors.get_cpu_temp()
-        gs.get("rpi5")["temp"] = int(temp) / 1000
+        gs.get("rpi5")["temp"] = gs.thermal_sensors.get_cpu_temp()
         time.sleep(1)
 
 

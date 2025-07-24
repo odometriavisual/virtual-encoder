@@ -36,19 +36,6 @@ def _get_rpi0_status(gs: EncoderGS):
             gs.set("camera", False)
             gs.set("imu", False)
 
-        camera = "Ok" if gs.get("camera") else "Err."
-        rpi_zero = "Ok" if gs.get("rpi0") else "Err."
-        imu = "Ok" if gs.get("imu") else "Err."
-
-        gs.display.draw_line(0, f"MODO: {gs.get('modo')}", "center")
-        gs.display.draw_line(1, f"ESTADO: {gs.get('estado')}", "center")
-
-        gs.display.draw_line(2, f"IP: {gs.get('rpi5')['ip']}")
-        gs.display.draw_line(3, f"CAM : {camera}")
-        gs.display.draw_line(4, f"piZ: {rpi_zero} | IMU: {imu}")
-
-        gs.display.update()
-
 
 def _get_imu_status(gs: EncoderGS):
     with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as sock:

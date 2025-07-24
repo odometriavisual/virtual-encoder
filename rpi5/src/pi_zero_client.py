@@ -5,33 +5,29 @@ from subprocess import SubprocessError
 import requests
 from requests.exceptions import RequestException
 
-from .hal.camera import CameraNoop
-from .hal.imu import ImuNoop
-from .hal.relay import RelayNoop
-from .status import EncoderStatus
+from .hal.camera import CameraNull
+from .hal.imu import ImuNull
+from .hal.relay import RelayNull
 
-PIZERO_HOST = 'rpi0'
+PIZERO_HOST = "rpi0"
 WEBSERVER_PORT = 7123
 STREAM_PORT = 7100
 
-class PiZeroClient:
-    def __init__(self, status: EncoderStatus):
-        self.status = status
 
-        self.camera = CameraNoop()
-        self.imu = ImuNoop()
-        self.relay = RelayNoop()
+class PiZeroClient:
+    def __init__(self, gs):
+        self.gs = gs
 
         self.stream_enabled = True
 
     def set_focus(self, focus: float):
-        self.camera.set_focus(focus)
+        self.gs.camera.set_focus(focus)
 
     def set_exposure(self, exposure: int):
-        self.camera.set_exposure(exposure)
+        self.gs.camera.set_exposure(exposure)
 
     def get_img(self):
-        return self.camera.get_img()
+        return self.gs.camera.get_img()
 
     def toggle_stream(self):
         if self.stream_enabled:
@@ -41,39 +37,49 @@ class PiZeroClient:
         self.stream_enabled = not self.stream_enabled
 
     def pause_stream(self):
-        self.camera.disable()
+        self.gs.camera.disable()
         self.stream_enabled = False
 
     def resume_stream(self):
-        self.camera.enable()
+        self.gs.camera.enable()
         self.stream_enabled = True
 
-    def get_orientation(self) -> [float, float, float, float, float]:
-        return [*self.imu.get_orientation(), 0]
+    def get_orientation(self) -> list[float]:
+        return [*self.gs.imu.get_orientation(), 0.0]
 
     def get_status(self):
         try:
-            return requests.get(f'http://{PIZERO_HOST}:{WEBSERVER_PORT}/status?rpi5status={self.status.get("estado")}', timeout=1.0).json()
+            return requests.get(
+                f"http://{PIZERO_HOST}:{WEBSERVER_PORT}/status?rpi5status={self.gs.get('estado')}",
+                timeout=1.0,
+            ).json()
         except RequestException:
             return False
 
     def get_file_count(self) -> int:
         try:
-            file_count = requests.get(f'http://{PIZERO_HOST}:{WEBSERVER_PORT}/file_count', timeout=15.0).text.strip()
+            file_count = requests.get(
+                f"http://{PIZERO_HOST}:{WEBSERVER_PORT}/file_count", timeout=15.0
+            ).text.strip()
             return int(file_count)
         except (RequestException, ValueError):
             return 0
 
     def start_acquisition(self, timestamp_ns, reason, pulses_period_ns):
         try:
-            requests.get(f'http://{PIZERO_HOST}:{WEBSERVER_PORT}/start_acquisition?ts={timestamp_ns}&r={reason}&p={pulses_period_ns}', timeout=1.0)
+            requests.get(
+                f"http://{PIZERO_HOST}:{WEBSERVER_PORT}/start_acquisition?ts={timestamp_ns}&r={reason}&p={pulses_period_ns}",
+                timeout=1.0,
+            )
             return True
         except (RequestException, ValueError):
             return False
 
     def stop_acquisition(self):
         try:
-            requests.get(f'http://{PIZERO_HOST}:{WEBSERVER_PORT}/stop_acquisition', timeout=1.0)
+            requests.get(
+                f"http://{PIZERO_HOST}:{WEBSERVER_PORT}/stop_acquisition", timeout=1.0
+            )
             return True
         except (RequestException, ValueError):
             return False
@@ -82,35 +88,34 @@ class PiZeroClient:
         self.poweroff_rpi0()
 
         try:
-            subprocess.run(['sudo', 'poweroff'])
+            subprocess.run(["sudo", "poweroff"])
         except SubprocessError:
             pass
 
     def poweroff_rpi0(self):
         try:
-            requests.get(f'http://{PIZERO_HOST}:{WEBSERVER_PORT}/poweroff', timeout=1.0)
+            requests.get(f"http://{PIZERO_HOST}:{WEBSERVER_PORT}/poweroff", timeout=1.0)
         except RequestException:
             pass
 
     def poweroff_relay(self):
-        self.relay.turn_off()
+        self.gs.relay.turn_off()
 
     def reboot(self):
         self.reboot_rpi0()
 
         try:
-            subprocess.run(['sudo', 'reboot'])
+            subprocess.run(["sudo", "reboot"])
         except SubprocessError:
             pass
 
     def reboot_rpi0(self):
         try:
-            requests.get(f'http://{PIZERO_HOST}:{WEBSERVER_PORT}/reboot', timeout=1.0)
+            requests.get(f"http://{PIZERO_HOST}:{WEBSERVER_PORT}/reboot", timeout=1.0)
         except RequestException:
             pass
 
     def reboot_relay(self):
-        self.relay.turn_off()
+        self.gs.relay.turn_off()
         time.sleep(10)
-        self.relay.turn_on()
-
+        self.gs.relay.turn_on()

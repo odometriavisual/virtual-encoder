@@ -5,6 +5,7 @@ from subprocess import SubprocessError
 # No fstab adicionar :
 # /dev/sda1  /media/usb-ssd      auto  nofail,rw,user,exec,umask=000  0       0
 
+
 class Downloader:
     def __init__(self):
         self.process: subprocess.Popen | None = None
@@ -14,35 +15,41 @@ class Downloader:
                 "ip": "192.168.0.3",
                 "username": "pi",
                 "password": "pi",
-                "path": "/home/pi/picam_imgs"
+                "path": "/home/pi/picam_imgs",
             },
             "rpi5": {
                 "ip": "192.168.0.2",
                 "username": "pi",
                 "password": "pi",
-                "path": "/home/pi/picam_imgs"
+                "path": "/home/pi/picam_imgs",
             },
-            "ssd": {
-                "path": "/media/usb-ssd"
-            }
+            "ssd": {"path": "/media/usb-ssd"},
         }
 
     def generate_runlist(self, src_name="rpi0", dest_name="ssd"):
         src = f"""{self.devices[src_name]["username"]}@{self.devices[src_name]["ip"]}:{self.devices[src_name]["path"]}"""
         dest = f"""{self.devices[dest_name]["path"]}"""
-        return ["sshpass", "-p", self.devices["rpi0"]["password"], "rsync", "-r", "-v", "--include=*.zip", "--bwlimit=5000", src, dest]
+        return [
+            "sshpass",
+            "-p",
+            self.devices["rpi0"]["password"],
+            "rsync",
+            "-r",
+            "-v",
+            "--include=*.zip",
+            "--bwlimit=5000",
+            src,
+            dest,
+        ]
 
     def start(self, runlist=None):
         try:
             if runlist is None:
                 runlist = self.generate_runlist()
             # Inicializa a thread:
-            
-            self.process = subprocess.Popen(
-                runlist,
-                stdout=subprocess.PIPE
-            )
-            
+
+            self.process = subprocess.Popen(runlist, stdout=subprocess.PIPE)
+
             return True
 
         except SubprocessError:
@@ -80,7 +87,7 @@ class Downloader:
                 return False
             elif output is True:
                 break
-            time.sleep(.1)
+            time.sleep(0.1)
 
         if not self.stop():
             return False
@@ -88,20 +95,21 @@ class Downloader:
         # If all run perfectly, then return true:
         return True
 
+
 if __name__ == "__main__":
     d = Downloader()
 
     # Alternativa 1 de uso:
-    #print(d.download())
+    # print(d.download())
 
     # Alternativa 2 (sem tratamento de erro):
     d.start()  # Pode retornar True | False
     while d.process.poll() is None:
-        output = d.get_status() # Pode ser: "STRING" | True | False
+        output = d.get_status()  # Pode ser: "STRING" | True | False
         if isinstance(output, str):
             print(output)
         # (True = Finalizou execução perfeitamente, False = contrario)
     d.stop()  # Pode retornar True | False
-    
+
     # Uso do removedor:
-    #d.delete_ssdfiles()
+    # d.delete_ssdfiles()

@@ -1,18 +1,14 @@
-from ..estados import *
-from ..pi_zero_client import PiZeroClient
-from ..status import EncoderStatus
-from ..hal.encoder import EncoderNoop
+from ..estados import EstadoAquisicaoTempo
+from ..encoder_gs import EncoderGS
 
 
 class ModoAutonomo:
-    def __init__(self, client: PiZeroClient, status: EncoderStatus, encoders: tuple[EncoderNoop, ...]):
-        self.client = client
-        self.status = status
-        self.encoders = encoders
+    def __init__(self, gs: EncoderGS):
+        self.gs = gs
 
-        self.status.set('modo', 'Autonomo')
+        self.gs.set("modo", "Autonomo")
 
-        self.estado = EstadoAquisicaoTempo(client, self.status, self.encoders, 10, '')
+        self.estado = EstadoAquisicaoTempo(self.gs, 10, "")
 
     def stop(self):
         pass

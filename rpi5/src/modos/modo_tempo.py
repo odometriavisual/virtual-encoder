@@ -34,4 +34,4 @@ class ModoTempo:
                 self.estado = EstadoReady(self.gs)
 
             case _, "toggle_stream":
-                self.gs.pi_zero_api.toggle_stream()
+                self.gs.camera.toggle()

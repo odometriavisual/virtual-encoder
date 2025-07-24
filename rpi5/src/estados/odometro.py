@@ -29,10 +29,7 @@ class EstadoAquisicaoOdometro(Estado):
         def _preprocess_last_img():
             last_t = time.time()
             while self.is_running:
-                self.gs.client.vid_event.wait()
-                self.gs.client.vid_event.clear()
-
-                self.odometer.feed_image(to_grayscale(self.gs.client.get_img()))
+                self.odometer.feed_image(to_grayscale(self.gs.camera.get_img()))
                 t1 = time.time()
                 dt = (t1 - last_t) * 1000
                 last_t = t1

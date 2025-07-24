@@ -53,7 +53,7 @@ class EncoderGS:
                 self, "eth1", "/media/usb-ssd/"
             )
             self.relay = RelayGPIO()
-            self.thermal_sensors = ThermalSensorsRaspberry()
+            self.thermal_sensors = ThermalSensorsRaspberry(self)
             self.ssd_manager = MountDeviceManager(
                 device="/dev/sda1", mount_point="/media/usb-ssd"
             )

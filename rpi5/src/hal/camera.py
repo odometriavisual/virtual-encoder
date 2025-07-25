@@ -97,3 +97,88 @@ class CameraUDP(CameraNull, threading.Thread):
 
     def set_focus(self, focus: float):
         pass
+
+
+try:
+    import io
+    from threading import Condition
+
+    from picamera2 import Picamera2
+
+    class _StreamingOutput(io.BufferedIOBase):
+        def __init__(self):
+            self.frame = None
+            self.condition = Condition()
+
+        def write(self, buf):
+            with self.condition:
+                self.frame = buf
+                self.condition.notify_all()
+
+    class CameraPicamera2(CameraNull, threading.Thread):
+        def __init__(self, gs: "EncoderGS"):
+            CameraNull.__init__(self)
+            threading.Thread.__init__(self, daemon=True)
+
+            self.gs = gs
+
+            self._new_frame_event = threading.Event()
+            self._frame_lock = threading.Lock()
+
+            self._picam2 = Picamera2()
+            self._picam2.configure(
+                self._picam2.create_video_configuration(
+                    main={"size": (640, 480)}, queue=False
+                )
+            )
+            self._picam2.controls.FrameRate = 60
+
+            self._picam2.start()
+            self.is_enabled = True
+            self._frame = self.default_frame.copy()
+
+        def run(self):
+            while True:
+                frame = self._picam2.capture_array()
+
+                with self._frame_lock:
+                    self._frame = frame
+
+                self._new_frame_event.set()
+
+        def toggle(self):
+            if self.is_enabled:
+                self._picam2.stop()
+                self.is_enabled = False
+            else:
+                self._picam2.start()
+                self.is_enabled = True
+
+        def get_img(self):
+            if self._new_frame_event.wait(3):
+                self.is_enabled = True
+            else:
+                self.is_enabled = False
+                with self._frame_lock:
+                    self._frame = self.default_frame.copy()
+
+            with self._frame_lock:
+                self._new_frame_event.clear()
+                return self._frame.copy()
+
+        def peek_img(self):
+            with self._frame_lock:
+                return self._frame.copy()
+
+        def set_exposure(self, exposure: int):
+            self._picam2.set_controls({"ExposureTime": exposure})
+
+        def set_focus(self, focus: float):
+            pass
+
+
+except Exception:
+
+    class CameraPicamera2:
+        def __init__(self, gs: "EncoderGS"):
+            raise NotImplementedError

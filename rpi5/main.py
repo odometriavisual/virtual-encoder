@@ -1,6 +1,4 @@
 #!/usr/bin/env python
-import json
-import socket
 import threading
 import time
 import subprocess
@@ -48,7 +46,7 @@ def main():
 
     Rele: 25
     """
-    gs = EncoderGS(default_modo_lambda=lambda gs: ModoTempo(gs), debug=True)
+    gs = EncoderGS(default_modo_lambda=lambda gs: ModoTempo(gs), debug=False)
 
     webui = WebuiApp(gs)
     threading.Thread(target=webui.run, daemon=True).start()

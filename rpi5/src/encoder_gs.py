@@ -1,7 +1,7 @@
 import threading
 from queue import Queue
 
-from .hal.camera import CameraNull, CameraUDP
+from .hal.camera import CameraNull, CameraUDP, CameraPicamera2
 from .hal.display import DisplayNull, DisplaySSD1306
 from .hal.encoder import EncoderNull, EncoderGPIO
 from .hal.imu import ImuNull, ImuUDP
@@ -41,7 +41,11 @@ class EncoderGS:
                 device="/dev/sda1", mount_point="/media/usb-ssd"
             )
         else:
-            self.camera = CameraUDP(self)
+            try:
+                self.camera = CameraPicamera2(self)
+            except IndexError:
+                self.camera = CameraUDP(self)
+
             self.display = DisplaySSD1306(self)
             self.encoders = (
                 EncoderGPIO(PIN_A=26, PIN_B=19),

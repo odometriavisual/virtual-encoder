@@ -10,7 +10,7 @@ class PiZeroApi:
 
     def set_focus(self, focus: float):
         try:
-            requests.get(
+            requests.post(
                 f"http://{self.PIZERO_HOST}:{self.WEBSERVER_PORT}/focus/{focus}",
                 timeout=1.0,
             )
@@ -19,7 +19,7 @@ class PiZeroApi:
 
     def set_exposure(self, exposure: int):
         try:
-            requests.get(
+            requests.post(
                 f"http://{self.PIZERO_HOST}:{self.WEBSERVER_PORT}/exposure/{exposure}",
                 timeout=1.0,
             )
@@ -29,7 +29,7 @@ class PiZeroApi:
     def get_status(self):
         try:
             return requests.get(
-                f"http://{self.PIZERO_HOST}:{self.WEBSERVER_PORT}/status?rpi5status={self.gs.get('estado')}",
+                f"http://{self.PIZERO_HOST}:{self.WEBSERVER_PORT}/status/{self.gs.get('estado')}",
                 timeout=1.0,
             ).json()
         except RequestException:
@@ -47,8 +47,8 @@ class PiZeroApi:
 
     def start_acquisition(self, timestamp_ns, reason, pulses_period_ns):
         try:
-            requests.get(
-                f"http://{self.PIZERO_HOST}:{self.WEBSERVER_PORT}/start_acquisition?ts={timestamp_ns}&r={reason}&p={pulses_period_ns}",
+            requests.post(
+                f"http://{self.PIZERO_HOST}:{self.WEBSERVER_PORT}/start_acquisition/{timestamp_ns}/{pulses_period_ns}/{reason}",
                 timeout=1.0,
             )
             return True
@@ -57,7 +57,7 @@ class PiZeroApi:
 
     def stop_acquisition(self):
         try:
-            requests.get(
+            requests.post(
                 f"http://{self.PIZERO_HOST}:{self.WEBSERVER_PORT}/stop_acquisition",
                 timeout=1.0,
             )
@@ -67,7 +67,7 @@ class PiZeroApi:
 
     def poweroff_rpi0(self):
         try:
-            requests.get(
+            requests.post(
                 f"http://{self.PIZERO_HOST}:{self.WEBSERVER_PORT}/poweroff", timeout=1.0
             )
         except RequestException:
@@ -75,7 +75,7 @@ class PiZeroApi:
 
     def reboot_rpi0(self):
         try:
-            requests.get(
+            requests.post(
                 f"http://{self.PIZERO_HOST}:{self.WEBSERVER_PORT}/reboot", timeout=1.0
             )
         except RequestException:
@@ -83,7 +83,7 @@ class PiZeroApi:
 
     def pause_stream(self):
         try:
-            requests.get(
+            requests.post(
                 f"http://{self.PIZERO_HOST}:{self.WEBSERVER_PORT}/pause_stream",
                 timeout=1.0,
             )
@@ -92,7 +92,7 @@ class PiZeroApi:
 
     def resume_stream(self):
         try:
-            requests.get(
+            requests.post(
                 f"http://{self.PIZERO_HOST}:{self.WEBSERVER_PORT}/resume_stream",
                 timeout=1.0,
             )

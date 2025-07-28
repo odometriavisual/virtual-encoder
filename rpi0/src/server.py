@@ -1,117 +1,59 @@
-# Rui Santos & Sara Santos - Random Nerd Tutorials
-# Complete project details at https://RandomNerdTutorials.com/raspberry-pi-mjpeg-streaming-web-server-picamera2/
-
-# Mostly copied from https://picamera.readthedocs.io/en/release-1.13/recipes2.html
-# Run this script, then point a web browser at http:<this-ip-address>:7123
-# Note: needs simplejpeg to be installed (pip3 install simplejpeg).
-
-import logging
-from http import server
-import socketserver
-import cv2
-import json
-from urllib.parse import urlparse, parse_qs
-
 from .local_pi_zero_client import LocalPiZeroClient
+from flask import Flask
 
-class Server:
-    def __init__(self, client: LocalPiZeroClient, port: int = 7123):
-        self.client = client
-        self.address = ("", port)
-        self.server = None
+def create_app(client: LocalPiZeroClient):
+    # Set static_* parameters to serve the ensaios' zip files
+    app = Flask(__name__, static_url_path='/ensaio', static_folder='/home/pi/picam_imgs')
 
-    def run(self):
-        handler = lambda *args, **kwargs: self.MJPEGHandler(
-            *args, client=self.client, **kwargs
-        )
-        self.server = self.StreamingServer(self.address, handler)
+    @app.route('/focus/<float:value>', methods=["POST"])
+    def set_focus(value):
+        client.set_focus(value)
+        return f"Foco selecionado: {value}"
 
-        print(f"Servidor iniciado em http://raspberrypi00.local:{self.address[1]}")
-        self.server.serve_forever()
+    @app.route('/exposure/<int:value>', methods=["POST"])
+    def set_exposure(value):
+        client.set_exposure(value)
+        return f"Exposicao selecionada: {value}"
 
-    class StreamingServer(socketserver.ThreadingMixIn, server.HTTPServer):
-        allow_reuse_address = True
-        daemon_threads = True
+    @app.route('/status/<rpi5status>', methods=["GET"])
+    def get_status(rpi5status):
+        status = client.get_status()
+        client.process_status(rpi5status)
+        return status
 
-    class MJPEGHandler(server.BaseHTTPRequestHandler):
-        def __init__(self, *args, client: LocalPiZeroClient, **kwargs):
-            self.client = client
-            self.focus = None
-            super().__init__(*args, **kwargs)
+    @app.route('/file_count', methods=["GET"])
+    def get_file_count():
+        return f"{client.get_file_count()}"
 
-        def do_GET(self):
-            elif self.path == "/file_count":
-                self._send_page(f"{self.client.get_file_count()}".encode("utf-8"))
+    @app.route('/start_acquisition/<int:timestamp>/<int:pulses_period_ns>/', defaults={'reason': ''}, methods=["POST"])
+    @app.route('/start_acquisition/<int:timestamp>/<int:pulses_period_ns>/<reason>', methods=["POST"])
+    def start_acquisition(timestamp, reason, pulses_period_ns):
+        client.start_acquisition(timestamp, reason, pulses_period_ns)
+        return ''
 
-            elif self.path.startswith("/start_acquisition"):
-                query_params = parse_qs(urlparse(self.path).query)
-                timestamp = int(query_params["ts"][0])
-                reason = query_params.get("r") and query_params["r"][0]
-                pulses_period_ns = query_params.get("p") and query_params["p"][0]
-                self.client.start_acquisition(timestamp, reason, pulses_period_ns)
-            elif self.path == "/stop_acquisition":
-                self.client.stop_acquititions()
+    @app.route('/stop_acquisition', methods=["POST"])
+    def stop_acquisition():
+        client.stop_acquititions()
+        return ''
 
-            elif self.path.startswith("/pause_stream"):
-                self.client.pause_stream()
-            elif self.path == "/resume_stream":
-                self.client.resume_stream()
+    @app.route('/poweroff', methods=["POST"])
+    def poweroff():
+        client.poweroff()
+        return ''
 
-            elif self.path == "/poweroff":
-                self.client.poweroff()
-            elif self.path == "/reboot":
-                self.client.reboot()
+    @app.route('/reboot', methods=["POST"])
+    def reboot():
+        client.reboot()
+        return ''
 
-            elif self.path.startswith("/status"):
-                status = self.client.get_status()
-                query_params = parse_qs(urlparse(self.path).query)
-                if "rpi5status" in query_params:
-                    self.client.process_status(query_params["rpi5status"][0])
-                self._send_page(
-                    json.dumps(status).encode("utf-8"), content_type="application/json"
-                )
+    @app.route('/pause_stream', methods=["POST"])
+    def pause_stream():
+        client.pause_stream()
+        return ''
 
-            elif self.path.startswith("/focus"):
-                self.focus = float(self._extract_last_path())
-                self.client.set_focus(self.focus)
-                response = f"Foco selecionado: {self.focus}"
-                self._send_page(response.encode("utf-8"))
-            elif self.path.startswith("/exposure"):
-                exposure_value = int(self._extract_last_path())
-                self.client.set_exposure(exposure_value)
-                response = f"Exposicao selecionada: {exposure_value}"
-                self._send_page(response.encode("utf-8"))
-            elif self.path == "/get_focus":
-                response = f"{self.focus}"
-                self._send_page(response.encode("utf-8"))
+    @app.route('/resume_stream', methods=["POST"])
+    def resume_stream():
+        client.resume_stream()
+        return ''
 
-            else:
-                self.send_error(404)
-                self.end_headers()
-
-        def _send_page(self, content, content_type="text/html"):
-            self.send_response(200)
-            self.send_header("Content-Type", content_type)
-            self.send_header("Content-Length", len(content))
-            self.end_headers()
-            self.wfile.write(content)
-
-        def _redirect_to_index(self):
-            self.send_response(301)
-            self.send_header("Location", "/index.html")
-            self.end_headers()
-
-        def _get_timestamp_and_imu_data(self):
-            quat = self.client.get_orientation()
-            return f"{quat[0]},{quat[1]},{quat[2]},{quat[3]},{quat[4]}"
-
-        def _extract_last_path(self):
-            try:
-                return self.path.split("/")[-1]
-            except (ValueError, IndexError):
-                return 0
-
-        def _encode_img_to_bytes(self, img):
-            _ret, jpg_frame = cv2.imencode(".jpg", img)  # transformando em JPG
-            bytes_frame = jpg_frame.tobytes()
-            return bytes_frame
+    return app

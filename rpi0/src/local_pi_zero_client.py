@@ -12,15 +12,16 @@ from picamera2.outputs import FileOutput
 
 from .log import Logger
 
+
 class LocalPiZeroClient:
     def __init__(self, picam: Picamera2, imu: BNO055_I2C, logger: Logger):
         # Inicializa a câmera
         self.picam2 = picam
 
         self.status_message_lock = threading.Lock()
-        self.status_message = ''
+        self.status_message = ""
         self.last_status_time = 0
-        self.rpi5status = ''
+        self.rpi5status = ""
 
         self.vid_lock = threading.Lock()
         self.frame = None
@@ -56,19 +57,21 @@ class LocalPiZeroClient:
 
     def send_debug_message(self, msg):
         with self.status_message_lock:
-            self.status_message += msg + '\n'
+            self.status_message += msg + "\n"
 
     def set_focus(self, focus: float):
         # Ajusta o foco da câmera
         self.focus = focus
-        if self.picam2.camera_properties['Model'] == 'imx708':
-            self.picam2.set_controls({"AfMode": controls.AfModeEnum.Manual, "LensPosition": float(focus)})
+        if self.picam2.camera_properties["Model"] == "imx708":
+            self.picam2.set_controls(
+                {"AfMode": controls.AfModeEnum.Manual, "LensPosition": float(focus)}
+            )
 
     def set_exposure(self, exposure: int):
         # Ajusta a exposição da câmera
         self.exposure = exposure
         self.picam2.set_controls({"ExposureTime": exposure})
-        self.send_debug_message(f'Set Exposição: {self.exposure}us')
+        self.send_debug_message(f"Set Exposição: {self.exposure}us")
 
     def reset_exposure(self):
         self.set_exposure(self.default_exposure)
@@ -85,8 +88,13 @@ class LocalPiZeroClient:
 
             return [
                 time_now,
-                quat[0], quat[1], quat[2], quat[3],
-                acc[0], acc[1], acc[2],
+                quat[0],
+                quat[1],
+                quat[2],
+                quat[3],
+                acc[0],
+                acc[1],
+                acc[2],
             ]
         else:
             return None
@@ -98,19 +106,19 @@ class LocalPiZeroClient:
         return frame
 
     def get_status(self):
-        with open('/sys/class/thermal/thermal_zone0/temp', 'r') as file:
+        with open("/sys/class/thermal/thermal_zone0/temp", "r") as file:
             temp = file.read()
             temp = int(temp) / 1000
 
         with self.status_message_lock:
             status = {
-                'imu': self.imu_enabled,
-                'camera': len(Picamera2.global_camera_info()) > 0,
-                'rpi0': { 'temp': temp, 'progress': self.calibration_progress },
-                'msg': self.status_message
+                "imu": self.imu_enabled,
+                "camera": len(Picamera2.global_camera_info()) > 0,
+                "rpi0": {"temp": temp, "progress": self.calibration_progress},
+                "msg": self.status_message,
             }
 
-            self.status_message = ''
+            self.status_message = ""
 
         return status
 
@@ -118,14 +126,16 @@ class LocalPiZeroClient:
         self.last_status_time = time.time_ns()
         self.rpi5status = status
 
-        if self.logger.enable_save and self.logger.ensaio_reason == 'timeout':
+        if self.logger.enable_save and self.logger.ensaio_reason == "timeout":
             self.logger.stop_acquisition()
 
     def get_file_count(self) -> int:
         """
         Returns number of ensaios in picam_imgs directory tree
         """
-        zips = [file for file in os.listdir('/home/pi/picam_imgs') if file.find('.zip') > 0]
+        zips = [
+            file for file in os.listdir("/home/pi/picam_imgs") if file.find(".zip") > 0
+        ]
         return len(zips)
 
     def start_acquisition(self, timestamp, reason, pulses_period_ns):
@@ -135,10 +145,10 @@ class LocalPiZeroClient:
         self.logger.stop_acquisition()
 
     def poweroff(self):
-        subprocess.run(['sudo', 'poweroff'])
+        subprocess.run(["sudo", "poweroff"])
 
     def reboot(self):
-        subprocess.run(['sudo', 'reboot'])
+        subprocess.run(["sudo", "reboot"])
 
     def start_imu_stream(self):
         def _start():
@@ -158,7 +168,7 @@ class LocalPiZeroClient:
                         measure = self.get_orientation()
                         if measure is not None:
                             self.logger.orientations_queue.put(measure, block=False)
-                            sock.send(json.dumps(measure).encode('utf-8'))
+                            sock.send(json.dumps(measure).encode("utf-8"))
 
         threading.Thread(target=_start, daemon=True).start()
 
@@ -179,11 +189,10 @@ class LocalPiZeroClient:
     def pause_stream(self):
         self.streaming_enabled = False
         self.picam2.stop()
-        self.send_debug_message('Video Streaming: Desativado')
+        self.send_debug_message("Video Streaming: Desativado")
 
     def resume_stream(self):
         if not self.streaming_enabled:
             self.streaming_enabled = True
             self.picam2.start()
-            self.send_debug_message('Video Streaming: Reativado')
-
+            self.send_debug_message("Video Streaming: Reativado")

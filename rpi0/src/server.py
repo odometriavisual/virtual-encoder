@@ -13,30 +13,20 @@ import json
 from urllib.parse import urlparse, parse_qs
 
 from .local_pi_zero_client import LocalPiZeroClient
-from .local_calibration import startLocalCalibration
 
-PAGE = '''\
-<html>
-<head>
-<title>picamera3 MJPEG streaming demo</title>
-</head>
-<body>
-<h1>Picamera3 MJPEG Streaming Demo</h1>
-<img src="stream.mjpg" width="640" height="480" />
-</body>
-</html>
-'''
 class Server:
-    def __init__(self, client:LocalPiZeroClient, port:int = 7123):
+    def __init__(self, client: LocalPiZeroClient, port: int = 7123):
         self.client = client
-        self.address = ('', port)
+        self.address = ("", port)
         self.server = None
 
     def run(self):
-        handler = lambda *args, **kwargs: self.MJPEGHandler(*args, client=self.client, **kwargs)
+        handler = lambda *args, **kwargs: self.MJPEGHandler(
+            *args, client=self.client, **kwargs
+        )
         self.server = self.StreamingServer(self.address, handler)
 
-        print("Servidor iniciado em http://raspberrypi00.local:7123")
+        print(f"Servidor iniciado em http://raspberrypi00.local:{self.address[1]}")
         self.server.serve_forever()
 
     class StreamingServer(socketserver.ThreadingMixIn, server.HTTPServer):
@@ -50,74 +40,65 @@ class Server:
             super().__init__(*args, **kwargs)
 
         def do_GET(self):
-            if self.path == '/':
-                self._redirect_to_index()
-            elif self.path == '/index.html':
-                self._send_page(PAGE.encode('utf-8'))
+            elif self.path == "/file_count":
+                self._send_page(f"{self.client.get_file_count()}".encode("utf-8"))
 
-            elif self.path == '/imu':
-                self._send_page(self._get_timestamp_and_imu_data().encode('utf-8'))
-            elif self.path == '/file_count':
-                self._send_page(f'{self.client.get_file_count()}'.encode('utf-8'))
-
-            elif self.path.startswith('/start_acquisition'):
+            elif self.path.startswith("/start_acquisition"):
                 query_params = parse_qs(urlparse(self.path).query)
-                timestamp = int(query_params['ts'][0])
-                reason = query_params.get('r') and query_params['r'][0]
-                pulses_period_ns = query_params.get('p') and query_params['p'][0]
+                timestamp = int(query_params["ts"][0])
+                reason = query_params.get("r") and query_params["r"][0]
+                pulses_period_ns = query_params.get("p") and query_params["p"][0]
                 self.client.start_acquisition(timestamp, reason, pulses_period_ns)
-            elif self.path == '/stop_acquisition':
+            elif self.path == "/stop_acquisition":
                 self.client.stop_acquititions()
 
-            elif self.path.startswith('/pause_stream'):
+            elif self.path.startswith("/pause_stream"):
                 self.client.pause_stream()
-            elif self.path == '/resume_stream':
+            elif self.path == "/resume_stream":
                 self.client.resume_stream()
 
-            elif self.path == '/poweroff':
+            elif self.path == "/poweroff":
                 self.client.poweroff()
-            elif self.path == '/reboot':
+            elif self.path == "/reboot":
                 self.client.reboot()
 
-            elif self.path.startswith('/status'):
+            elif self.path.startswith("/status"):
                 status = self.client.get_status()
                 query_params = parse_qs(urlparse(self.path).query)
-                if 'rpi5status' in query_params:
-                    self.client.process_status(query_params['rpi5status'][0])
-                self._send_page(json.dumps(status).encode('utf-8'), content_type='application/json')
+                if "rpi5status" in query_params:
+                    self.client.process_status(query_params["rpi5status"][0])
+                self._send_page(
+                    json.dumps(status).encode("utf-8"), content_type="application/json"
+                )
 
-            elif self.path.startswith('/focus'):
+            elif self.path.startswith("/focus"):
                 self.focus = float(self._extract_last_path())
                 self.client.set_focus(self.focus)
                 response = f"Foco selecionado: {self.focus}"
-                self._send_page(response.encode('utf-8'))
-            elif self.path.startswith('/exposure'):
+                self._send_page(response.encode("utf-8"))
+            elif self.path.startswith("/exposure"):
                 exposure_value = int(self._extract_last_path())
                 self.client.set_exposure(exposure_value)
                 response = f"Exposicao selecionada: {exposure_value}"
-                self._send_page(response.encode('utf-8'))
-            elif self.path == '/run_autofocus':
-                self.focus = startLocalCalibration(self.client, 1)
+                self._send_page(response.encode("utf-8"))
+            elif self.path == "/get_focus":
                 response = f"{self.focus}"
-                self._send_page(response.encode('utf-8'))
-            elif self.path == '/get_focus':
-                response = f"{self.focus}"
-                self._send_page(response.encode('utf-8'))
+                self._send_page(response.encode("utf-8"))
 
             else:
                 self.send_error(404)
                 self.end_headers()
 
-        def _send_page(self, content, content_type='text/html'):
+        def _send_page(self, content, content_type="text/html"):
             self.send_response(200)
-            self.send_header('Content-Type', content_type)
-            self.send_header('Content-Length', len(content))
+            self.send_header("Content-Type", content_type)
+            self.send_header("Content-Length", len(content))
             self.end_headers()
             self.wfile.write(content)
 
         def _redirect_to_index(self):
             self.send_response(301)
-            self.send_header('Location', '/index.html')
+            self.send_header("Location", "/index.html")
             self.end_headers()
 
         def _get_timestamp_and_imu_data(self):
@@ -126,11 +107,11 @@ class Server:
 
         def _extract_last_path(self):
             try:
-                return self.path.split('/')[-1]
+                return self.path.split("/")[-1]
             except (ValueError, IndexError):
                 return 0
 
         def _encode_img_to_bytes(self, img):
-            _ret, jpg_frame = cv2.imencode('.jpg', img)  # transformando em JPG
+            _ret, jpg_frame = cv2.imencode(".jpg", img)  # transformando em JPG
             bytes_frame = jpg_frame.tobytes()
             return bytes_frame

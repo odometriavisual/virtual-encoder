@@ -7,9 +7,14 @@ from src.local_pi_zero_client import LocalPiZeroClient
 from src.server import Server
 from src.log import Logger
 
+
 def main():
     picam = Picamera2()
-    picam.configure(picam.create_preview_configuration({'format': 'RGB888', "size": (640//2, 480//2)}))
+    picam.configure(
+        picam.create_preview_configuration(
+            {"format": "RGB888", "size": (640 // 2, 480 // 2)}
+        )
+    )
     picam.controls.FrameRate = 60  # Ajusta o FPS
 
     imu = adafruit_bno055.BNO055_I2C(board.I2C(), 0x29)
@@ -28,5 +33,6 @@ def main():
     server = Server(client)
     server.run()
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     main()

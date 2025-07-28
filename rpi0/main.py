@@ -4,7 +4,7 @@ import board
 import time
 
 from src.local_pi_zero_client import LocalPiZeroClient
-from src.server import Server
+from src.server import create_app
 from src.log import Logger
 
 
@@ -30,8 +30,8 @@ def main():
 
     logger.start()
 
-    server = Server(client)
-    server.run()
+    server = create_app(client)
+    server.run(host="0.0.0.0", port=7123)
 
 
 if __name__ == "__main__":

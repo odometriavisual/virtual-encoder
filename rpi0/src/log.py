@@ -126,7 +126,7 @@ class Logger:
         shutil.rmtree(self.save_dir)
 
         self.client.send_debug_message(
-            f"Aquisição gravada: {base_dir}.zip [{self.sizeof_fmt(getsize(self.save_dir + '.zip'))}]"
+            f"Aquisição gravada: <a href=\"/ensaio0/{base_dir}.zip\">{base_dir}.zip [{self.sizeof_fmt(getsize(self.save_dir + '.zip'))}]</a>"
         )
 
         self.fix_unzipped_dirs()

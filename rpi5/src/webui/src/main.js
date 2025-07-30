@@ -8,6 +8,7 @@ import {init_modal_desligar} from "./modal/desligar.js";
 import {init_modal_reiniciar} from "./modal/reiniciar.js";
 import {init_log, update_log} from "./log.js";
 import {init_video_feed} from "./video_feed.js";
+import {init_modal_download, update_modal_downloader} from "./modal/download.js";
 
 document.querySelector('#app').innerHTML = `
     <div class="wrapper">
@@ -96,6 +97,21 @@ document.querySelector('#app').innerHTML = `
                 <button class="modo-odometro">Modo Estimativa em Tempo Real</button>
             </div>
         </div>
+        
+        <div class="modal modal-download">
+            <div class="modal-content">
+                <span class="modal-titulo">Sincronizando SSD:</span>
+                <span class="modal-close">&times;</span>
+                <div class="download-loader">
+                    <div style="background:black; width: 32px; height:32px"></div>
+                    <div class="loader"></div>
+                    <div style="background:black; width: 32px; height:32px"></div>
+                </div>
+                
+                <span class="modal-progress"></span>
+                <span class="modal-info">Feche este modal para pausar sincronização</span>
+            </div>
+        </div>
     </div>
 `
 
@@ -122,6 +138,7 @@ window.onload = () => {
     init_modal_modos()
     init_modal_desligar()
     init_modal_reiniciar()
+    init_modal_download()
 
     init_controls()
 
@@ -130,6 +147,7 @@ window.onload = () => {
         update_controls(status)
         update_imu_canvas(status)
         update_log(status)
+        update_modal_downloader(status)
 
         window.canvas.style.display = status.modo === 'Odometro'? 'block': 'none'
         draw_point(status.pos.x, status.pos.y)

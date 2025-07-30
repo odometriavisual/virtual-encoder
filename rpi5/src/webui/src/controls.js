@@ -1,18 +1,4 @@
-import {next_estado, next_estado_args, next_modo} from "./encoder_api.js"
-
-function set_debounce_button(btn) {
-    btn.debounce_enabled = true
-
-    if (btn.debounce_id !== null) {
-        clearTimeout(btn.debounce_id)
-    }
-
-    btn.debounce_id = setTimeout(() => {
-        btn.debounce_enabled = false
-        btn.debounce_id = null
-        btn.disabled = false
-    }, 1000)
-}
+import {next_estado, next_estado_args, next_modo, set_debounce_button} from "./encoder_api.js"
 
 export function init_controls() {
     window.btns = {

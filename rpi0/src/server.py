@@ -15,6 +15,8 @@ def create_app(client: LocalPiZeroClient):
         client.set_exposure(value)
         return f"Exposicao selecionada: {value}"
 
+
+    @app.route('/status/', methods=["GET"], defaults={'rpi5status': ''})
     @app.route('/status/<rpi5status>', methods=["GET"])
     def get_status(rpi5status):
         status = client.get_status()

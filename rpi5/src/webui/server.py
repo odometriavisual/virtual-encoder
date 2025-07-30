@@ -75,6 +75,7 @@ class WebuiApp:
             return "Ok"
 
         @self.app.route("/next_estado", methods=["POST"])
+        @self.app.route("/next_estado/", methods=["POST"])
         def next_estado():
             self.gs.send_event("next_estado")
             return "ok"
@@ -90,6 +91,7 @@ class WebuiApp:
             return "ok"
 
         @self.app.route("/next_modo", methods=["POST"])
+        @self.app.route("/next_modo/", methods=["POST"])
         def next_modo():
             self.gs.send_event("next_estado")
             return "ok"

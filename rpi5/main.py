@@ -65,8 +65,13 @@ def main():
                     gs.set_modo(ModoOdometro(gs))
                 case _, ("next_modo", "Tempo"):
                     gs.set_modo(ModoTempo(gs))
-                case _, ("next_modo", "Download"):
-                    gs.set_modo(ModoDownload(gs))
+
+                case ModoAutonomo(), ("next_modo", "Download"):
+                    gs.set_modo(ModoDownload(gs, next_modo="Autonomo"))
+                case ModoTempo(), ("next_modo", "Download"):
+                    gs.set_modo(ModoDownload(gs, next_modo="Tempo"))
+                case ModoOdometro(), ("next_modo", "Download"):
+                    gs.set_modo(ModoDownload(gs, next_modo="Odometro"))
 
                 case _, ("next_modo", "poweroff"):
                     gs.pi_zero_api.poweroff_rpi0()

@@ -1,3 +1,17 @@
+export function set_debounce_button(btn) {
+    btn.debounce_enabled = true
+
+    if (btn.debounce_id !== null) {
+        clearTimeout(btn.debounce_id)
+    }
+
+    btn.debounce_id = setTimeout(() => {
+        btn.debounce_enabled = false
+        btn.debounce_id = null
+        btn.disabled = false
+    }, 1000)
+}
+
 export async function next_estado(event) {
     event.target.disabled = true;
     set_debounce_button(event.target);
@@ -25,7 +39,6 @@ export async function next_modo(event, modo) {
 export async function fetch_status_stream(update_status) {
     const headers = {
         'Accept': 'application/json',
-        'Keep-Alive': 'timeout=5, max=-1'
     };
     const method = 'GET';
     const keepalive = true;
@@ -58,6 +71,7 @@ export async function fetch_status_stream(update_status) {
             });
 
             await new Promise(resolve => setTimeout(resolve, 5000));
+            window.video_frame.src = '/video_feed'
         }
     }
 }

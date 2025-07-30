@@ -11,7 +11,7 @@ class WebuiApp:
     def __init__(self, gs: EncoderGS, host="0.0.0.0", port=5000):
         self.gs = gs
 
-        self.app = Flask(__name__)
+        self.app = Flask(__name__, static_url_path="/assets", static_folder="dist/assets")
         self.setup_routes()
 
         self.host = host
@@ -47,12 +47,7 @@ class WebuiApp:
 
         @self.app.route("/")
         def index():
-            with open("src/webui/public/index.html", "r") as file:
-                return file.read()
-
-        @self.app.route("/<path:path>")
-        def threejs(path):
-            with open(f"src/webui/public/{path}", "r") as file:
+            with open("src/webui/dist/index.html", "r") as file:
                 return file.read()
 
         @self.app.route("/status", methods=["GET"])

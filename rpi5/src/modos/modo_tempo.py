@@ -21,17 +21,14 @@ class ModoTempo:
             case _, ("Erro", message):
                 self.estado = EstadoErro(self.gs, message)
 
-            case EstadoErro(), "next_estado":
+            case EstadoErro(), "return_from_error":
                 self.estado = EstadoReady(self.gs)
 
-            case EstadoReady(), ("next_estado", _, pulses_frequency, reason):
+            case EstadoReady(), ("start_acquisition", pulses_frequency, reason):
                 self.estado = EstadoAquisicaoTempo(
                     self.gs, int(pulses_frequency), reason
                 )
 
-            case EstadoAquisicaoTempo(), "next_estado":
+            case EstadoAquisicaoTempo(), "stop_acquisition":
                 self.estado.stop()
                 self.estado = EstadoReady(self.gs)
-
-            case _, "toggle_stream":
-                self.gs.camera.toggle()

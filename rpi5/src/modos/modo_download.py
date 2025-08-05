@@ -16,13 +16,12 @@ class ModoDownload:
 
         self.transfered_files = 0
         self.file_count = self.gs.pi_zero_api.get_file_count()
-        self.stream_was_enabled = self.gs.camera.is_enabled
 
         if self.file_count == 0:
             self.gs.set("estado", "Nenhum ensaio salvo")
             self.gs.add_message("Download: Nenhuma aquisicao salva")
             time.sleep(1)
-            self.gs.send_event(("next_modo", next_modo))
+            self.gs.send_event(("set_modo", next_modo))
             return
 
         is_mounted = self.gs.ssd_manager.mount()
@@ -31,7 +30,7 @@ class ModoDownload:
             self.gs.estado = "ERRO: SSD não encontrado"
             self.gs.add_message("ERRO: SSD não encontrado")
             time.sleep(1)
-            self.gs.send_event(("next_modo", next_modo))
+            self.gs.send_event(("set_modo", next_modo))
             return
 
         self.gs.pi_zero_api.pause_stream()
@@ -43,12 +42,11 @@ class ModoDownload:
             self.gs.set("estado", "Erro no download")
             self.gs.add_message("ERRO: Erro de conexao")
             time.sleep(1)
-            self.gs.send_event(("next_modo", next_modo))
+            self.gs.send_event(("set_modo", next_modo))
             return
 
     def stop(self):
-        if self.stream_was_enabled:
-            self.gs.pi_zero_api.resume_stream()
+        pass
 
     def run(self):
         match status := self.dowloader.get_status():
@@ -56,7 +54,7 @@ class ModoDownload:
                 self.dowloader.stop()
                 self.gs.ssd_manager.unmount()
                 self.gs.set("estado", "Concluida" if status else "Erro")
-                self.gs.send_event(("next_modo", self.next_modo))
+                self.gs.send_event(("set_modo", self.next_modo))
                 self.gs.add_message("Download: Finalizado")
                 time.sleep(1)
 

@@ -89,6 +89,6 @@ class EstadoErro(Estado):
     def run(self):
         self.time_now = time.time_ns()
         if self.time_now > self.time_exit:
-            self.gs.send_event("next_estado")
+            self.gs.send_event("return_from_error")
         else:
             time.sleep(0.5)

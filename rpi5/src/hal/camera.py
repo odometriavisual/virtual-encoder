@@ -13,7 +13,10 @@ class CameraNull:
     def __init__(self):
         self.default_frame = np.full((240, 320, 3), (150, 150, 150), dtype=np.uint8)
 
-    def toggle(self):
+    def start_stream(self):
+        pass
+
+    def stop_stream(self):
         pass
 
     def get_img(self):
@@ -43,7 +46,6 @@ class CameraUDP(CameraNull, threading.Thread):
         self._frame_lock = threading.Lock()
 
         self._video_capture = cv2.VideoCapture()
-        self.is_enabled = True
         self._frame = self.default_frame.copy()
 
     def run(self):
@@ -68,19 +70,14 @@ class CameraUDP(CameraNull, threading.Thread):
                 self._video_capture.set(cv2.CAP_PROP_BUFFERSIZE, 1)
                 time.sleep(1)
 
-    def toggle(self):
-        if self.is_enabled:
-            self.gs.pi_zero_api.pause_stream()
-            self.is_enabled = False
-        else:
-            self.gs.pi_zero_api.resume_stream()
-            self.is_enabled = True
+    def start_stream(self):
+        self.gs.pi_zero_api.resume_stream()
+
+    def stop_stream(self):
+        self.gs.pi_zero_api.pause_stream()
 
     def get_img(self):
-        if self._new_frame_event.wait(3):
-            self.is_enabled = True
-        else:
-            self.is_enabled = False
+        if not self._new_frame_event.wait(3):
             with self._frame_lock:
                 self._frame = self.default_frame.copy()
 
@@ -134,7 +131,6 @@ try:
             self._picam2.controls.FrameRate = 60
 
             self._picam2.start()
-            self.is_enabled = True
             self._frame = self.default_frame.copy()
 
         def run(self):
@@ -146,19 +142,14 @@ try:
 
                 self._new_frame_event.set()
 
-        def toggle(self):
-            if self.is_enabled:
-                self._picam2.stop()
-                self.is_enabled = False
-            else:
-                self._picam2.start()
-                self.is_enabled = True
+        def start_stream(self):
+            self._picam2.start()
+
+        def stop_stream(self):
+            self._picam2.stop()
 
         def get_img(self):
-            if self._new_frame_event.wait(3):
-                self.is_enabled = True
-            else:
-                self.is_enabled = False
+            if not self._new_frame_event.wait(3):
                 with self._frame_lock:
                     self._frame = self.default_frame.copy()
 

@@ -73,7 +73,7 @@ document.querySelector('#app').innerHTML = `
             <div class="modal-content">
                 <span class="modal-titulo">Confirme qual componente você deseja desligar:</span>
                 <span class="modal-close">&times;</span>
-                <button class="encoder">Desligar encoder</button>
+                <button class="encoder">Desligar encoder e câmera subsea</button>
                 <button class="camera-subsea">Desligar câmera subsea</button>
                 <button class="rele">Desligar câmera subsea por relê</button>
             </div>
@@ -83,7 +83,7 @@ document.querySelector('#app').innerHTML = `
             <div class="modal-content">
                 <span class="modal-titulo">Confirme qual componente você deseja reiniciar:</span>
                 <span class="modal-close">&times;</span>
-                <button class="encoder">Reiniciar encoder</button>
+                <button class="encoder">Reiniciar encoder e câmera subsea</button>
                 <button class="camera-subsea">Reiniciar câmera subsea</button>
                 <button class="rele">Reiniciar câmera subsea por relê</button>
             </div>

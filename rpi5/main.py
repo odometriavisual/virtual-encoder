@@ -59,52 +59,51 @@ def main():
     while True:
         while ev := gs.poll_event():
             match gs.modo, ev:
-                case _, ("next_modo", "Autonomo"):
+                case _, ("set_modo", "Autonomo"):
                     gs.set_modo(ModoAutonomo(gs))
-                case _, ("next_modo", "Odometro"):
+                case _, ("set_modo", "Odometro"):
                     gs.set_modo(ModoOdometro(gs))
-                case _, ("next_modo", "Tempo"):
+                case _, ("set_modo", "Tempo"):
                     gs.set_modo(ModoTempo(gs))
 
-                case ModoAutonomo(), ("next_modo", "Download"):
+                case ModoAutonomo(), ("set_modo", "Download"):
                     gs.set_modo(ModoDownload(gs, next_modo="Autonomo"))
-                case ModoTempo(), ("next_modo", "Download"):
+                case ModoTempo(), ("set_modo", "Download"):
                     gs.set_modo(ModoDownload(gs, next_modo="Tempo"))
-                case ModoOdometro(), ("next_modo", "Download"):
+                case ModoOdometro(), ("set_modo", "Download"):
                     gs.set_modo(ModoDownload(gs, next_modo="Odometro"))
 
-                case _, ("next_modo", "poweroff"):
+                case _, ("shutdown", "all"):
                     gs.pi_zero_api.poweroff_rpi0()
                     try:
                         subprocess.run(["sudo", "poweroff"])
                     except subprocess.SubprocessError:
                         pass
-                case _, ("next_modo", "poweroff rpi0"):
+                case _, ("shutdown", "camera"):
                     gs.pi_zero_api.poweroff_rpi0()
-                case _, ("next_modo", "poweroff relay"):
+                case _, ("shutdown", "relay"):
                     gs.relay.turn_off()
-                case _, ("next_modo", "reboot"):
+
+                case _, ("reboot", "all"):
                     gs.pi_zero_api.reboot()
                     try:
                         subprocess.run(["sudo", "reboot"])
                     except subprocess.SubprocessError:
                         pass
-                case _, ("next_modo", "reboot rpi0"):
+                case _, ("reboot", "camera"):
                     gs.pi_zero_api.reboot_rpi0()
-                case _, ("next_modo", "reboot relay"):
+                case _, ("reboot", "relay"):
                     gs.relay.turn_off()
                     time.sleep(5)
                     gs.relay.turn_on()
 
-                case _, ("set_focus", focus):
-                    gs.pi_zero_api.set_focus(focus)
-                case _, ("set_exposure", exposure):
-                    gs.pi_zero_api.set_exposure(exposure)
+                case _, ("set_exposure", value):
+                    gs.pi_zero_api.set_exposure(value)
 
-                case ModoTempo(), "next_modo":
-                    gs.set_modo(ModoAutonomo(gs))
-                case ModoAutonomo(), "next_modo":
-                    gs.set_modo(ModoTempo(gs))
+                case _, "start_stream":
+                    gs.camera.start_stream()
+                case _, "stop_stream":
+                    gs.camera.stop_stream()
 
                 case _:
                     gs.modo.handle_event(ev)

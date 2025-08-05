@@ -31,17 +31,16 @@ class ModoOdometro:
             case _, ("Erro", message):
                 self.estado = EstadoErro(self.gs, message)
 
-            case EstadoErro(), "next_estado":
+            case EstadoErro(), "return_from_error":
                 self.estado = EstadoReady(self.gs)
 
             case EstadoReady(), (
-                "next_estado",
-                _,
+                "start_acquisition",
                 _,
                 reason,
-            ):  # next_estado, ESTADO, PULSOS P/ SEG, REASON
+            ):  # ESTADO, PULSOS P/ SEG, REASON
                 self.estado = EstadoAquisicaoOdometro(self.gs, self.odometer, reason)
 
-            case EstadoAquisicaoOdometro(), "next_estado":
+            case EstadoAquisicaoOdometro(), "stop_acquisition":
                 self.estado.stop()
                 self.estado = EstadoReady(self.gs)

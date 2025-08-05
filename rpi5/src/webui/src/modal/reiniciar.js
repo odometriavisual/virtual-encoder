@@ -1,3 +1,5 @@
+import * as encoder_api from '../encoder_api.js'
+
 export function init_modal_reiniciar() {
     window.modal_reiniciar = {
         modal: document.querySelector('.modal-reiniciar'),
@@ -13,17 +15,17 @@ export function init_modal_reiniciar() {
 
     window.modal_reiniciar.encoder.addEventListener('click', event => {
         window.modal_reiniciar.modal.style.display = 'none'
-        next_modo(event, 'reboot')
+        encoder_api.reboot(event, 'all')
     })
 
     window.modal_reiniciar.camera_subsea.addEventListener('click', event => {
         window.modal_reiniciar.modal.style.display = 'none'
-        next_modo(event, 'reboot rpi0')
+        encoder_api.reboot(event, 'camera')
     })
 
     window.modal_reiniciar.rele.addEventListener('click', event => {
         window.modal_reiniciar.modal.style.display = 'none'
-        next_modo(event, 'reboot relay')
+        encoder_api.reboot(event, 'relay')
     })
 
     window.addEventListener('click', event => {

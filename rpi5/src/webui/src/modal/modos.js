@@ -1,4 +1,4 @@
-import {next_modo} from "../encoder_api.js";
+import * as encoder_api from "../encoder_api.js";
 
 export function init_modal_modos() {
     window.modal_modos = {
@@ -14,12 +14,12 @@ export function init_modal_modos() {
 
     window.modal_modos.modo_tempo.addEventListener('click', event => {
         window.modal_modos.modal.style.display = 'none'
-        next_modo(event, 'Tempo')
+        encoder_api.set_modo(event, 'Tempo')
     })
 
     window.modal_modos.modo_odometro.addEventListener('click', event => {
         window.modal_modos.modal.style.display = 'none'
-        next_modo(event, 'Odometro')
+        encoder_api.set_modo(event, 'Odometro')
     })
 
     window.addEventListener('click', event => {

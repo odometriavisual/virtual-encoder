@@ -1,4 +1,4 @@
-import {next_estado, next_estado_args, next_modo, set_debounce_button} from "./encoder_api.js"
+import * as encoder_api from "./encoder_api.js"
 
 export function init_controls() {
     window.btns = {
@@ -40,19 +40,26 @@ export function init_controls() {
         window.clear_canvas()
         const pps = parseInt(window.pulsos_por_segundo.value)
         const reason = window.motivo.value
-        next_estado_args(event, 'Aquisicao', pps, reason)
+        encoder_api.start_acquisition(event, pps, reason)
     })
-    window.btns.parar_aquisicao.addEventListener('click', next_estado)
+    window.btns.parar_aquisicao.addEventListener('click', event => {
+        encoder_api.stop_acquisition(event)
+    })
 
-    window.btns.iniciar_download.addEventListener('click', event => next_modo(event, 'Download'))
+    window.btns.iniciar_download.addEventListener('click', event => encoder_api.set_modo(event, 'Download'))
     window.btns.mudar_modo.addEventListener('click', event => window.modal_modos.modal.style.display = 'block')
     window.btns.desligar.addEventListener('click', event => window.modal_desligar.modal.style.display = 'block')
     window.btns.reiniciar.addEventListener('click', event => window.modal_reiniciar.modal.style.display = 'block')
 
+    window.streaming_enabled = true
     window.toggle_streaming.addEventListener('click', async event => {
-        set_debounce_button(event.target)
-        const method = 'POST'
-        await fetch('/toggle_stream', { method })
+        if (window.streaming_enabled) {
+           encoder_api.stop_stream(event)
+        }
+        else {
+            encoder_api.start_stream(event)
+        }
+        window.streaming_enabled = !window.streaming_enabled
     })
 
     window.toggle_calibracao.addEventListener('click', event =>
@@ -60,16 +67,12 @@ export function init_controls() {
     )
 
     document.querySelector('.exposicao > button').addEventListener('click', async event => {
-        set_debounce_button(event.target)
-        const method = 'POST'
-        await fetch(`/set_exposure/${window.exposicao.value}`, { method })
+        encoder_api.set_exposure(event, window.exposicao.value)
     })
 
     window.exposicao.addEventListener("keyup", async event => {
         if (event.key === "Enter") {
-            set_debounce_button(event.target)
-            const method = 'POST'
-            await fetch(`/set_exposure/${window.exposicao.value}`, { method })
+            encoder_api.set_exposure(event, window.exposicao.value)
         }
     })
 

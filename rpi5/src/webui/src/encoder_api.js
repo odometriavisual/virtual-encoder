@@ -12,28 +12,68 @@ export function set_debounce_button(btn) {
     }, 1000)
 }
 
-export async function next_estado(event) {
+export async function start_acquisition(event, pulses_per_second, reason) {
     event.target.disabled = true;
     set_debounce_button(event.target);
 
     const method = 'POST';
-    await fetch('/next_estado', { method });
+    await fetch(`/start_acquisition/${pulses_per_second}/${reason}`, { method });
 }
 
-export async function next_estado_args(event, estado, pps, reason) {
+export async function stop_acquisition(event) {
     event.target.disabled = true;
     set_debounce_button(event.target);
 
     const method = 'POST';
-    await fetch(`/next_estado/${estado}/${pps}/${reason}`, { method });
+    await fetch('/stop_acquisition', { method });
 }
 
-export async function next_modo(event, modo) {
+export async function start_stream(event) {
     event.target.disabled = true;
     set_debounce_button(event.target);
 
     const method = 'POST';
-    await fetch(`/next_modo/${modo}`, { method });
+    await fetch('/start_stream', { method });
+}
+
+export async function stop_stream(event) {
+    event.target.disabled = true;
+    set_debounce_button(event.target);
+
+    const method = 'POST';
+    await fetch('/stop_stream', { method });
+}
+
+export async function set_modo(event, modo) {
+    event.target.disabled = true;
+    set_debounce_button(event.target);
+
+    const method = 'POST';
+    await fetch(`/set_modo/${modo}`, { method });
+}
+
+export async function set_exposure(event, value) {
+    event.target.disabled = true;
+    set_debounce_button(event.target);
+
+    const method = 'POST';
+    await fetch(`/set_exposure/${window.exposicao.value}`, { method })
+}
+
+export async function shutdown(event, component) {
+    event.target.disabled = true;
+    set_debounce_button(event.target);
+
+    const method = 'POST';
+    await fetch(`/shutdown/${component}`, { method })
+}
+
+export async function reboot(event, component) {
+    event.target.disabled = true;
+    set_debounce_button(event.target);
+
+    const method = 'POST';
+    await fetch(`/reboot/${component}`, { method })
 }
 
 export async function fetch_status_stream(update_status) {

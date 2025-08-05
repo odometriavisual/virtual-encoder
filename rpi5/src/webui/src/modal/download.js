@@ -1,4 +1,4 @@
-import {next_modo} from "../encoder_api.js";
+import * as encoder_api from "../encoder_api.js";
 
 export function init_modal_download() {
     window.modal_download = {
@@ -9,13 +9,13 @@ export function init_modal_download() {
 
     window.modal_download.close.addEventListener('click', event => {
         window.modal_download.modal.style.display = 'none'
-        next_modo(event, '')
+        encoder_api.set_modo(event, '')
     })
 
     window.addEventListener('click', event => {
         if (event.target === window.modal_download.modal) {
             window.modal_download.modal.style.display = 'none'
-            next_modo(event, '')
+            encoder_api.set_modo(event, '')
         }
     })
 }

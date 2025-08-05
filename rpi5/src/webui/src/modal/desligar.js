@@ -1,4 +1,4 @@
-import {next_modo} from "../encoder_api.js";
+import * as encoder_api from "../encoder_api.js";
 
 export function init_modal_desligar() {
     window.modal_desligar = {
@@ -15,17 +15,17 @@ export function init_modal_desligar() {
 
     window.modal_desligar.encoder.addEventListener('click', event => {
         window.modal_desligar.modal.style.display = 'none'
-        next_modo(event, 'poweroff')
+        encoder_api.shutdown(event, 'all')
     })
 
     window.modal_desligar.camera_subsea.addEventListener('click', event => {
         window.modal_desligar.modal.style.display = 'none'
-        next_modo(event, 'poweroff rpi0')
+        encoder_api.shutdown(event, 'camera')
     })
 
     window.modal_desligar.rele.addEventListener('click', event => {
         window.modal_desligar.modal.style.display = 'none'
-        next_modo(event, 'poweroff relay')
+        encoder_api.shutdown(event, 'relay')
     })
 
     window.addEventListener('click', event => {

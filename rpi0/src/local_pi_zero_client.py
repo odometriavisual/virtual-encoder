@@ -154,17 +154,18 @@ class LocalPiZeroClient:
         def _start():
             next_time = time.monotonic_ns()
             T = 1e9 / 100
-            while True:
-                t0 = time.monotonic_ns()
-                if t0 < next_time:
-                    time.sleep(0.001)
-                    continue
 
-                next_time += T
+            with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as sock:
+                sock.connect(("rpi5", 7101))
+                while True:
+                    t0 = time.monotonic_ns()
+                    if t0 < next_time:
+                        time.sleep(0.001)
+                        continue
 
-                if self.streaming_enabled:
-                    with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as sock:
-                        sock.connect(("rpi5", 7101))
+                    next_time += T
+
+                    if self.streaming_enabled:
                         measure = self.get_orientation()
                         if measure is not None:
                             self.logger.orientations_queue.put(measure, block=False)
@@ -181,8 +182,9 @@ class LocalPiZeroClient:
                 stream = sock.makefile("wb")
                 self.picam2.start_recording(encoder, FileOutput(stream))
 
+            never_event = threading.Event()
             while True:
-                time.sleep(3600)
+                never_event.wait()
 
         threading.Thread(target=_listen, daemon=True).start()
 

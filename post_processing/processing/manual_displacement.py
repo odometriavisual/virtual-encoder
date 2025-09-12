@@ -2,6 +2,7 @@ import cv2
 import os
 import numpy as np
 from tkinter import filedialog, Tk
+from refine_point import refine_point_with_corners
 import glob
 import sys
 
@@ -158,14 +159,15 @@ class ManualDisplacementEstimator:
 
             self.right_point = None
 
-            cv2.namedWindow("Frame Atual")
+            cv2.namedWindow("Frame Atual", cv2.WINDOW_NORMAL)
             cv2.setMouseCallback("Frame Atual", self.mouse_callback_left)
-            cv2.namedWindow("Próximo Frame")
+            cv2.namedWindow("Próximo Frame", cv2.WINDOW_NORMAL)
             cv2.setMouseCallback("Próximo Frame", self.mouse_callback_right)
 
             print(
                 f"\n📷 Frame {self.current_index + 1}/{len(self.image_paths)} -> Frame {self.current_index + 2}/{len(self.image_paths)}")
-            print("💡 Clique nos pontos correspondentes. Pressione 'c' para confirmar ou 'q' para sair")
+            print(
+                "💡 Clique nos pontos correspondentes. Pressione 'c' para confirmar, 'r' para resetar pontos ou 'q' para sair")
 
             while True:
                 # Cria displays atualizados com informações
@@ -209,6 +211,16 @@ class ManualDisplacementEstimator:
                 if key == ord('q'):
                     cv2.destroyAllWindows()
                     return self.save_displacements()
+
+                elif key == ord('r'):
+                    # Reset dos pontos
+                    self.left_point = None
+                    self.right_point = None
+                    self.left_display = self.prepare_image(self.left_image.copy())
+                    self.right_display = self.prepare_image(self.right_image.copy())
+                    print("🔄 Pontos resetados")
+                    if hasattr(self, '_last_displacement'):
+                        delattr(self, '_last_displacement')
 
                 elif key == ord('c') and self.left_point and self.right_point:
                     # Converte pontos para coordenadas originais
@@ -307,10 +319,39 @@ class ManualDisplacementEstimator:
             self.left_display = self.draw_marker(self.left_display, self.left_point)
 
     def mouse_callback_right(self, event, x, y, flags, param):
+        """Callback atualizado com refinamento por cantos"""
         if event == cv2.EVENT_LBUTTONDOWN:
             self.right_point = (x, y)
+
+            # Refinamento automático se ambos os pontos estão definidos
+            if self.left_point is not None:
+                # Converte pontos do display para coordenadas originais
+                left_orig = (self.left_point[0] / SCALE, self.left_point[1] / SCALE)
+                right_click_orig = (x / SCALE, y / SCALE)
+
+                # Converte imagens para grayscale
+                grayL = cv2.cvtColor(self.left_image, cv2.COLOR_BGR2GRAY)
+                grayR = cv2.cvtColor(self.right_image, cv2.COLOR_BGR2GRAY)
+
+                method = 'shi-tomasi'  # ou 'harris'
+
+                # Aplica refinamento com detecção de cantos
+                refined_left, refined_right = refine_point_with_corners(
+                    grayL, grayR,
+                    left_orig, right_click_orig,
+                    search_radius=30,
+                    method=method
+                )
+
+                # Converte ponto refinado de volta para coordenadas de display
+                self.left_point = (int(refined_left[0] * SCALE), int(refined_left[1] * SCALE))
+                self.right_point = (int(refined_right[0] * SCALE), int(refined_right[1] * SCALE))
+
+            # Atualiza display da imagem direita
             self.right_display = self.prepare_image(self.right_image.copy())
             self.right_display = self.draw_marker(self.right_display, self.right_point)
+            self.left_display = self.prepare_image(self.left_image.copy())
+            self.left_display = self.draw_marker(self.left_display, self.left_point)
 
     def save_displacements(self):
         if not self.displacements:

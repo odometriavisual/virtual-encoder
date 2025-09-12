@@ -145,7 +145,7 @@ class Logger:
             self.archive_ensaio(base_dir)
             shutil.rmtree(f"{self.root_dir}/{base_dir}")
             self.client.send_debug_message(
-                f"Aquisição gravada: {base_dir}.zip [{self.sizeof_fmt(getsize(f'{self.root_dir}/{base_dir}.zip'))}]"
+                f'Aquisição gravada: <a href="/ensaio0/{base_dir}.zip">{base_dir}.zip [{self.sizeof_fmt(getsize(self.save_dir + ".zip"))}]</a>'
             )
 
     def archive_ensaio(self, base_dir):

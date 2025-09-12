@@ -36,7 +36,7 @@ class LocalPiZeroClient:
 
         self.boot_time = time.time_ns()
 
-        self.imu_enabled = not imu is None
+        self.imu_enabled = imu is not None
         self.imu = imu
 
         self.streaming_enabled = True

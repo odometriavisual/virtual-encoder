@@ -1,9 +1,15 @@
 from os import makedirs, listdir
 from datetime import datetime
-from os.path import isfile, isdir, getsize
+from os.path import isdir, getsize
 from cv2 import imwrite
 
-import threading, csv, time, shutil, queue
+import threading
+import csv
+import time
+import shutil
+import os
+import zipfile
+import queue
 
 
 class Logger:
@@ -18,7 +24,7 @@ class Logger:
         datenow = datetime.fromtimestamp(time_now // 1_000_000_000).strftime(
             "%Y%m%dT%H%M%S"
         )
-        self.root_dir = f"/home/pi/picam_imgs"
+        self.root_dir = "/home/pi/picam_imgs"
         self.ensaio_number = f"{self.boot_num}_{datenow}"
         self.save_dir = f"{self.root_dir}/{self.ensaio_number}"
         self.imu_file = None
@@ -113,7 +119,7 @@ class Logger:
     def stop_acquisition(self):
         self.enable_save = False
         i = self.save_dir.rindex("/")
-        root_dir, base_dir = self.save_dir[:i], self.save_dir[i + 1 :]
+        _root_dir, base_dir = self.save_dir[:i], self.save_dir[i + 1 :]
 
         self.imu_file.close()
         self.imu_file = None
@@ -122,11 +128,11 @@ class Logger:
             f"Gravando aquisição: {base_dir}.zip, aguarde..."
         )
 
-        shutil.make_archive(f"{self.save_dir}", "zip", root_dir, base_dir)
+        self.archive_ensaio(base_dir)
         shutil.rmtree(self.save_dir)
 
         self.client.send_debug_message(
-            f"Aquisição gravada: <a href=\"/ensaio0/{base_dir}.zip\">{base_dir}.zip [{self.sizeof_fmt(getsize(self.save_dir + '.zip'))}]</a>"
+            f'Aquisição gravada: <a href="/ensaio0/{base_dir}.zip">{base_dir}.zip [{self.sizeof_fmt(getsize(self.save_dir + ".zip"))}]</a>'
         )
 
         self.fix_unzipped_dirs()
@@ -136,13 +142,27 @@ class Logger:
             dir for dir in listdir(self.root_dir) if dir.find(".zip") == -1
         ]
         for base_dir in unzipped_dirs:
-            shutil.make_archive(
-                f"{self.root_dir}/{base_dir}", "zip", self.root_dir, base_dir
-            )
+            self.archive_ensaio(base_dir)
             shutil.rmtree(f"{self.root_dir}/{base_dir}")
             self.client.send_debug_message(
                 f"Aquisição gravada: {base_dir}.zip [{self.sizeof_fmt(getsize(f'{self.root_dir}/{base_dir}.zip'))}]"
             )
+
+    def archive_ensaio(self, base_dir):
+        ensaio_dir = os.path.join(self.root_dir, base_dir)
+        zip_path = ensaio_dir + ".zip"
+
+        with zipfile.ZipFile(
+            zip_path, mode="w", compression=zipfile.ZIP_STORED
+        ) as zip_file:
+            for root, dirs, files in os.walk(ensaio_dir):
+                for file in files:
+                    zip_file.write(
+                        os.path.join(root, file),
+                        os.path.relpath(
+                            os.path.join(root, file), os.path.join(ensaio_dir, "..")
+                        ),
+                    )
 
     def sizeof_fmt(self, num, suffix="B"):
         for unit in ("", "Ki", "Mi", "Gi", "Ti", "Pi", "Ei", "Zi"):

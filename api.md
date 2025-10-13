@@ -1,86 +1,75 @@
-# RPI0
+# API do encoder
 
-## Requests
+- Serviço HTTP
+- Porta: 5000
 
-### `GET index.html`
-Página de testes.
+# GET `/`
+Returns the web page
 
-### `GET imu`
-Dados imu no formato: 
+
+# GET `/status`
+Returns a json stream of the system's status.
+The stream contains a series of json objects, separated by \n, according to the following format:
+
 ```js
-"time_now, quat[0], quat[1], quat[2], quat[3]"
-```
-
-### `GET file_count`
-Quantidade arquivos na pasta picam_imgs. Inteiro.
-
-### `GET start_acquisition/TIMESTAMP_NS`
-Inicia uma aquisição na pasta do timestamp correspondente.
-Timestamp em nanosegundos.
-Se existir uma aquisição corrente, para ela antes.
-
-### `GET stop_acquitition`
-Para aquisição corrente
-
-### `GET poweroff`
-Desliga pi_zero. Não retorna.
-
-### `GET reboot`
-Reinicia pi_zero. Não retorna.
-
-### `GET focus/VAL`
-Seta foco da câmera.
-
-### `GET get_focus`
-Retorna foco atual da câmera. Float.
-
-### `GET run_autofocus`
-Executa rotina de autofoco e retorna foco escolhido. Float.
-Pode demorar, utilizar um tempo limite alto para requisição.
-
-### `GET exposure/VAL`
-Seta exposição da câmera.
-
-### `GET stream.mjpeg`
-Abre uma stream de vídeo pelo HTTP. Testes no laboratório surgerem que stream UDP é capaz de atingir melhores taxas de quadros e menores latências.
-
-## UDP
-
-### Vídeo
-Quando o serviço inicia é criado um stream MJPEG de bitrate 2M enviando para a porta 7100 do host rpi5, configurado no /etc/hosts. 
-
-# RPI5
-
-## Comandos da webui
-
-### `video_feed`
-Stream HTTP do vídeo.
-
-### `GET status`
-Retorna status do sistema RPi5 + RPi0 + câmera + imu. Formato:
-```json
 {
-    "rpi5": { "temp": 0.0, "ip": "0.0.0.0" },
-    "rpi0": { "temp": 0.0 },
-    "camera": false,
-    "imu": false,
+    "rpi5": {
+        "temp": 0.0,
+        "ip": "0.0.0.0"
+    },
+    "rpi0": False | { "temp": 0.0 },
+    "camera": False | True,
+    "imu": False | [0., 0., 0., 0., 0.],
     "pos": { "x": 0, "y": 0 },
     "modo": "Iniciando",
-    "estado": ""
+    "estado": "",
+    "msg": ""
 }
 ```
 
-### `POST set_focus` 
-Seta foco da câmera.
+# GET `/video_feed`
+The camera's MJPEG stream.
 
-### `POST next_estado`
-Avança para próximo estado no ciclo.
+# POST `/start_acquisition/<int:pulses_per_second>/<reason>`
+If in the ModoOdometro or in the ModoTempo at the Ready state, starts an aquisition.
+`pulses_per_second` must be an integer, `reason` must be an UTF-8 encoded string.
+ModoOdometro ignores the parameter `pulses_per_second`. Reason is non mandatory.
 
-### `POST next_estado ESTADO ARGS`
-Avança para próximo estado no ciclo com argumentos.
 
-### `POST next_modo`
-Altera para próximo modo configurado.
+# POST `/stop_acquisition`
+If in the ModoOdometro or in the ModoTempo at the Aquisição state, stops and saves an aquisition.
 
-### `POST next_modo MODO`
-Altera para o modo selecionado.
+# POST `/start_stream`
+Starts the video stream.
+
+# POST `/stop_stream`
+Stops the video stream.
+
+# POST `/set_exposure/<int:value>`
+Sets the camera exposure. `value` must be an integer in microseconds.
+
+
+# POST `/set_modo/<modo>`
+Sets the system's mode. The `modo` parameter must be a string of one of the following values:
+- `autonomo`
+- `tempo`
+- `odometro`
+- `download`
+
+Returns 404 if the `modo` string is invalid
+
+# POST `/shutdown/<component>`
+Shutdowns a component of the system. The string `component` must be one of the following:
+- `all`: shutdowns everything
+- `camera`: only shutdowns the camera
+- `relay`: forced shutdown of camera by opening the relay
+
+Returns 404 if the `component` string is invalid
+
+# POST `/reboot/<component>`
+Reboots a component of the system. The string `component` must be one of the following:
+- `all`: reboots everything
+- `camera`: only reboots the camera
+- `relay`: forced reboot of camera by opening and closing the relay
+
+Returns 404 if the `component` string is invalid

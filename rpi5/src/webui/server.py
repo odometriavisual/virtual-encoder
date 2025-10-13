@@ -126,7 +126,7 @@ class WebuiApp:
         @self.app.route("/set_modo/<modo>", methods=["POST"])
         def set_modo(modo):
             """
-            Sets the system's modo. The modo must be a string of one of the following values:
+            Sets the system's mode. The modo parameter must be a string of one of the following values:
             - "Autonomo"
             - "Tempo"
             - "Odometro"

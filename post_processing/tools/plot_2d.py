@@ -9,14 +9,16 @@ def rotation_matrix_2d(theta):
     return np.array([[c, -s], [s, c]])
 
 
-reference = np.load(
-    "/home/fernando/Documents/encoder/ensaios/2025.09.26 ensaios para artigos/trajectory.npz"
-)["arr_0"]
+reference = np.load("trajectory.npz")["arr_0"]
 
+def find_vertices(trajectory):
+    v0 = trajectory[0]
+    v1 = trajectory[(trajectory[:,0] + trajectory[:,1]).argmax()]
+    v2 = trajectory[(trajectory[:,0] - trajectory[:,1]).argmax()]
+    v3 = trajectory[-1]
+    return np.array([v0, v1, v2, v3])
 
 def plot2DFromData(list_displacements, px_p_mm):
-    plt.ion()
-
     # Converter para coordenadas acumuladas (trajetória)
 
     phase = np.arctan2(list_displacements[:, 1], list_displacements[:, 0])
@@ -54,8 +56,11 @@ def plot2DFromData(list_displacements, px_p_mm):
         x, y + 0.05, label_text, ha="center", va="bottom", fontsize=10, color="blue"
     )
 
-    ref = -(reference[:, 1:] - np.array([389.6, 141.6]))
+    ref = -(reference[:, 1:] - np.array([300., 100.]))
     axis0.plot(ref[:, 0], ref[:, 1], label="Referência", color="hotpink")
+
+    verts = find_vertices(trajectory_mm)    
+    axis0.plot(verts[:,0], verts[:,1], "x", markersize=10, color="red", linestyle="")
 
     axis1.set_title("Deslocamentos absolutos (px)")
     axis1.plot(absolute_displacements)
@@ -63,6 +68,6 @@ def plot2DFromData(list_displacements, px_p_mm):
     axis2.set_title("Fase dos deslocamentos (rad)")
     axis2.plot(phase)
 
-    fig.show()
+    # fig.show()
 
-    plt.ioff()
+    plt.show()

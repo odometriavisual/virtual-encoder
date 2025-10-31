@@ -10,7 +10,7 @@ from tools.video_overlay import create_side_by_side_video
 from tools.plot_2d import plot2DFromData
 from tools.plot_3d import plot3DFromData
 from processing.displacement_processor import process_displacements
-from config_interface import show_config_interface
+from ui.config_interface import show_config_interface
 from post_processing.utils.file_tools import select_folder, get_config_label
 import traceback
 

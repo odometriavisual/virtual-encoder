@@ -11,7 +11,6 @@ from tools.plot_2d import plot2DFromData
 from tools.plot_3d import plot3DFromData
 from processing.displacement_processor import process_displacements
 from config_interface import show_config_interface
-from visual_odometer.visual_odometer import DEFAULT_CONFIG
 from post_processing.utils.file_tools import select_folder, get_config_label
 import traceback
 
@@ -29,7 +28,7 @@ class MainMenuInterface:
 
         # Variáveis
         self.current_folder = None
-        self.current_config = DEFAULT_CONFIG.copy()
+        self.current_config = dict()
 
         # CORREÇÃO: Garantir que a configuração tenha a seção 'Image Processing'
         if "Image Processing" not in self.current_config:
@@ -465,7 +464,7 @@ class MainMenuInterface:
 
     def process_displacements_with_progress(self, image_folder, config, progress_callback, force_reprocessing=False):
         """Versão modificada do process_displacements com callback de progresso"""
-        from visual_odometer.visual_odometer import VisualOdometer
+        from visual_odometer import VisualOdometer
         from processing.displacement_processor import load_img_grayscale
         from post_processing.utils.img_tools import extract_timestamp_from_txt
         from post_processing.utils.imu_tools import load_imu_data, find_closest_imu_data

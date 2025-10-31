@@ -2,6 +2,18 @@ import os
 
 from PIL import Image, ImageEnhance, ImageOps
 import numpy as np
+import cv2
+
+def apply_preprocessing(img, apply_clahe, apply_denoise):
+    if apply_clahe:
+        clahe = cv2.createCLAHE(clipLimit=2.0, tileGridSize=(8, 8))
+        img = clahe.apply(img)
+
+    if apply_denoise:
+        img = cv2.fastNlMeansDenoising(img, h=10, templateWindowSize=7, searchWindowSize=21)
+
+    return img
+    
 
 def apply_img_filters(filename, img_configs):
     img_enhancer_configs = img_configs["Image Enhancers"]

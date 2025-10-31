@@ -96,38 +96,38 @@ def create_trajectory_overlay_centered(img, trajectory_points, current_idx, scal
 
     return img_with_overlay
 
-def create_side_by_side_video(image_folder):
-    data_path = os.path.join(image_folder, "displacements_data.npz")
-    if not os.path.exists(data_path):
+def create_side_by_side_video(ensaio):
+    if not ensaio.has_displacements():
         print("Arquivo de deslocamento não encontrado.")
         return
 
-    data = np.load(data_path, allow_pickle=True)
+    data = ensaio.get_displacements()
     displacements = data["displacements"]
     trajectory = np.cumsum(displacements, axis=0)
 
-    image_files = sorted(glob.glob(os.path.join(image_folder, "*.jpg")))
-    num_frames = min(len(image_files), len(trajectory))
+    num_frames = min(ensaio.get_img_count(), len(trajectory))
     trajectory = trajectory[:num_frames]
-    image_files = image_files[:num_frames]
+    images = ensaio.get_all_imgs()[:num_frames]
 
-    first_img = cv2.imread(image_files[0])
+    first_img = images[0][1]
     height, width = first_img.shape[:2]
     spacing = 100
     patch_size = spacing
 
     current_square_origin = np.copy(trajectory[0])
+    video_path = os.path.join(ensaio.get_name(), "_comparacao_lado_a_lado2.mp4")
 
     out = cv2.VideoWriter(
-        os.path.join(image_folder, "comparacao_lado_a_lado2.mp4"),
+        video_path,
         cv2.VideoWriter_fourcc(*"mp4v"),
         60,
         (width * 2, height)
     )
 
     for i in range(num_frames):
-        img = cv2.imread(image_files[i])
-        if img is None:
+        retval, img = cv2.imencode(".jpg", cv2.cvtColor(images[i][1], cv2.COLOR_GRAY2BGR))
+        
+        if not retval:
             continue
 
         img = adjust_brightness_adaptively(img)
@@ -184,7 +184,7 @@ def create_side_by_side_video(image_folder):
         print(f"Frame {i+1}/{num_frames} processado...")
 
     out.release()
-    print(f"Vídeo lado a lado salvo em: {os.path.join(image_folder, 'comparacao_lado_a_lado2.mp4')}")
+    print(f"Vídeo lado a lado salvo em: {video_path}")
 
 if __name__ == "__main__":
     create_side_by_side_video()

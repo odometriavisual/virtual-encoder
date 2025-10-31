@@ -3,7 +3,7 @@ import traceback
 
 if __name__ == "__main__":
     try:
-        from menu_interface import show_main_menu
+        from ui.menu_interface import show_main_menu
         show_main_menu()
     except Exception as e:
         print(e)

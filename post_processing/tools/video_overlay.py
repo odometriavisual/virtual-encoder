@@ -1,9 +1,8 @@
-
 import os
 import glob
+
 import numpy as np
 import cv2
-from tkinter import Tk, filedialog
 
 def adjust_brightness_adaptively(img, target_brightness=130):
     gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)

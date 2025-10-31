@@ -1,14 +1,14 @@
-import sys, os
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../../')))
-
+import os
 import glob
+
 import numpy as np
-from tkinter import Tk, filedialog
-from post_processing.utils.img_tools import extract_timestamp_from_txt
-from post_processing.utils.imu_tools import load_imu_data, find_closest_imu_data
-from visual_odometer import VisualOdometer
 from PIL import Image, ImageOps
 import cv2
+from tkinter import Tk, filedialog
+
+from utils.img_tools import extract_timestamp_from_txt
+from utils.imu_tools import load_imu_data, find_closest_imu_data
+from visual_odometer import VisualOdometer
 
 def load_img_grayscale(filename, apply_clahe=True, apply_denoise=True):
     """

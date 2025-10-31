@@ -1,6 +1,7 @@
+import os
+
 from PIL import Image, ImageEnhance, ImageOps
 import numpy as np
-import os
 
 def apply_img_filters(filename, img_configs):
     img_enhancer_configs = img_configs["Image Enhancers"]

@@ -1,11 +1,12 @@
-#config_interface.py
-import tkinter as tk
-from PIL import Image, ImageTk
 import os
 import sys
 import glob
+
+import tkinter as tk
 import cv2
 import numpy as np
+from PIL import Image, ImageTk
+
 from processing.displacement_processor import load_img_grayscale
 
 def show_config_interface(config, folder_path):

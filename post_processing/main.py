@@ -1,4 +1,3 @@
-#main.py
 import traceback
 
 if __name__ == "__main__":

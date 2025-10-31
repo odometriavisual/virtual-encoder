@@ -1,14 +1,10 @@
-import sys
-import os
-
-parent_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
-sys.path.insert(0, parent_dir)
+import math
 
 import numpy as np
 import matplotlib.pyplot as plt
-from utils.imu_tools import fast_rot, rotate_vector
-import math
 from scipy.spatial.transform import Rotation as R
+
+from utils.imu_tools import fast_rot, rotate_vector
 
 def plot3DFromData(list_displacements, list_quaternions, px_p_mm):
     plt.ion()

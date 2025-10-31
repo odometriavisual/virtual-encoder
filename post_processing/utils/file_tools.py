@@ -1,5 +1,4 @@
 from tkinter import Tk, filedialog
-import sys
 
 def select_folder():
     """Abre seletor de pasta para imagens e encerra se não for escolhida."""

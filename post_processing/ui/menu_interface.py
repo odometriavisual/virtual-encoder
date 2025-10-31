@@ -2,17 +2,20 @@ import os
 import subprocess
 import sys
 import traceback
-import glob
 
 import tkinter as tk
 from tkinter import messagebox, ttk
 import numpy as np
+from visual_odometer import VisualOdometer
 
 from tools.video_overlay import create_side_by_side_video
 from tools.plot_2d import plot2DFromData
 from tools.plot_3d import plot3DFromData
 from ui.config_interface import show_config_interface
-from utils.file_tools import select_folder
+from utils.file_tools import select_ensaio
+from utils.ensaio import Ensaio
+from utils.imu_tools import find_closest_imu_data
+from utils.img_tools import apply_preprocessing
 
 
 class MainMenuInterface:
@@ -27,7 +30,7 @@ class MainMenuInterface:
         self.root.configure(bg='#f0f0f0')
 
         # Variáveis
-        self.current_folder = None
+        self.current_ensaio = None
         self.current_config = dict()
 
         # CORREÇÃO: Garantir que a configuração tenha a seção 'Image Processing'
@@ -36,8 +39,6 @@ class MainMenuInterface:
                 "apply_clahe": False,
                 "apply_denoise": False
             }
-
-        self.processed_data = None
 
         self.setup_ui()
         self.center_window()
@@ -123,22 +124,22 @@ class MainMenuInterface:
 
         self.create_button(
             config_frame,
-            "📁 Selecionar Pasta de Imagens",
-            self.select_folder,
+            "📁 Selecionar Ensaio",
+            self.__select_ensaio,
             '#3498db'
         )
 
         self.create_button(
             config_frame,
-            "⚙️ Configurar Parâmetros",
+            "Configurar Parâmetros",
             self.configure_parameters,
             '#9b59b6'
         )
 
         self.create_button(
             config_frame,
-            "🔄 Processar Deslocamentos",
-            self.process_data,
+            "Processar Deslocamentos",
+            self.__process_data,
             '#e67e22'
         )
 
@@ -241,71 +242,6 @@ class MainMenuInterface:
 
         return btn
 
-    def load_existing_data(self):
-        """Carrega dados NPZ existentes se disponíveis"""
-        if not self.current_folder:
-            return None
-
-        data_file = os.path.join(self.current_folder, "displacements_data.npz")
-        calibration_file = os.path.join(self.current_folder, "calibration_data.csv")
-
-        px_p_mm = 1.0  # valor padrão caso não tenha calibração
-        if os.path.exists(calibration_file):
-            try:
-                import csv
-                with open(calibration_file, 'r') as f:
-                    reader = csv.DictReader(f)
-                    row = next(reader)
-                    px_p_mm = float(row['px_p_mm'])
-            except Exception as e:
-                print(f"Erro ao ler calibration_data.csv: {e}")
-
-        if os.path.exists(data_file):
-            try:
-                data = np.load(data_file, allow_pickle=True)
-                return {
-                    'displacements': data['displacements'],
-                    'quaternions': data['quaternions'],
-                    'timestamps': data['timestamps'],
-                    'image_folder': self.current_folder,
-                    'px_p_mm': px_p_mm
-                }
-            except Exception as e:
-                print(f"Erro ao carregar dados existentes: {e}")
-                return None
-
-        return None
-
-    def check_data_status(self):
-        """Verifica se existem dados processados e atualiza o status"""
-        if not self.current_folder:
-            return
-
-        data_file = os.path.join(self.current_folder, "displacements_data.npz")
-
-        if os.path.exists(data_file):
-            # Contar imagens para verificar se dados estão completos
-            image_files = glob.glob(os.path.join(self.current_folder, '*.jpg'))
-
-            try:
-                data = np.load(data_file, allow_pickle=True)
-                num_processed = len(data['displacements'])
-                num_images = len(image_files)
-
-                if num_processed == num_images:
-                    status_text = f"✅ Dados processados: {num_processed} imagens"
-                    status_color = '#27ae60'
-                else:
-                    status_text = f"⚠️ Dados incompletos: {num_processed}/{num_images} imagens"
-                    status_color = '#f39c12'
-
-                self.status_label.config(text=status_text, fg=status_color)
-
-            except Exception:
-                self.status_label.config(text="❌ Erro nos dados processados", fg='#e74c3c')
-        else:
-            self.status_label.config(text="⏳ Dados não processados", fg='#f39c12')
-
     def darken_color(self, color):
         """Escurece uma cor para o efeito hover"""
         color_map = {
@@ -329,61 +265,57 @@ class MainMenuInterface:
         y = (self.root.winfo_screenheight() // 2) - (height // 2)
         self.root.geometry(f'{width}x{height}+{x}+{y}')
 
-    def select_folder(self):
+    def __check_data_status(self):
+        """Verifica se existem dados processados e atualiza o status"""
+        if not self.current_ensaio:
+            return
+
+        num_images = self.current_ensaio.get_img_count()
+
+        if self.current_ensaio.has_displacements():
+            status_text = f"✅ Dados processados: {num_images} imagens"
+            status_color = '#27ae60'
+        else:
+            status_text ="⏳ Dados não processados",
+            status_color = '#f39c12'
+
+        self.status_label.config(text=status_text, fg=status_color)
+
+    def __select_ensaio(self):
         """Seleciona a pasta de imagens"""
         try:
-            folder = select_folder()
-            if folder:
-                self.current_folder = folder
-                self.folder_label.config(
-                    text=f"📁 Pasta selecionada: {os.path.basename(folder)}",
+            ensaio_file = select_ensaio()
+            if ensaio_file:
+                self.current_ensaio = Ensaio(ensaio_file.replace(".zip", ""))
+
+                self.folder_label.config( 
+                    text=f"Ensaio selecionado: {os.path.basename(ensaio_file)}",
                     fg='#27ae60',
                     font=("Arial", 10, "bold")
                 )
 
-                # Verificar status dos dados
-                self.check_data_status()
+            self.__check_data_status()
 
-                # Tentar carregar dados existentes
-                existing_data = self.load_existing_data()
-                if existing_data:
-                    self.processed_data = existing_data
-
-                #messagebox.showinfo("Sucesso", f"Pasta selecionada:\n{folder}")
         except Exception as e:
             messagebox.showerror("Erro", f"Erro ao selecionar pasta:\n{str(e)}")
 
     def configure_parameters(self):
         """Abre a interface de configuração"""
-        if not self.current_folder:
-            messagebox.showwarning("Aviso", "Selecione uma pasta de imagens primeiro!")
+        if not self.current_ensaio:
+            messagebox.showwarning("Aviso", "Selecione um ensaio primeiro!")
             return
 
         try:
-            self.current_config = show_config_interface(self.current_config, self.current_folder)
+            self.current_config = show_config_interface(self.current_config, self.current_ensaio.get_img(0))
             #messagebox.showinfo("Sucesso", "Configuração atualizada com sucesso!")
         except Exception as e:
             messagebox.showerror("Erro", f"Erro na configuração:\n{str(e)}")
 
-    def process_data(self):
+    def __process_data(self):
         """Processa os deslocamentos"""
-        if not self.current_folder:
+        if not self.current_ensaio:
             messagebox.showwarning("Aviso", "Selecione uma pasta de imagens primeiro!")
             return
-
-        # Verificar se arquivo IMU existe
-        imu_file = os.path.join(self.current_folder, "imu.csv")
-        if not os.path.exists(imu_file):
-            messagebox.showerror("Erro", f"Arquivo IMU não encontrado:\n{imu_file}")
-            return
-
-        # Contar imagens
-        image_files = glob.glob(os.path.join(self.current_folder, '*.jpg'))
-        if not image_files:
-            messagebox.showerror("Erro", "Nenhuma imagem JPG encontrada na pasta!")
-            return
-
-        total_images = len(image_files)
 
         try:
             # Janela de progresso mais avançada
@@ -419,7 +351,7 @@ class MainMenuInterface:
                 progress_window,
                 length=350,
                 mode='determinate',
-                maximum=total_images
+                maximum=self.current_ensaio.get_img_count()
             )
             progress_bar.pack(pady=10)
 
@@ -440,9 +372,7 @@ class MainMenuInterface:
                 percent_label.config(text=f"{percent}%")
                 progress_window.update()
 
-            # Processar dados com callback de progresso
-            self.processed_data = self.process_displacements_with_progress(
-                self.current_folder,
+            self.__process_displacements_with_progress(
                 self.current_config,
                 update_progress,
                 force_reprocessing=True
@@ -450,10 +380,7 @@ class MainMenuInterface:
 
             progress_window.destroy()
 
-            # Atualizar status
-            self.check_data_status()
-
-            #messagebox.showinfo("Sucesso", f"Processamento concluído!\n{total_images} imagens processadas.")
+            self.__check_data_status()
 
         except Exception as e:
             if 'progress_window' in locals():
@@ -462,67 +389,32 @@ class MainMenuInterface:
             traceback.print_exc()
             messagebox.showerror("Erro", f"Erro no processamento:\n{str(e)}")
 
-    def process_displacements_with_progress(self, image_folder, config, progress_callback, force_reprocessing=False):
+    def __process_displacements_with_progress(self, config, progress_callback, force_reprocessing=False):
         """Versão modificada do process_displacements com callback de progresso"""
-        from visual_odometer import VisualOdometer
-        from processing.displacement_processor import load_img_grayscale
-        from post_processing.utils.img_tools import extract_timestamp_from_txt
-        from post_processing.utils.imu_tools import load_imu_data, find_closest_imu_data
-
-        data_file = os.path.join(image_folder, "displacements_data.npz")
 
         # Tentar carregar dados existentes (caso não seja forçado)
-        if os.path.exists(data_file) and not force_reprocessing:
-            data = np.load(data_file, allow_pickle=True)
+        if self.current_ensaio.has_displacements() and not force_reprocessing:
+            return
 
-            # Leitura do px_p_mm mesmo se não for necessário reprocesar
-            calibration_file = os.path.join(image_folder, "calibration_data.csv")
-            px_p_mm = 1.0
-            if os.path.exists(calibration_file):
-                try:
-                    import csv
-                    with open(calibration_file, 'r') as f:
-                        reader = csv.DictReader(f)
-                        row = next(reader)
-                        px_p_mm = float(row['px_p_mm'])
-                except Exception as e:
-                    print(f"Erro ao ler calibration_data.csv: {e}")
-
-            return {
-                'displacements': data['displacements'],
-                'quaternions': data['quaternions'],
-                'timestamps': data['timestamps'],
-                'image_folder': image_folder,
-                'px_p_mm': px_p_mm
-            }
-
-        # Carregar IMU
-        imu_file = os.path.join(image_folder, "imu.csv")
-        imu_data = load_imu_data(imu_file)
-        image_files = sorted(glob.glob(os.path.join(image_folder, '*.jpg')))
-
-        # Leitura do calibration_data.csv
-        calibration_file = os.path.join(image_folder, "calibration_data.csv")
-        px_p_mm = 1.0
-        if os.path.exists(calibration_file):
-            try:
-                import csv
-                with open(calibration_file, 'r') as f:
-                    reader = csv.DictReader(f)
-                    row = next(reader)
-                    px_p_mm = float(row['px_p_mm'])
-            except Exception as e:
-                print(f"Erro ao ler calibration_data.csv: {e}")
 
         # Inicializar odômetro
-        odometer = VisualOdometer((240, 320), async_mode=False)
-        odometer.configs = config
+        odometer = VisualOdometer((240, 320), async_mode=True)
+
         displacements, quaternions, timestamps = [], [], []
+        imu_data = self.current_ensaio.get_imu_data()
+        if len(imu_data) == 0:
+            imu_data.append({
+                'timestamp': 0,
+                'qx': 0,
+                'qy': 0,
+                'qz': 0,
+                'qw': 1,
+            })
 
-        for i, img_file in enumerate(image_files):
-            progress_callback(i + 1, len(image_files), img_file)
 
-            img_timestamp = extract_timestamp_from_txt(img_file)
+        for i, (img_timestamp, img) in enumerate(self.current_ensaio.get_all_imgs()):
+            progress_callback(i + 1, self.current_ensaio.get_img_count(), self.current_ensaio.get_name())
+
             quaternion = find_closest_imu_data(imu_data, img_timestamp)
             q_array = [quaternion['qw'], quaternion['qx'], quaternion['qy'], quaternion['qz']]
 
@@ -530,8 +422,8 @@ class MainMenuInterface:
             apply_clahe = config.get("Image Processing", {}).get("apply_clahe", False)
             apply_denoise = config.get("Image Processing", {}).get("apply_denoise", False)
 
-            img_processed = load_img_grayscale(img_file, apply_clahe, apply_denoise)
-            odometer.feed_image(img_processed)
+            img = apply_preprocessing(img, apply_clahe, apply_denoise)
+            odometer.feed_image(img)
 
             dx, dy = odometer.get_displacement()
             displacements.append([dx, dy])
@@ -543,64 +435,47 @@ class MainMenuInterface:
         timestamps = np.array(timestamps)
 
         # Salvar dados
-        np.savez(data_file,
-                 displacements=displacements,
-                 quaternions=quaternions,
-                 timestamps=timestamps)
-
-        return {
-            'displacements': displacements,
-            'quaternions': quaternions,
-            'timestamps': timestamps,
-            'image_folder': image_folder,
-            'px_p_mm': px_p_mm
-        }
+        self.current_ensaio.set_displacements(displacements=displacements, quaternions=quaternions, timestamps=timestamps)
 
     def show_2d_plot(self):
         """Mostra o gráfico 2D da trajetória"""
-        if not self.current_folder:
+        if not self.current_ensaio:
             messagebox.showwarning("Aviso", "Selecione uma pasta de imagens primeiro!")
             return
 
-        # Tentar carregar dados existentes se não estiverem em memória
-        if not self.processed_data:
-            self.processed_data = self.load_existing_data()
-
-        if not self.processed_data:
+        if not self.current_ensaio.has_displacements():
             if messagebox.askyesno("Dados não encontrados",
                                    "Nenhum dado processado encontrado.\n\nDeseja processar os dados agora?"):
-                self.process_data()
-                if not self.processed_data:
+                self.__process_data()
+                if not self.current_ensaio.has_displacements():
                     return
             else:
                 return
 
         try:
-            plot2DFromData(self.processed_data["displacements"], self.processed_data.get("px_p_mm", 1.0))
+            processed_data = self.current_ensaio.get_displacements()
+            plot2DFromData(processed_data["displacements"], self.current_ensaio.get_px_p_mm())
         except Exception as e:
             messagebox.showerror("Erro", f"Erro ao gerar gráfico 2D:\n{str(e)}")
 
     def show_3d_plot(self):
         """Mostra o gráfico 2D da trajetória"""
-        if not self.current_folder:
+        if not self.current_ensaio:
             messagebox.showwarning("Aviso", "Selecione uma pasta de imagens primeiro!")
             return
 
-        # Tentar carregar dados existentes se não estiverem em memória
-        if not self.processed_data:
-            self.processed_data = self.load_existing_data()
-
-        if not self.processed_data:
+        if not self.current_ensaio.has_displacements():
             if messagebox.askyesno("Dados não encontrados",
                                    "Nenhum dado processado encontrado.\n\nDeseja processar os dados agora?"):
-                self.process_data()
-                if not self.processed_data:
+                self.__process_data()
+                if not self.current_ensaio.has_displacements():
                     return
             else:
                 return
 
         try:
-            plot3DFromData(self.processed_data["displacements"],self.processed_data["quaternions"],self.processed_data.get("px_p_mm", 1.0))
+            processed_data = self.current_ensaio.get_displacements()
+            plot3DFromData(processed_data["displacements"], processed_data["quaternions"], self.current_ensaio.get_px_p_mm())
 
         except Exception as e:
             messagebox.showerror("Erro", f"Erro ao gerar gráfico 3D:\n{str(e)}")
@@ -610,10 +485,10 @@ class MainMenuInterface:
         """Ver vídeo - cria se não existir, abre se já existir"""
         print("DEBUG: Função view_video chamada!")  # Debug
 
-        if not self.current_folder:
+        if not self.current_ensaio:
             return  # Sai silenciosamente se não houver pasta selecionada
 
-        video_path = os.path.join(self.current_folder, "comparacao_lado_a_lado2.mp4")
+        video_path = os.path.join(self.current_ensaio.get_name(), "_comparacao_lado_a_lado2.mp4")
 
         # Se o vídeo já existe, abre diretamente
         if os.path.exists(video_path):
@@ -645,7 +520,7 @@ class MainMenuInterface:
             progress_window.update()
 
             # Criar o vídeo
-            create_side_by_side_video(self.current_folder)
+            create_side_by_side_video(self.current_ensaio)
 
             progress_window.destroy()
 
@@ -676,17 +551,17 @@ class MainMenuInterface:
 
     def open_results_folder(self):
         """Abre a pasta de resultados"""
-        if not self.current_folder:
+        if not self.current_ensaio:
             messagebox.showwarning("Aviso", "Selecione uma pasta de imagens primeiro!")
             return
 
         try:
             if sys.platform.startswith('win'):
-                os.startfile(self.current_folder)
+                os.startfile(self.current_folder.get_filename())
             elif sys.platform.startswith('darwin'):
-                subprocess.run(['open', self.current_folder])
+                subprocess.run(['open', self.current_folder.get_filename()])
             else:
-                subprocess.run(['xdg-open', self.current_folder])
+                subprocess.run(['xdg-open', self.current_folder.get_filename()])
 
         except Exception as e:
             messagebox.showerror("Erro", f"Erro ao abrir pasta:\n{str(e)}")

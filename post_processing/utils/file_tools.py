@@ -9,6 +9,10 @@ def select_folder():
         return None  # Encerra o programa com sucesso
     return folder
 
+def select_ensaio():
+    Tk().withdraw()
+    return filedialog.askopenfilename(filetypes=[("ensaio", "*.zip")], initialdir="/home/fernando/Documents/encoder/ensaios/2025.10.13 Calibracao de distancia v3")
+
 def get_config_label(config: dict) -> str:
     disp_config = config["Displacement Estimation"]
     method = disp_config["method"]

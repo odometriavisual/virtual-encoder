@@ -1,6 +1,4 @@
-import os
 import sys
-import glob
 
 import tkinter as tk
 import cv2
@@ -8,8 +6,9 @@ import numpy as np
 from PIL import Image, ImageTk
 
 from processing.displacement_processor import load_img_grayscale
+from utils.img_tools import apply_preprocessing
 
-def show_config_interface(config, folder_path):
+def show_config_interface(config, example_img):
     config.setdefault("Image Processing", {
         "apply_clahe": True,
         "apply_denoise": True
@@ -24,19 +23,6 @@ def show_config_interface(config, folder_path):
             "a3": 0.037,
         }
     })
-
-    image_extensions = ["*.jpg", "*.jpeg", "*.png", "*.bmp", "*.tiff"]
-    image_files = []
-    for ext in image_extensions:
-        image_files.extend(glob.glob(os.path.join(folder_path, ext)))
-        image_files.extend(glob.glob(os.path.join(folder_path, ext.upper())))
-    image_files = sorted(image_files)
-
-    if not image_files:
-        print(f"Nenhuma imagem encontrada na pasta: {folder_path}")
-        return config
-
-    img_path = image_files[0]
 
     root = tk.Tk()
     root.title("Configuração do Visual Odometer")
@@ -65,7 +51,7 @@ def show_config_interface(config, folder_path):
     def load_original_image():
         nonlocal original_photo
         try:
-            cv_img = cv2.imread(img_path)
+            cv_img = example_img[1].copy()
             if cv_img is None:
                 original_label.config(text="Arquivo de imagem\ninválido")
                 return False
@@ -83,11 +69,8 @@ def show_config_interface(config, folder_path):
     def update_preview():
         nonlocal processed_photo
         try:
-            img_proc = load_img_grayscale(
-                img_path,
-                clahe_var.get(),
-                denoise_var.get()
-            )
+            img_proc = apply_preprocessing(example_img[1].copy(), clahe_var.get(), denoise_var.get())
+
             if img_proc is None:
                 processed_label.config(text="Erro: Imagem\nnão processada")
                 return

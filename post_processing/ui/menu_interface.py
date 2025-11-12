@@ -13,9 +13,9 @@ from tools.plot_2d import plot2DFromData
 from tools.plot_3d import plot3DFromData
 from ui.config_interface import show_config_interface
 from utils.file_tools import select_ensaio
-from utils.ensaio import Ensaio
 from utils.imu_tools import find_closest_imu_data
 from utils.img_tools import apply_preprocessing
+from ensaio import Ensaio
 
 
 class MainMenuInterface:

@@ -19,4 +19,9 @@ systemctl enable before-virtual-encoder.service
 systemctl enable before-shutdown.service
 systemctl enable virtual-encoder.service
 
+./chrony/install.sh
+./boot-counter/install.sh
+./picam_gc/install.sh
+./enable_watchdog.sh
+
 echo "Services installed, reboot system to start services..."

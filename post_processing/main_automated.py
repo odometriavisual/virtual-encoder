@@ -1,4 +1,4 @@
-from utils.ensaio import Ensaio
+from ensaio import Ensaio
 from visual_odometer import VisualOdometer
 
 import matplotlib.pyplot as plt

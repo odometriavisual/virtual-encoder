@@ -1,0 +1,16 @@
+[project]
+name = "common"
+version = "0.1.0"
+description = "Common files for the Virtual Encoder"
+requires-python = ">=3.13"
+dependencies = [
+  "numpy",
+  "opencv-python",
+]
+
+[build-system]
+requires = ["setuptools"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+include = [ "ensaio" ]

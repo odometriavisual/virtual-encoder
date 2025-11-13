@@ -9,7 +9,7 @@ from .hal.network_interface import NetworkInterfaceConfigFile
 from .hal.relay import RelayNull, RelayGPIO
 from .hal.thermal_sensors import ThermalSensorsNull, ThermalSensorsRaspberry
 from .mount_device_manager import MountDeviceManager
-from .acquisition_writer import PiZeroApi
+from .acquisition_writer import AcquisitionWriter
 
 
 class EncoderGS:
@@ -70,7 +70,7 @@ class EncoderGS:
         self.network_interface.set_ip_address(None)
         self.ssd_manager.unmount()
 
-        self.pi_zero_api = PiZeroApi(self)
+        self.pi_zero_api = AcquisitionWriter(self)
 
         self._event_queue = Queue(4)
 

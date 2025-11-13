@@ -122,6 +122,9 @@ class Ensaio:
 
         self.__zip = ZipFile(self.__zip_path, "a")
         
+    def close(self):
+        self.__zip.close()
+
     def get_name(self) -> str:
         return self.__name
 

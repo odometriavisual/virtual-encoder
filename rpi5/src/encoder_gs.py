@@ -9,7 +9,7 @@ from .hal.network_interface import NetworkInterfaceConfigFile
 from .hal.relay import RelayNull, RelayGPIO
 from .hal.thermal_sensors import ThermalSensorsNull, ThermalSensorsRaspberry
 from .mount_device_manager import MountDeviceManager
-from .pi_zero_api import PiZeroApi
+from .acquisition_writer import PiZeroApi
 
 
 class EncoderGS:

@@ -18,12 +18,16 @@ class Ensaio:
         px_p_mm: float = 0,
         pulses_period: int = 0,
     ):
-        self.name = name
+        """
+        Invariant: after __init__ finishes Ensaio is open in append mode
+                   you should not assume that the invariant is mantained during method calls
+        thread unsafe
+        """
+        self.__name = name
+        self.__zip_path = Path(self.__name + ".zip")
 
-        zip_path = Path(self.name + ".zip")
-
-        if not zip_path.exists():
-            with ZipFile(self.name + ".zip", "w") as zip:
+        if not self.__zip_path.exists():
+            with ZipFile(self.__zip_path, "w") as zip:
                 zip.mkdir("data")
 
                 with io.TextIOWrapper(
@@ -71,7 +75,7 @@ class Ensaio:
                         ]
                     )
 
-        with ZipFile(self.name + ".zip", "r") as zip:
+        with ZipFile(self.__zip_path, "r") as zip:
             calibration_filename = [
                 filename
                 for filename in zip.namelist()
@@ -116,11 +120,13 @@ class Ensaio:
             )
             self.__img_count = len(self.__imgs)
 
+        self.__zip = ZipFile(self.__zip_path, "a")
+        
     def get_name(self) -> str:
-        return self.name
+        return self.__name
 
     def get_filename(self) -> str:
-        return f"{self.name}.zip"
+        return f"{self.__name}.zip"
 
     def get_first_pulse_timestamp(self) -> int:
         return self.__first_pulse_timestamp
@@ -143,21 +149,26 @@ class Ensaio:
     def set_displacements(
         self, displacements: NDArray, quaternions: NDArray, timestamps: NDArray
     ) -> dict:
-        with ZipFile(self.name + ".zip", "a") as zip:
-            with zip.open("data/displacements_data.npz", "w") as displacements_file:
-                np.savez(
-                    displacements_file,
-                    displacements=displacements,
-                    quaternions=quaternions,
-                    timestamps=timestamps,
-                )
+        with self.__zip.open("data/displacements_data.npz", "w") as displacements_file:
+            np.savez(
+                displacements_file,
+                displacements=displacements,
+                quaternions=quaternions,
+                timestamps=timestamps,
+            )
 
     def has_displacements(self) -> bool:
-        with ZipFile(self.name + ".zip", "r") as zip:
+        self.__zip.close()
+        
+        with ZipFile(self.__zip_path, "r") as zip:
             return "data/displacements_data.npz" in zip.namelist()
 
+        self.__zip = ZipFile(self.__zip_path, "a")
+
     def get_displacements(self) -> dict:
-        with ZipFile(self.name + ".zip", "r") as zip:
+        self.__zip.close()
+
+        with ZipFile(self.__zip_path, "r") as zip:
             with zip.open("data/displacements_data.npz", "r") as displacements_file:
                 data = np.load(displacements_file, allow_pickle=True)
 
@@ -167,18 +178,21 @@ class Ensaio:
                     'timestamps': data['timestamps'],
                 }
 
+        self.__zip = ZipFile(self.__zip_path, "a")
+
 
     def add_img(self, img: NDArray, timestamp: int):
-        with ZipFile(self.name + ".zip", "a") as zip:
-            _, buf =  cv2.imencode(".jpg", img)
-            zip.writestr(f"data/{timestamp}.jpg", buf)
+        _, buf =  cv2.imencode(".jpg", img)
+        self.__zip.writestr(f"data/{timestamp}.jpg", buf)
 
         self.__img_count += 1
 
     def get_img(self, i: int) -> (int, NDArray):
+        self.__zip.close()
+
         filename = self.__imgs[i]
         try:
-            with ZipFile(self.name + ".zip", "r") as zip:
+            with ZipFile(self.__zip_path, "r") as zip:
                 return (
                     int(Path(filename).stem),
                     cv2.imdecode(
@@ -188,11 +202,15 @@ class Ensaio:
                 )
         except KeyboardInterrupt:
             pass
+        finally:
+            self.__zip = ZipFile(self.__zip_path, "a")
 
     def get_all_imgs(self) -> [(int, NDArray)]:
+        self.__zip.close()
+
         imgs = []
         try:
-            with ZipFile(self.name + ".zip", "r") as zip:
+            with ZipFile(self.__zip_path, "r") as zip:
                 for filename in self.__imgs:
                     imgs.append((
                         int(Path(filename).stem),
@@ -204,3 +222,5 @@ class Ensaio:
             return imgs
         except KeyboardInterrupt:
             return []
+        finally:
+            self.__zip = ZipFile(self.__zip_path, "a")

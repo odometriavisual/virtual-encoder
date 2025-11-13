@@ -1,100 +1,76 @@
-import requests
-from requests.exceptions import RequestException
+import time
+import threading
+
+from ensaio import Ensaio
 
 
-class PiZeroApi:
+class AcquisitionWriter:
     def __init__(self, gs):
-        self.PIZERO_HOST = "rpi0"
-        self.WEBSERVER_PORT = 7123
         self.gs = gs
 
-    def set_focus(self, focus: float):
-        try:
-            requests.post(
-                f"http://{self.PIZERO_HOST}:{self.WEBSERVER_PORT}/focus/{focus}",
-                timeout=1.0,
-            )
-        except RequestException:
-            pass
+        self.__recording = False
+        self.__acquisition = None
 
-    def set_exposure(self, exposure: int):
-        try:
-            requests.post(
-                f"http://{self.PIZERO_HOST}:{self.WEBSERVER_PORT}/exposure/{exposure}",
-                timeout=1.0,
-            )
-        except RequestException:
-            pass
+        self.__write_buffer_i = 0
+        self.__pending_imgs = [[], []]
+        self.__pending_orientations = [[], []]
 
-    def get_status(self):
-        try:
-            return requests.get(
-                f"http://{self.PIZERO_HOST}:{self.WEBSERVER_PORT}/status/{self.gs.get('estado')}",
-                timeout=1.0,
-            ).json()
-        except RequestException:
-            return False
+        self.__threads = []
 
-    def get_file_count(self) -> int:
-        try:
-            file_count = requests.get(
-                f"http://{self.PIZERO_HOST}:{self.WEBSERVER_PORT}/file_count",
-                timeout=15.0,
-            ).text.strip()
-            return int(file_count)
-        except (RequestException, ValueError):
-            return 0
+    def __reader_imgs_thread(self):
+        while self.__recording:
+            img = self.gs.camera.get_img()
+            ts = time.time_ns()
+            self.__pending_imgs[self.__write_buffer_i].append((img, ts))
+
+    def __reader_orientations_thread(self):
+        while self.__recording:
+            imu_data = self.gs.imu.get_orientation()
+            ts = time.time_ns()
+            self.__pending_orientations[self.__write_buffer_i].append([ts, *imu_data])
+
+    def __writer_thread(self):
+        while self.__recording:
+            time.sleep(0.5)
+            read_buffer_i = self.__write_buffer_i
+            self.__write_buffer_i = 1 - read_buffer_i
+
+            for img, ts in self.__pending_imgs[read_buffer_i]:
+                self.__acquisition.add_img(img, ts)
+            self.__pending_imgs[read_buffer_i] = []
+
+            for orientation in self.__pending_orientations[read_buffer_i]:
+                self.__acquisition.add_imu_data(orientation)
+            self.__pending_orientations[read_buffer_i] = []
+
+        for imgs in self.__pending_imgs:
+            for img, ts in imgs:
+                self.__acquisition.add_img(img, ts)
+
+        for orientations in self.__pending_orientations:
+            for imu_data in orientations:
+                self.__acquisition.add_imu_data(orientation)
+            
 
     def start_acquisition(self, timestamp_ns, reason, pulses_period_ns):
-        try:
-            requests.post(
-                f"http://{self.PIZERO_HOST}:{self.WEBSERVER_PORT}/start_acquisition/{timestamp_ns}/{pulses_period_ns}/{reason}",
-                timeout=1.0,
-            )
-            return True
-        except (RequestException, ValueError):
-            return False
+        self.__acquisition = Ensaio(f"{timestamp_ns} {reason}" if len(reason) > 0 else f"{timestamp_ns}", dir=self.ENSAIOS_DIR)
+        self.__recording = True
+        self.__pending_imgs = [[], []]
+        self.__pending_orientations = [[], []]
+
+        self.__threads = [
+            threading.Thread(target=self.__reader_imgs_thread, daemon=True),
+            threading.Thread(target=self.__reader_orientations_thread, daemon=True),
+            threading.Thread(target=self.__writer_thread, daemon=True),
+        ]
+        for t in self.__threads:
+            t.start()
 
     def stop_acquisition(self):
-        try:
-            requests.post(
-                f"http://{self.PIZERO_HOST}:{self.WEBSERVER_PORT}/stop_acquisition",
-                timeout=1.0,
-            )
-            return True
-        except (RequestException, ValueError):
-            return False
+        self.__recording = False
+        for t in self.__threads:
+            t.join()
 
-    def poweroff_rpi0(self):
-        try:
-            requests.post(
-                f"http://{self.PIZERO_HOST}:{self.WEBSERVER_PORT}/poweroff", timeout=1.0
-            )
-        except RequestException:
-            pass
-
-    def reboot_rpi0(self):
-        try:
-            requests.post(
-                f"http://{self.PIZERO_HOST}:{self.WEBSERVER_PORT}/reboot", timeout=1.0
-            )
-        except RequestException:
-            pass
-
-    def pause_stream(self):
-        try:
-            requests.post(
-                f"http://{self.PIZERO_HOST}:{self.WEBSERVER_PORT}/pause_stream",
-                timeout=1.0,
-            )
-        except RequestException:
-            pass
-
-    def resume_stream(self):
-        try:
-            requests.post(
-                f"http://{self.PIZERO_HOST}:{self.WEBSERVER_PORT}/resume_stream",
-                timeout=1.0,
-            )
-        except RequestException:
-            pass
+        self.__acquisition.close()
+        self.__acquisition = None
+        self.__threads = []

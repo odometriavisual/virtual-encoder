@@ -7,6 +7,8 @@ from .hal.encoder import EncoderNull, EncoderGPIO
 from .hal.imu import ImuNull, ImuI2C
 from .hal.network_interface import NetworkInterfaceConfigFile
 from .hal.relay import RelayNull, RelayGPIO
+from .hal.led import LedNull, LedSerdes
+from .hal.serdes import SerdesNull, Serdes
 from .hal.thermal_sensors import ThermalSensorsNull, ThermalSensorsRaspberry
 from .mount_device_manager import MountDeviceManager
 from .acquisition_writer import AcquisitionWriter
@@ -30,32 +32,36 @@ class EncoderGS:
         self.status_lock = threading.Lock()
 
         if debug:
-            self.camera = CameraNull()
             self.display = DisplayNull()
             self.encoders = (EncoderNull(), EncoderNull(), EncoderNull())
             self.imu = ImuNull()
             self.network_interface = NetworkInterfaceConfigFile(self, "eno1", "/tmp")
             self.relay = RelayNull()
+            self.led = LedNull()
+            self.serdes = SerdesNull()
             self.thermal_sensors = ThermalSensorsNull()
             self.ssd_manager = MountDeviceManager(
                 device="/dev/sda1", mount_point="/media/usb-ssd"
             )
+            self.camera = CameraNull()
         else:
-            try:
-                self.camera = CameraPicamera2(self)
-            except IndexError:
-                self.camera = CameraUDP(self)
-
             self.encoders = (
                 EncoderGPIO(PIN_A=26, PIN_B=19),
                 EncoderGPIO(PIN_A=5, PIN_B=23),
                 EncoderGPIO(PIN_A=6, PIN_B=13),
             )
-            self.imu = ImuI2C(self)
             self.network_interface = NetworkInterfaceConfigFile(
                 self, "eth1", "/media/usb-ssd/"
             )
             self.relay = RelayGPIO()
+            self.led = LedSerdes(17)
+            self.serdes = Serdes(
+                bnoreset_pin=27,
+                powerdown_pin=22,
+                seraddr=0x40,
+                desaddr=0x2A,
+            )
+            self.serdes.run(enable_driver=True)
             self.thermal_sensors = ThermalSensorsRaspberry(self)
             self.ssd_manager = MountDeviceManager(
                 device="/dev/sda1", mount_point="/media/usb-ssd"
@@ -67,7 +73,13 @@ class EncoderGS:
             except ValueError:
                 self.display = DisplayNull()
 
+            try:
+                self.camera = CameraPicamera2(self)
+            except IndexError:
+                self.camera = CameraUDP(self)
             self.camera.start()
+
+            self.imu = ImuI2C(self)
             self.imu.start()
 
         self.ssd_manager.mount()

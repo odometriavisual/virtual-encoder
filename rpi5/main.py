@@ -20,20 +20,6 @@ def _get_temp(gs: EncoderGS):
         time.sleep(1)
 
 
-def _get_rpi0_status(gs: EncoderGS):
-    while True:
-        time.sleep(1.0)
-        rpi0_status = gs.pi_zero_api.get_status()
-        if rpi0_status:
-            gs.set("rpi0", rpi0_status["rpi0"])
-            gs.set("camera", rpi0_status["camera"])
-            gs.add_message(rpi0_status["msg"])
-        else:
-            gs.set("rpi0", False)
-            gs.set("camera", False)
-            gs.set("imu", False)
-
-
 def main():
     """
     OLED: 2 (SDA)
@@ -53,7 +39,7 @@ def main():
 
     time.sleep(1)
 
-    for task in [_get_ip, _get_temp, _get_rpi0_status]:
+    for task in [_get_ip, _get_temp]:
         threading.Thread(target=task, daemon=True, args=(gs,)).start()
 
     while True:

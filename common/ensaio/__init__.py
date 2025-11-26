@@ -53,23 +53,6 @@ class Ensaio:
                         ]
                     )
 
-                with io.TextIOWrapper(
-                    zip.open("data/imu.csv", mode="w"), newline=""
-                ) as file:
-                    writer = csv.writer(file)
-                    writer.writerow(
-                        [
-                            "timestamp",
-                            "qw",
-                            "qx",
-                            "qy",
-                            "qz",
-                            "acc_x",
-                            "acc_y",
-                            "acc_z",
-                       ]
-                    )
-
         with ZipFile(self.__zip_path, "r") as zip:
             calibration_filename = [
                 filename
@@ -89,26 +72,29 @@ class Ensaio:
                 self.__pulses_period = int(data["pulses_period_ns"])
 
                 
-            imu_filename = [
+            self.__imu_data = []
+            imu_filenames = [
                 filename
                 for filename in zip.namelist()
                 if "imu" in filename
-            ][0]
+            ]
 
-            with io.TextIOWrapper(
-                zip.open(imu_filename, "r"), encoding="UTF-8"
-            ) as file:
-                reader = csv.DictReader(file)
+            if len(imu_filenames) > 0:
+                imu_filename = imu_filenames[0]
 
-                self.__imu_data = []
-                for row in reader:
-                    self.__imu_data.append({
-                        'timestamp': int(row['timestamp']),
-                        'qx': float(row['qx']) if row['qx'] else 0.0,
-                        'qy': float(row['qy']) if row['qy'] else 0.0,
-                        'qz': float(row['qz']) if row['qz'] else 0.0,
-                        'qw': float(row['qw']) if row['qw'] else 0.0,
-                    })
+                with io.TextIOWrapper(
+                    zip.open(imu_filename, "r"), encoding="UTF-8"
+                ) as file:
+                    reader = csv.DictReader(file)
+
+                    for row in reader:
+                        self.__imu_data.append({
+                            'timestamp': int(row['timestamp']),
+                            'qx': float(row['qx']) if row['qx'] else 0.0,
+                            'qy': float(row['qy']) if row['qy'] else 0.0,
+                            'qz': float(row['qz']) if row['qz'] else 0.0,
+                            'qw': float(row['qw']) if row['qw'] else 0.0,
+                        })
 
             self.__imgs = sorted(
                 [filename for filename in zip.namelist() if ".jpg" in filename]
@@ -118,6 +104,22 @@ class Ensaio:
         self.__zip = ZipFile(self.__zip_path, "a")
         
     def close(self):
+        with io.TextIOWrapper(
+            self.__zip.open("data/imu.csv", mode="w"), newline=""
+        ) as file:
+            writer = csv.DictWriter(file, fieldnames=[
+                "timestamp",
+                "qw",
+                "qx",
+                "qy",
+                "qz",
+                "acc_x",
+                "acc_y",
+                "acc_z",
+           ])
+            writer.writeheader()
+            writer.writerows(self.__imu_data)
+
         self.__zip.close()
 
     def get_name(self) -> str:
@@ -144,6 +146,18 @@ class Ensaio:
     def get_imu_data(self) -> [dict]:
         return self.__imu_data
 
+    def add_imu_data(self, data):
+        self.__imu_data.append({
+            'timestamp': data[0],
+            'qx': data[1],
+            'qy': data[2],
+            'qz': data[3],
+            'qw': data[4],
+            'acc_x': data[5],
+            'acc_y': data[6],
+            'acc_z': data[7],
+        })
+
     def set_displacements(
         self, displacements: NDArray, quaternions: NDArray, timestamps: NDArray
     ) -> dict:
@@ -156,7 +170,7 @@ class Ensaio:
             )
 
     def has_displacements(self) -> bool:
-        self.__zip.close()
+        self.close()
         
         with ZipFile(self.__zip_path, "r") as zip:
             return "data/displacements_data.npz" in zip.namelist()
@@ -164,7 +178,7 @@ class Ensaio:
         self.__zip = ZipFile(self.__zip_path, "a")
 
     def get_displacements(self) -> dict:
-        self.__zip.close()
+        self.close()
 
         with ZipFile(self.__zip_path, "r") as zip:
             with zip.open("data/displacements_data.npz", "r") as displacements_file:
@@ -186,7 +200,7 @@ class Ensaio:
         self.__img_count += 1
 
     def get_img(self, i: int) -> (int, NDArray):
-        self.__zip.close()
+        self.close()
 
         filename = self.__imgs[i]
         try:
@@ -204,7 +218,7 @@ class Ensaio:
             self.__zip = ZipFile(self.__zip_path, "a")
 
     def get_all_imgs(self) -> [(int, NDArray)]:
-        self.__zip.close()
+        self.close()
 
         imgs = []
         try:

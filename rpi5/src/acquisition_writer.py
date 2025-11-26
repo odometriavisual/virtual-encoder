@@ -1,11 +1,13 @@
 import time
 import threading
+from pathlib import Path
 
 from ensaio import Ensaio
 
 
 class AcquisitionWriter:
     def __init__(self, gs):
+        self.ENSAIOS_DIR = "/home/pi/picam_imgs"
         self.gs = gs
 
         self.__recording = False
@@ -16,6 +18,10 @@ class AcquisitionWriter:
         self.__pending_orientations = [[], []]
 
         self.__threads = []
+
+        dir = Path(self.ENSAIOS_DIR)
+        if not dir.is_dir():
+            dir.mkdir()
 
     def __reader_imgs_thread(self):
         while self.__recording:
@@ -50,7 +56,6 @@ class AcquisitionWriter:
         for orientations in self.__pending_orientations:
             for imu_data in orientations:
                 self.__acquisition.add_imu_data(orientation)
-            
 
     def start_acquisition(self, timestamp_ns, reason, pulses_period_ns):
         self.__acquisition = Ensaio(f"{timestamp_ns} {reason}" if len(reason) > 0 else f"{timestamp_ns}", dir=self.ENSAIOS_DIR)

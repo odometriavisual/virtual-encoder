@@ -97,20 +97,7 @@ class CameraUDP(CameraNull, threading.Thread):
 
 
 try:
-    import io
-    from threading import Condition
-
     from picamera2 import Picamera2
-
-    class _StreamingOutput(io.BufferedIOBase):
-        def __init__(self):
-            self.frame = None
-            self.condition = Condition()
-
-        def write(self, buf):
-            with self.condition:
-                self.frame = buf
-                self.condition.notify_all()
 
     class CameraPicamera2(CameraNull, threading.Thread):
         def __init__(self, gs: "EncoderGS"):
@@ -119,8 +106,7 @@ try:
 
             self.gs = gs
 
-            self._new_frame_event = threading.Event()
-            self._frame_lock = threading.Lock()
+            self._new_frame_condition = threading.Condition()
 
             self._picam2 = Picamera2()
             self._picam2.configure(
@@ -137,10 +123,9 @@ try:
             while True:
                 frame = self._picam2.capture_array()
 
-                with self._frame_lock:
+                with self._new_frame_condition:
                     self._frame = frame
-
-                self._new_frame_event.set()
+                    self._new_frame_condition.notify_all()
 
         def start_stream(self):
             self._picam2.start()
@@ -149,16 +134,14 @@ try:
             self._picam2.stop()
 
         def get_img(self):
-            if not self._new_frame_event.wait(3):
-                with self._frame_lock:
+            with self._new_frame_condition:
+                if not self._new_frame_condition.wait(3):
                     self._frame = self.default_frame.copy()
 
-            with self._frame_lock:
-                self._new_frame_event.clear()
                 return self._frame.copy()
 
         def peek_img(self):
-            with self._frame_lock:
+            with self._new_frame_condition:
                 return self._frame.copy()
 
         def set_exposure(self, exposure: int):

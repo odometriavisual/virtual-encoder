@@ -1,7 +1,10 @@
+import adafruit_bno055
+import board
+
 import threading
 import socket
 import json
-
+import time
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
@@ -46,3 +49,42 @@ class ImuUDP(ImuNull, threading.Thread):
 
     def get_orientation(self) -> list[float]:
         return self.orientation
+
+
+class ImuI2C(ImuNull, threading.Thread):
+    def __init__(self, gs: "EncoderGS"):
+        ImuNull.__init__(self)
+        threading.Thread.__init__(self, daemon=True)
+
+        self.gs = gs
+        self.orientation = [0, 0, 0, 1]
+        self.__condition = threading.Condition()
+
+        i2c = board.I2C()
+
+        try:
+            self.__sensor = adafruit_bno055.BNO055_I2C(i2c, 0x28)
+        except Exception:
+            self.__sensor = adafruit_bno055.BNO055_I2C(i2c, 0x29)
+
+    def run(self):
+        while True:
+            try:
+                quat = self.__sensor.quaternion
+                acc = self.__sensor.acceleration
+
+                with self.__condition:
+                    self.orientation = [*quat, *acc]
+                    self.gs.set("imu", self.orientation)
+                    self.__condition.notify_all()
+
+            except Exception:
+                pass
+
+            time.sleep(0.01)
+
+
+    def get_orientation(self) -> list[float]:
+        with self.__condition:
+            self.__condition.wait()
+            return self.orientation

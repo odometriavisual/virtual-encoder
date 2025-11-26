@@ -4,7 +4,7 @@ from queue import Queue
 from .hal.camera import CameraNull, CameraUDP, CameraPicamera2
 from .hal.display import DisplayNull, DisplaySSD1306
 from .hal.encoder import EncoderNull, EncoderGPIO
-from .hal.imu import ImuNull, ImuUDP
+from .hal.imu import ImuNull, ImuI2C
 from .hal.network_interface import NetworkInterfaceConfigFile
 from .hal.relay import RelayNull, RelayGPIO
 from .hal.thermal_sensors import ThermalSensorsNull, ThermalSensorsRaspberry
@@ -52,7 +52,7 @@ class EncoderGS:
                 EncoderGPIO(PIN_A=5, PIN_B=23),
                 EncoderGPIO(PIN_A=6, PIN_B=13),
             )
-            self.imu = ImuUDP(self)
+            self.imu = ImuI2C(self)
             self.network_interface = NetworkInterfaceConfigFile(
                 self, "eth1", "/media/usb-ssd/"
             )

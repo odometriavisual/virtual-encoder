@@ -69,13 +69,6 @@ class Ensaio:
                             "acc_z",
                        ]
                     )
-                    writer.writerow(
-                        [
-                            0,
-                            1, 0, 0, 0,
-                            0, 0, 0,
-                        ]
-                    )
 
         with ZipFile(self.__zip_path, "r") as zip:
             calibration_filename = [

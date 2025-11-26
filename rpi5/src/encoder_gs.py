@@ -46,7 +46,6 @@ class EncoderGS:
             except IndexError:
                 self.camera = CameraUDP(self)
 
-            self.display = DisplaySSD1306(self)
             self.encoders = (
                 EncoderGPIO(PIN_A=26, PIN_B=19),
                 EncoderGPIO(PIN_A=5, PIN_B=23),
@@ -62,8 +61,13 @@ class EncoderGS:
                 device="/dev/sda1", mount_point="/media/usb-ssd"
             )
 
+            try:
+                self.display = DisplaySSD1306(self)
+                self.display.start()
+            except ValueError:
+                self.display = DisplayNull()
+
             self.camera.start()
-            self.display.start()
             self.imu.start()
 
         self.ssd_manager.mount()

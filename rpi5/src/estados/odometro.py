@@ -80,7 +80,7 @@ class EstadoAquisicaoOdometro(Estado):
 
     def stop(self):
         self.is_running = False
-        self.gs.pi_zero_api.stop_acquisition()
+        self.gs.acquisition_writer.stop_acquisition()
 
     def run(self):
         if self.is_first_pulse:
@@ -89,7 +89,7 @@ class EstadoAquisicaoOdometro(Estado):
             timestamp_ns = time.time_ns()
 
             def start_acquisition_helper():
-                self.gs.pi_zero_api.start_acquisition(timestamp_ns, self.reason, 0)
+                self.gs.acquisition_writer.start_acquisition(timestamp_ns, self.reason, 0)
 
             req_thread = threading.Thread(target=start_acquisition_helper, daemon=True)
 

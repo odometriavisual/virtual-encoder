@@ -74,7 +74,7 @@ class EncoderGS:
         self.network_interface.set_ip_address(None)
         self.ssd_manager.unmount()
 
-        self.pi_zero_api = AcquisitionWriter(self)
+        self.acquisition_writer = AcquisitionWriter(self)
 
         self._event_queue = Queue(4)
 

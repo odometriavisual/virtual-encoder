@@ -44,7 +44,7 @@ class EstadoAquisicaoTempo(Estado):
         self.next_time = time.time_ns() + self.period
 
     def stop(self):
-        self.gs.pi_zero_api.stop_acquisition()
+        self.gs.acquisition_writer.stop_acquisition()
 
     def run(self):
         if self.is_first_pulse:
@@ -53,7 +53,7 @@ class EstadoAquisicaoTempo(Estado):
             timestamp_ns = time.time_ns()
 
             def start_acquisition_helper():
-                self.gs.pi_zero_api.start_acquisition(
+                self.gs.acquisition_writer.start_acquisition(
                     timestamp_ns, self.reason, self.period
                 )
 

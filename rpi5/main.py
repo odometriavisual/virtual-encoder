@@ -3,7 +3,7 @@ import threading
 import time
 import subprocess
 
-from src.modos import ModoAutonomo, ModoDownload, ModoOdometro, ModoTempo
+from src.modos import ModoAutonomo, ModoOdometro, ModoTempo
 from src.encoder_gs import EncoderGS
 from src.webui.server import WebuiApp
 
@@ -52,39 +52,26 @@ def main():
                 case _, ("set_modo", "Tempo"):
                     gs.set_modo(ModoTempo(gs))
 
-                case ModoAutonomo(), ("set_modo", "Download"):
-                    gs.set_modo(ModoDownload(gs, next_modo="Autonomo"))
-                case ModoTempo(), ("set_modo", "Download"):
-                    gs.set_modo(ModoDownload(gs, next_modo="Tempo"))
-                case ModoOdometro(), ("set_modo", "Download"):
-                    gs.set_modo(ModoDownload(gs, next_modo="Odometro"))
-
                 case _, ("shutdown", "all"):
-                    gs.pi_zero_api.poweroff_rpi0()
                     try:
                         subprocess.run(["sudo", "poweroff"])
                     except subprocess.SubprocessError:
                         pass
-                case _, ("shutdown", "camera"):
-                    gs.pi_zero_api.poweroff_rpi0()
                 case _, ("shutdown", "relay"):
                     gs.relay.turn_off()
 
                 case _, ("reboot", "all"):
-                    gs.pi_zero_api.reboot()
                     try:
                         subprocess.run(["sudo", "reboot"])
                     except subprocess.SubprocessError:
                         pass
-                case _, ("reboot", "camera"):
-                    gs.pi_zero_api.reboot_rpi0()
                 case _, ("reboot", "relay"):
                     gs.relay.turn_off()
                     time.sleep(5)
                     gs.relay.turn_on()
 
                 case _, ("set_exposure", value):
-                    gs.pi_zero_api.set_exposure(value)
+                    gs.camera.set_exposure(value)
 
                 case _, "start_stream":
                     gs.camera.start_stream()

@@ -13,6 +13,7 @@ class Ensaio:
         self,
         name: str,
         *,
+        dir: str = ".",
         first_pulse_timestamp: int = 0,
         exposure: int = 0,
         px_p_mm: float = 0,
@@ -24,7 +25,8 @@ class Ensaio:
         thread unsafe
         """
         self.__name = name
-        self.__zip_path = Path(self.__name + ".zip")
+        self.__dir = dir
+        self.__zip_path = Path(self.__dir) / Path(self.__name + ".zip")
 
         if not self.__zip_path.exists():
             with ZipFile(self.__zip_path, "w") as zip:
@@ -129,7 +131,7 @@ class Ensaio:
         return self.__name
 
     def get_filename(self) -> str:
-        return f"{self.__name}.zip"
+        return f"{self.__dir / self.__path}"
 
     def get_first_pulse_timestamp(self) -> int:
         return self.__first_pulse_timestamp

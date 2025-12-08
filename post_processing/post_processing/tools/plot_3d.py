@@ -4,7 +4,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from scipy.spatial.transform import Rotation as R
 
-from utils.imu_tools import fast_rot, rotate_vector
+from post_processing.utils.imu_tools import fast_rot, rotate_vector
 
 def plot3DFromData(list_displacements, list_quaternions, px_p_mm):
     plt.ion()

@@ -5,8 +5,8 @@ import cv2
 import numpy as np
 from PIL import Image, ImageTk
 
-from processing.displacement_processor import load_img_grayscale
-from utils.img_tools import apply_preprocessing
+from post_processing.processing.displacement_processor import load_img_grayscale
+from post_processing.utils.img_tools import apply_preprocessing
 
 def show_config_interface(config, example_img):
     config.setdefault("Image Processing", {

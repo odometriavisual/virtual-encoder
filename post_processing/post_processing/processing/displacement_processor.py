@@ -5,10 +5,10 @@ import numpy as np
 from PIL import Image, ImageOps
 import cv2
 from tkinter import Tk, filedialog
-
-from utils.img_tools import extract_timestamp_from_txt
-from utils.imu_tools import load_imu_data, find_closest_imu_data
 from visual_odometer import VisualOdometer
+
+from post_processing.utils.img_tools import extract_timestamp_from_txt
+from post_processing.utils.imu_tools import load_imu_data, find_closest_imu_data
 
 def load_img_grayscale(filename, apply_clahe=True, apply_denoise=True):
     """

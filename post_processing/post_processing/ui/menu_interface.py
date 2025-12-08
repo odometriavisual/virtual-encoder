@@ -7,16 +7,15 @@ import tkinter as tk
 from tkinter import messagebox, ttk
 import numpy as np
 from visual_odometer import VisualOdometer
-
-from tools.video_overlay import create_side_by_side_video
-from tools.plot_2d import plot2DFromData
-from tools.plot_3d import plot3DFromData
-from ui.config_interface import show_config_interface
-from utils.file_tools import select_ensaio
-from utils.imu_tools import find_closest_imu_data
-from utils.img_tools import apply_preprocessing
 from ensaio import Ensaio
 
+from post_processing.tools.video_overlay import create_side_by_side_video
+from post_processing.tools.plot_2d import plot2DFromData
+from post_processing.tools.plot_3d import plot3DFromData
+from post_processing.ui.config_interface import show_config_interface
+from post_processing.utils.file_tools import select_ensaio
+from post_processing.utils.imu_tools import find_closest_imu_data
+from post_processing.utils.img_tools import apply_preprocessing
 
 class MainMenuInterface:
     def __init__(self):

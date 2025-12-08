@@ -32,7 +32,7 @@ def plot2DFromData(list_displacements, px_p_mm):
     trajectory_px = np.cumsum(list_displacements, axis=0)
 
     # Converter de pixels para milímetros
-    trajectory_mm = trajectory_px / px_p_mm
+    trajectory_mm = trajectory_px / 1 # px_p_mm
 
     # Plotar o gráfico 2D
     fig = plt.figure()
@@ -55,8 +55,8 @@ def plot2DFromData(list_displacements, px_p_mm):
         x, y + 0.05, label_text, ha="center", va="bottom", fontsize=10, color="blue"
     )
 
-    ref = -(reference[:, 1:] - np.array([300., 100.]))
-    axis0.plot(ref[:, 0], ref[:, 1], label="Referência", color="hotpink")
+    # ref = -(reference[:, 1:] - np.array([300., 100.]))
+    # axis0.plot(ref[:, 0], ref[:, 1], label="Referência", color="hotpink")
 
     verts = find_vertices(trajectory_mm)    
     axis0.plot(verts[:,0], verts[:,1], "x", markersize=10, color="red", linestyle="")

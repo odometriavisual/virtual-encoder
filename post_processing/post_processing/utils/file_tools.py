@@ -11,7 +11,7 @@ def select_folder():
 
 def select_ensaio():
     Tk().withdraw()
-    return filedialog.askopenfilename(filetypes=[("ensaio", "*.zip")], initialdir="/home/fernando/Documents/encoder/ensaios/2025.10.13 Calibracao de distancia v3")
+    return filedialog.askopenfilename(filetypes=[("ensaio", "*.zip")], initialdir="/tmp/work")
 
 def get_config_label(config: dict) -> str:
     disp_config = config["Displacement Estimation"]

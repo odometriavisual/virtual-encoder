@@ -2,14 +2,22 @@
 name = "post-processing"
 version = "1.0.0"
 description = "Post processing toolbox for the Virtual Encoder"
-requires-python = ">=3.13"
+requires-python = ">=3.11"
 dependencies = [
   "common",
   "matplotlib>=3.10.7",
-  "numpy",
+  "numpy~=1.26.4",
   "opencv-python>=4.11.0.86",
   "visual-odometer",
 ]
+
+[build-system]
+requires = ["setuptools"]
+build-backend = "setuptools.build_meta"
+
+
+[tool.setuptools.packages.find]
+include = [ "post_processing" ]
 
 [tool.uv.sources]
 visual-odometer = { path = "../../visual-odometer", editable = true }

@@ -5,6 +5,7 @@
 *.zip
 .idea
 data
+*.egg-info
 
 # Created by https://www.gitignore.io/api/intellij
 

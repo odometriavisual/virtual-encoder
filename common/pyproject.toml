@@ -2,9 +2,9 @@
 name = "common"
 version = "0.1.0"
 description = "Common files for the Virtual Encoder"
-requires-python = ">=3.13"
+requires-python = ">=3.11"
 dependencies = [
-  "numpy",
+  "numpy~=1.26.4",
   "opencv-python",
 ]
 

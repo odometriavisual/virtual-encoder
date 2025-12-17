@@ -1,6 +1,3 @@
-import adafruit_bno055
-import board
-
 import threading
 import socket
 import json
@@ -14,6 +11,9 @@ if TYPE_CHECKING:
 class ImuNull:
     def get_orientation(self) -> list[float]:
         return [0, 0, 0, 1]
+
+    def start(self):
+        pass
 
 
 class ImuUDP(ImuNull, threading.Thread):
@@ -51,40 +51,49 @@ class ImuUDP(ImuNull, threading.Thread):
         return self.orientation
 
 
-class ImuI2C(ImuNull, threading.Thread):
-    def __init__(self, gs: "EncoderGS"):
-        ImuNull.__init__(self)
-        threading.Thread.__init__(self, daemon=True)
+try:
+    import adafruit_bno055
+    import board
 
-        self.gs = gs
-        self.orientation = [0, 0, 0, 1]
-        self.__condition = threading.Condition()
+    class ImuI2C(ImuNull, threading.Thread):
+        def __init__(self, gs: "EncoderGS"):
+            ImuNull.__init__(self)
+            threading.Thread.__init__(self, daemon=True)
 
-        i2c = board.I2C()
+            self.gs = gs
+            self.orientation = [0, 0, 0, 1]
+            self.__condition = threading.Condition()
 
-        try:
-            self.__sensor = adafruit_bno055.BNO055_I2C(i2c, 0x28)
-        except Exception:
-            self.__sensor = adafruit_bno055.BNO055_I2C(i2c, 0x29)
+            i2c = board.I2C()
 
-    def run(self):
-        while True:
             try:
-                quat = self.__sensor.quaternion
-                acc = self.__sensor.acceleration
-
-                with self.__condition:
-                    self.orientation = [*quat, *acc]
-                    self.gs.set("imu", self.orientation)
-                    self.__condition.notify_all()
-
+                self.__sensor = adafruit_bno055.BNO055_I2C(i2c, 0x28)
             except Exception:
-                pass
+                self.__sensor = adafruit_bno055.BNO055_I2C(i2c, 0x29)
 
-            time.sleep(0.01)
+        def run(self):
+            while True:
+                try:
+                    quat = self.__sensor.quaternion
+                    acc = self.__sensor.acceleration
 
+                    with self.__condition:
+                        self.orientation = [*quat, *acc]
+                        self.gs.set("imu", self.orientation)
+                        self.__condition.notify_all()
 
-    def get_orientation(self) -> list[float]:
-        with self.__condition:
-            self.__condition.wait()
-            return self.orientation
+                except Exception:
+                    pass
+
+                time.sleep(0.01)
+
+        def get_orientation(self) -> list[float]:
+            with self.__condition:
+                self.__condition.wait()
+                return self.orientation
+except Exception:
+
+    class ImuI2C(ImuNull):
+        def __init__(self):
+            super().__init__()
+            raise NotImplementedError

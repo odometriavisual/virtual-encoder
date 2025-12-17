@@ -4,9 +4,9 @@ import time
 
 from visual_odometer import VisualOdometer
 
-from ..estados import Estado
-from ..encoder_gs import EncoderGS
-from ..dsp import to_grayscale
+from virtual_encoder.estados import Estado
+from virtual_encoder.encoder_gs import EncoderGS
+from virtual_encoder.dsp import to_grayscale
 
 
 class EstadoAquisicaoOdometro(Estado):

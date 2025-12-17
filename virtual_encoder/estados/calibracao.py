@@ -1,8 +1,8 @@
 import cv2
 import numpy
 
-from .estados import Estado
-from ..encoder_gs import EncoderGS
+from virtual_encoder.estados import Estado
+from virtual_encoder.encoder_gs import EncoderGS
 
 # O frame do cv2 é do tipo numpy.ndarray, por isso não é necessário converter
 

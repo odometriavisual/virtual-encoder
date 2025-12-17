@@ -2,7 +2,7 @@ import time
 import threading
 from pathlib import Path
 
-from ensaio import Ensaio
+from .ensaio import Ensaio
 
 
 class AcquisitionWriter:

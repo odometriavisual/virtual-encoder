@@ -2,7 +2,7 @@ import time
 from abc import abstractmethod
 from threading import Thread
 
-from ..encoder_gs import EncoderGS
+from virtual_encoder.encoder_gs import EncoderGS
 
 
 class Estado:

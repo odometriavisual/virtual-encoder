@@ -1,7 +1,7 @@
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from ..encoder_gs import EncoderGS
+    from virtual_encoder.encoder_gs import EncoderGS
 
 
 class ThermalSensorsNull:

@@ -1,8 +1,8 @@
 from visual_odometer import VisualOdometer
 
-from ..estados import EstadoAquisicaoOdometro, EstadoErro, EstadoReady
-from ..encoder_gs import EncoderGS
-from ..dsp import to_grayscale
+from virtual_encoder.estados import EstadoAquisicaoOdometro, EstadoErro, EstadoReady
+from virtual_encoder.encoder_gs import EncoderGS
+from virtual_encoder.dsp import to_grayscale
 
 
 class ModoOdometro:

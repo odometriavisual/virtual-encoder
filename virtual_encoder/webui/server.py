@@ -1,10 +1,11 @@
 import cv2
 import time
 import json
+
 from flask import Flask, Response, abort
 from werkzeug.serving import BaseWSGIServer
 
-from ..encoder_gs import EncoderGS
+from virtual_encoder.encoder_gs import EncoderGS
 
 
 class WebuiApp:

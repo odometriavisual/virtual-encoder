@@ -1,5 +1,5 @@
-from ..estados import EstadoReady, EstadoErro, EstadoAquisicaoTempo
-from ..encoder_gs import EncoderGS
+from virtual_encoder.estados import EstadoReady, EstadoErro, EstadoAquisicaoTempo
+from virtual_encoder.encoder_gs import EncoderGS
 
 
 class ModoTempo:

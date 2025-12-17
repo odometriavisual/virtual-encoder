@@ -1,6 +1,6 @@
-from .estados import Estado, EstadoSet, EstadoAquisicaoTempo, EstadoReady, EstadoErro
-from .calibracao import EstadoCalibracao
-from .odometro import EstadoAquisicaoOdometro
+from virtual_encoder.estados.estados import Estado, EstadoSet, EstadoAquisicaoTempo, EstadoReady, EstadoErro
+from virtual_encoder.estados.calibracao import EstadoCalibracao
+from virtual_encoder.estados.odometro import EstadoAquisicaoOdometro
 
 __all__ = [
     "Estado",

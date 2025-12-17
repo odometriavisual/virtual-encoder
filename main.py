@@ -3,9 +3,9 @@ import threading
 import time
 import subprocess
 
-from src.modos import ModoAutonomo, ModoOdometro, ModoTempo
-from src.encoder_gs import EncoderGS
-from src.webui.server import WebuiApp
+from virtual_encoder.modos import ModoAutonomo, ModoOdometro, ModoTempo
+from virtual_encoder.encoder_gs import EncoderGS
+from virtual_encoder.webui.server import WebuiApp
 
 
 def _get_ip(gs: EncoderGS):

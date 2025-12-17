@@ -98,21 +98,6 @@ wheels = [
 ]
 
 [[package]]
-name = "common"
-version = "0.1.0"
-source = { editable = "../common" }
-dependencies = [
-    { name = "numpy" },
-    { name = "opencv-python" },
-]
-
-[package.metadata]
-requires-dist = [
-    { name = "numpy", specifier = "~=1.26.4" },
-    { name = "opencv-python" },
-]
-
-[[package]]
 name = "flask"
 version = "3.1.1"
 source = { registry = "https://pypi.org/simple" }
@@ -327,7 +312,6 @@ name = "rpi5"
 version = "0.1.0"
 source = { virtual = "." }
 dependencies = [
-    { name = "common" },
     { name = "flask" },
     { name = "opencv-python" },
     { name = "requests" },
@@ -336,7 +320,6 @@ dependencies = [
 
 [package.metadata]
 requires-dist = [
-    { name = "common", editable = "../common" },
     { name = "flask", specifier = ">=3.1.1" },
     { name = "opencv-python", specifier = ">=4.11.0.86" },
     { name = "requests", specifier = ">=2.32.4" },

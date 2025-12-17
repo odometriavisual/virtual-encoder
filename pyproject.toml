@@ -5,13 +5,14 @@ description = "Virtual Encoder running on a RPi5"
 readme = "README.md"
 requires-python = ">=3.11"
 dependencies = [
-    "common",
     "flask>=3.1.1",
     "opencv-python>=4.11.0.86",
     "requests>=2.32.4",
     "visual-odometer",
 ]
 
+[tool.setuptools.packages.find]
+include = ["virtual_encoder"]
+
 [tool.uv.sources]
 visual-odometer = { path = "../../visual-odometer" }
-common = { path = "../common", editable = true }

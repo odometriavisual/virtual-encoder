@@ -8,7 +8,6 @@ from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from virtual_encoder.encoder_gs import EncoderGS
 
-
 class CameraNull:
     def __init__(self):
         self.default_frame = np.full((240, 320, 3), (150, 150, 150), dtype=np.uint8)
@@ -25,11 +24,26 @@ class CameraNull:
     def peek_img(self):
         return self.default_frame.copy()
 
+    def calibrate_exposure(self, *, min, max, target):
+        pass
+
     def set_exposure(self, exposure: int):
         pass
 
     def set_focus(self, focus: float):
         pass
+
+    def binsearch_exposicao(target, frame, bot, cur, top):
+        data = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+        avg = np.average(data)
+    
+        if avg < target:
+            bot = cur
+        elif avg > target:
+            top = cur
+
+        cur = (bot + top) // 2
+        return bot, cur, top
 
 
 class CameraUDP(CameraNull, threading.Thread):
@@ -89,6 +103,9 @@ class CameraUDP(CameraNull, threading.Thread):
         with self._frame_lock:
             return self._frame.copy()
 
+    def calibrate_exposure(self, *, min, max, target):
+        pass
+
     def set_exposure(self, exposure: int):
         pass
 
@@ -144,8 +161,19 @@ try:
             with self._new_frame_condition:
                 return self._frame.copy()
 
+        def calibrate_exposure(self, *, min, max, target):
+            bot = min
+            top = max
+            cur = (top + bot) // 2
+            count = 20
+            while bot < top and count > 0:
+                count -= 1
+                self.set_exposure(cur)
+                time.sleep(0.3)
+                bot, cur, top = CameraNull.binsearch_exposicao(target, self.peek_img(), bot, cur, top)
+
         def set_exposure(self, exposure: int):
-            self._picam2.set_controls({"ExposureTime": exposure})
+            self._picam2.controls.ExposureTime = exposure
 
         def set_focus(self, focus: float):
             pass

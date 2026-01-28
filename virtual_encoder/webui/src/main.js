@@ -58,7 +58,7 @@ document.querySelector('#app').innerHTML = `
             <button class="iniciar-download" disabled>Iniciar Download</button>
 
             <button class="toggle-streaming">Toggle Streaming</button>
-            <button class="toggle-calibracao">Toggle Calibração</button>
+            <button class="toggle-calibracao">Toggle Alinhamento</button>
 
             <button class="mudar-modo" disabled>Mudar modo</button>
             <button class="reiniciar" disabled>Reiniciar</button>

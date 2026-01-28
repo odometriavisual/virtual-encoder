@@ -8,7 +8,8 @@ export function init_controls() {
         mudar_modo: document.querySelector('button.mudar-modo'),
         reiniciar: document.querySelector('button.reiniciar'),
         desligar: document.querySelector('button.desligar'),
-    }
+        calibrar_exposicao: document.querySelector('.exposicao'),
+        }
 
     for (let [_, btn] of Object.entries(window.btns)) {
         btn.disabled = true
@@ -65,7 +66,7 @@ export function init_controls() {
         document.querySelectorAll('.crosshair').forEach(e => e.classList.toggle('hidden'))
     )
 
-    document.querySelector('.exposicao').addEventListener('click', async event => {
+    window.btns.calibrar_exposicao.addEventListener('click', async event => {
         encoder_api.calibrate_exposure(event)
     })
 
@@ -73,7 +74,7 @@ export function init_controls() {
 }
 
 export function update_controls(status) {
-    const global_disable = status.estado === 'Calibrando'
+    const global_disable = status.modo === 'Calibracao'
 
     if (status.modo === 'Tempo' || status.modo === 'Odometro') {
         window.btns.iniciar_download.disabled = global_disable
@@ -98,7 +99,14 @@ export function update_controls(status) {
             btn.disabled = true
         }
     }
+    else if (status.modo === 'Calibracao') {
+        window.btns.iniciar_download.disabled = true
 
+        window.btns.iniciar_aquisicao.disabled = true
+        window.btns.parar_aquisicao.disabled = true
+    }
+
+    window.btns.calibrar_exposicao.disabled = global_disable || status.modo === 'Calibracao' || status.estado !== "Ready"
     window.toggle_streaming.disabled = window.toggle_streaming.debounce_enabled || global_disable
     window.btns.mudar_modo.disabled = global_disable || status.estado !== 'Ready'
     window.btns.reiniciar.disabled = global_disable || status.rpi5 === false

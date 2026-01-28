@@ -6,8 +6,8 @@ from .ensaio import Ensaio
 
 
 class AcquisitionWriter:
-    def __init__(self, gs):
-        self.ENSAIOS_DIR = "/home/pi/picam_imgs"
+    def __init__(self, save_directory, gs):
+        self.ENSAIOS_DIR = save_directory
         self.gs = gs
 
         self.__recording = False
@@ -58,7 +58,10 @@ class AcquisitionWriter:
                 self.__acquisition.add_imu_data(orientation)
 
     def start_acquisition(self, timestamp_ns, reason, pulses_period_ns):
-        self.__acquisition = Ensaio(f"{timestamp_ns} {reason}" if len(reason) > 0 else f"{timestamp_ns}", dir=self.ENSAIOS_DIR)
+        self.__acquisition = Ensaio(
+            f"{timestamp_ns} {reason}" if len(reason) > 0 else f"{timestamp_ns}",
+            dir=self.ENSAIOS_DIR,
+        )
         self.__recording = True
         self.__pending_imgs = [[], []]
         self.__pending_orientations = [[], []]

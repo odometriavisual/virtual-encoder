@@ -52,6 +52,14 @@ export async function set_modo(event, modo) {
     await fetch(`/set_modo/${modo}`, { method });
 }
 
+export async function calibrate_exposure(event) {
+    event.target.disabled = true;
+    set_debounce_button(event.target);
+
+    const method = 'POST';
+    await fetch('/calibrate_exposure', { method })
+}
+
 export async function set_exposure(event, value) {
     event.target.disabled = true;
     set_debounce_button(event.target);

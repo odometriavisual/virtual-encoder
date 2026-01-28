@@ -18,7 +18,6 @@ export function init_controls() {
     window.toggle_streaming = document.querySelector('button.toggle-streaming')
     window.toggle_calibracao = document.querySelector('button.toggle-calibracao')
 
-    window.exposicao = document.querySelector('.exposicao > input')
     window.pulsos_por_segundo = document.querySelector('.pulsos-por-segundo > input')
     window.motivo = document.querySelector('.motivo > input')
 
@@ -66,14 +65,8 @@ export function init_controls() {
         document.querySelectorAll('.crosshair').forEach(e => e.classList.toggle('hidden'))
     )
 
-    document.querySelector('.exposicao > button').addEventListener('click', async event => {
-        encoder_api.set_exposure(event, window.exposicao.value)
-    })
-
-    window.exposicao.addEventListener("keyup", async event => {
-        if (event.key === "Enter") {
-            encoder_api.set_exposure(event, window.exposicao.value)
-        }
+    document.querySelector('.exposicao').addEventListener('click', async event => {
+        encoder_api.calibrate_exposure(event)
     })
 
     window.log_clear.addEventListener('click', () => window.log_text.innerText = '')

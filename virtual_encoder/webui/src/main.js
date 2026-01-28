@@ -41,11 +41,7 @@ document.querySelector('#app').innerHTML = `
                 <input type="range" min="0" max="10" step="0.05" value="1" />
             </label>
 
-            <label class="exposicao">
-                <div>Exposição (us):</div>
-                <input type="number" value="750" />
-                <button>Enviar</button>
-            </label>
+            <button class="exposicao">Calibrar Exposição</button>
 
             <label class="pulsos-por-segundo">
                 <div>Pulsos/s:</div>

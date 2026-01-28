@@ -14,20 +14,22 @@ body {
   grid-template-columns: max-content 168px auto;
   grid-template-rows: auto 240px;
   grid-template-areas:
-				"img       monitoramento log"
-				"controles controles     log"
+    "img       monitoramento log"
+    "controles controles     log"
 }
 
-@media (width <= 1200px) {
+@media (width <=1200px) {
   .wrapper {
     grid-template-columns: auto 168px;
     grid-template-rows: auto 240px;
     grid-template-areas:
-                    "img       monitoramento"
-                    "controles controles    "
+      "img       monitoramento"
+      "controles controles    "
   }
 
-  .log { display: none !important; }
+  .log {
+    display: none !important;
+  }
 }
 
 .monitoramento {
@@ -55,9 +57,25 @@ body {
   grid-area: 1/1;
 }
 
-.crosshair.hidden { display: none; }
-.crosshair.horizontal { z-index: 1; height:1px; width:100%; background:red; grid-area:1/1; }
-.crosshair.vertical { z-index: 1; height:100%; width:1px; background:red; grid-area:1/1; }
+.crosshair.hidden {
+  display: none;
+}
+
+.crosshair.horizontal {
+  z-index: 1;
+  height: 1px;
+  width: 100%;
+  background: red;
+  grid-area: 1/1;
+}
+
+.crosshair.vertical {
+  z-index: 1;
+  height: 100%;
+  width: 1px;
+  background: red;
+  grid-area: 1/1;
+}
 
 .log {
   display: flex;
@@ -68,7 +86,7 @@ body {
   height: 98vh;
 }
 
-.log > button {
+.log>button {
   height: 48px;
 }
 
@@ -100,16 +118,16 @@ img {
 }
 
 .modal {
-    display: none;
-    position: fixed;
-    z-index: 1;
-    padding-top: 100px;
-    left: 0;
-    top: 0;
-    width: 100%;
-    height: 100%;
-    overflow: auto;
-    background-color: rgba(0,0,0,0.4);
+  display: none;
+  position: fixed;
+  z-index: 1;
+  padding-top: 100px;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  overflow: auto;
+  background-color: rgba(0, 0, 0, 0.4);
 }
 
 .modal-content {
@@ -125,7 +143,7 @@ img {
   grid-gap: 16px;
 }
 
-.modal-modos > .modal-content {
+.modal-modos>.modal-content {
   width: 40%;
 
   display: grid;
@@ -154,12 +172,12 @@ img {
   cursor: pointer;
 }
 
-.modal-content > button {
+.modal-content>button {
   grid-area: 2;
   height: 150px;
 }
 
-.modal-content > .modal-titulo {
+.modal-content>.modal-titulo {
   grid-area: 1 / 1 / 1 / span 2;
 
   user-select: none;
@@ -167,7 +185,7 @@ img {
   font-weight: bold;
 }
 
-.modal.modal-download > .modal-content {
+.modal.modal-download>.modal-content {
   width: 40%;
 
   display: grid;
@@ -188,14 +206,17 @@ img {
 .loader {
   width: calc(80px / cos(45deg));
   height: 14px;
-  --c: #000 0 15px,#0000 0 20px;
-  background: repeating-linear-gradient(135deg,var(--c)) left top, repeating-linear-gradient( 45deg,var(--c)) left bottom;
-  background-size:  200% 50%;
+  --c: #000 0 15px, #0000 0 20px;
+  background: repeating-linear-gradient(135deg, var(--c)) left top, repeating-linear-gradient(45deg, var(--c)) left bottom;
+  background-size: 200% 50%;
   background-repeat: no-repeat;
   animation: download-anim 4s infinite linear;
 }
+
 @keyframes download-anim {
-  100% {background-position:top right,bottom right}
+  100% {
+    background-position: top right, bottom right
+  }
 }
 
 .modal-download .modal-progress {
@@ -209,7 +230,7 @@ img {
   user-select: none;
 }
 
-.visualization > canvas {
+.visualization>canvas {
   position: absolute;
   top: 0;
   left: 0;
@@ -225,24 +246,63 @@ img {
   grid-template-rows: 24px 24px 1fr 1fr 1fr;
 }
 
-.brilho { grid-area: 1 / 1 / span 1 / span 14; user-select: none; }
-.brilho { display: flex; gap: 8px; }
-.brilho > input[type="button"] { flex-shrink: 10; }
+.brilho {
+  grid-area: 1 / 1 / span 1 / span 14;
+  user-select: none;
+}
 
-.iniciar-aquisicao { grid-area: 5 / auto / span 1 / span 2; }
-.parar-aquisicao { grid-area: 5 / auto / span 1 / span 2; }
+.brilho {
+  display: flex;
+  gap: 8px;
+}
 
-.mudar-modo { grid-area: 5 / 7 / span 1 / span 2; }
-.toggle-streaming { grid-area: 4 / 10 / span 1 / span 2; }
-.toggle-calibracao { grid-area: 5 / 10 / span 1 / span 2; }
+.brilho>input[type="button"] {
+  flex-shrink: 10;
+}
 
-.iniciar-download { grid-area: 5 / auto / span 1 / span 2; }
-.reiniciar { grid-area: 5 / 13 / span 1 / span 2; }
-.desligar { grid-area: 4 / 13 / span 1 / span 2; }
+.iniciar-aquisicao {
+  grid-area: 5 / auto / span 1 / span 2;
+}
 
-.exposicao { grid-area: 3 / 1 / span 1 / span 3; }
-.pulsos-por-segundo { grid-area: 3 / 5 / span 1 / span 3; }
-.motivo { grid-area: 3 / 9 / span 1 / span 3; }
+.parar-aquisicao {
+  grid-area: 5 / auto / span 1 / span 2;
+}
+
+.mudar-modo {
+  grid-area: 5 / 7 / span 1 / span 2;
+}
+
+.toggle-streaming {
+  grid-area: 4 / 10 / span 1 / span 2;
+}
+
+.toggle-calibracao {
+  grid-area: 5 / 10 / span 1 / span 2;
+}
+
+.iniciar-download {
+  grid-area: 5 / auto / span 1 / span 2;
+}
+
+.reiniciar {
+  grid-area: 5 / 13 / span 1 / span 2;
+}
+
+.desligar {
+  grid-area: 4 / 13 / span 1 / span 2;
+}
+
+.exposicao {
+  grid-area: 3 / 1 / span 1 / span 3;
+}
+
+.pulsos-por-segundo {
+  grid-area: 3 / 5 / span 1 / span 3;
+}
+
+.motivo {
+  grid-area: 3 / 9 / span 1 / span 3;
+}
 
 /* Chrome, Safari, Edge, Opera */
 input::-webkit-outer-spin-button,
@@ -256,13 +316,18 @@ input[type=number] {
   -moz-appearance: textfield;
 }
 
-label > div { align-self: center; }
-.exposicao > input { flex-grow: 1;}
-.brilho > input,
-.pulsos-por-segundo > input,
-.motivo > input { flex-grow: 1; width: 100%;}
+label>div {
+  align-self: center;
+}
 
-.monitoramento > div {
+.brilho>input,
+.pulsos-por-segundo>input,
+.motivo>input {
+  flex-grow: 1;
+  width: 100%;
+}
+
+.monitoramento>div {
   display: flex;
   justify-content: center;
   align-items: center;

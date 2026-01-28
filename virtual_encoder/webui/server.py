@@ -116,6 +116,14 @@ class WebuiApp:
             self.gs.send_event("stop_stream")
             return ""
 
+        @self.app.route("/calibrate_exposure", methods=["POST"])
+        def calibrate_exposure():
+            """
+            Calibrates the camera exposure according to the configuration present in the config file.
+            """
+            self.gs.send_event("calibrate_exposure")
+            return ""
+
         @self.app.route("/set_exposure/<int:value>", methods=["POST"])
         def set_exposure(value):
             """

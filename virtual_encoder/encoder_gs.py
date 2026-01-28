@@ -4,7 +4,7 @@ from queue import Queue
 from .hal.camera import CameraNull, CameraUDP, CameraPicamera2
 from .hal.display import DisplayNull, DisplaySSD1306
 from .hal.encoder import EncoderNull, EncoderGPIO
-from .hal.imu import ImuNull, ImuI2C
+from .hal.imu import ImuNull, ImuI2C, ImuUDP
 from .hal.network_interface import NetworkInterfaceConfigFile
 from .hal.relay import RelayNull, RelayGPIO
 from .hal.led import LedNull, LedSerdes
@@ -16,6 +16,7 @@ from .acquisition_writer import AcquisitionWriter
 
 class EncoderGS:
     def __init__(self, config, *, default_modo_lambda):
+        self.config = config
         self.status = {
             "rpi5": {
                 "temp": 0.0,
@@ -31,67 +32,122 @@ class EncoderGS:
         }
         self.status_lock = threading.Lock()
 
-        if config["debug"]:
-            self.display = DisplayNull()
-            self.encoders = (EncoderNull(), EncoderNull(), EncoderNull())
-            self.imu = ImuNull()
-            self.network_interface = NetworkInterfaceConfigFile(self, "eno1", "/tmp")
-            self.relay = RelayNull()
-            self.led = LedNull()
-            self.serdes = SerdesNull()
-            self.thermal_sensors = ThermalSensorsNull()
-            self.ssd_manager = MountDeviceManager(
-                device="/dev/sda1", mount_point="/media/usb-ssd"
-            )
-            self.camera = CameraNull()
-        else:
-            self.encoders = [
-                EncoderGPIO(PIN_A=pins["A"], PIN_B=pins["B"]) for pins in config["gpio"]["encoders_panther"]
-            ]
-            self.network_interface = NetworkInterfaceConfigFile(
-                self, "eth1", "/media/usb-ssd/"
-            )
-            self.relay = RelayGPIO(config["gpio"]["relay"])
-            self.led = LedSerdes(config["gpio"]["led"])
-            self.serdes = Serdes(
-                bnoreset_pin=config["gpio"]["bno_reset"],
-                powerdown_pin=config["gpio"]["serdes_powerdown"],
-                seraddr=config["serdes"]["serializer_address"],
-                desaddr=config["serdes"]["deserializer_address"],
-                verbose=config["serdes"]["verbose"],
-                monitor=config["serdes"]["eye_monitor"],
-                force_camera_on=config["serdes"]["force_camera_on"],
-            )
-            self.serdes.run(enable_driver=True)
-            self.thermal_sensors = ThermalSensorsRaspberry(self)
-            self.ssd_manager = MountDeviceManager(
-                device="/dev/sda1", mount_point="/media/usb-ssd"
-            )
+        self.__setup_display()
+        self.__setup_encoders()
+        self.__setup_relay()
+        self.__setup_imu()
+        self.__setup_led()
+        self.__setup_serdes()
+        self.__setup_thermal_sensors()
+        self.__setup_camera()
+        self.__setup_acquisition_writer()
 
-            try:
-                self.display = DisplaySSD1306(self)
-                self.display.start()
-            except ValueError:
-                self.display = DisplayNull()
-
-            try:
-                self.camera = CameraPicamera2(self)
-            except IndexError:
-                self.camera = CameraUDP(self)
-            self.camera.start()
-
-            self.imu = ImuI2C(self)
-            self.imu.start()
-
-        self.ssd_manager.mount()
-        self.network_interface.set_ip_address(None)
-        self.ssd_manager.unmount()
-
-        self.acquisition_writer = AcquisitionWriter(self)
+        # ssd_manager must be set up before network interface
+        self.__setup_ssd_manager()
+        self.__setup_network_interface()
 
         self._event_queue = Queue(4)
 
         self.modo = default_modo_lambda(self)
+
+    def __setup_display(self):
+        if self.config["debug"]:
+            self.display = DisplayNull()
+        else:
+            try:
+                self.display = DisplaySSD1306(self)
+                self.display.start()
+            except Exception:
+                self.display = DisplayNull()
+
+    def __setup_encoders(self):
+        if self.config["debug"]:
+            self.encoders = (EncoderNull(), EncoderNull(), EncoderNull())
+        else:
+            self.encoders = [
+                EncoderGPIO(PIN_A=pins["A"], PIN_B=pins["B"])
+                for pins in self.config["gpio"]["encoders_panther"]
+            ]
+
+    def __setup_relay(self):
+        if self.config["debug"]:
+            self.relay = RelayNull()
+        else:
+            self.relay = RelayGPIO(self.config["gpio"]["relay"])
+
+    def __setup_imu(self):
+        if self.config["debug"]:
+            self.imu = ImuNull()
+        elif self.config["use_legacy_camera"]:
+            self.imu = ImuUDP(self)
+            self.imu.start()
+        else:
+            self.imu = ImuI2C(self)
+            self.imu.start()
+
+    def __setup_led(self):
+        if self.config["debug"] or self.config["use_legacy_camera"]:
+            self.led = LedNull()
+        else:
+            self.led = LedSerdes(self.config["gpio"]["led"])
+
+    def __setup_serdes(self):
+        if self.config["debug"] or self.config["use_legacy_camera"]:
+            self.serdes = SerdesNull()
+        else:
+            self.serdes = Serdes(
+                bnoreset_pin=self.config["gpio"]["bno_reset"],
+                powerdown_pin=self.config["gpio"]["serdes_powerdown"],
+                seraddr=self.config["serdes"]["serializer_address"],
+                desaddr=self.config["serdes"]["deserializer_address"],
+                verbose=self.config["serdes"]["verbose"],
+                monitor=self.config["serdes"]["eye_monitor"],
+                force_camera_on=self.config["serdes"]["force_camera_on"],
+            )
+            self.serdes.run(enable_driver=True)
+
+    def __setup_thermal_sensors(self):
+        if self.config["debug"]:
+            self.thermal_sensors = ThermalSensorsNull()
+        else:
+            self.thermal_sensors = ThermalSensorsRaspberry(self)
+
+    def __setup_ssd_manager(self):
+        if self.config["debug"]:
+            self.ssd_manager = None
+        else:
+            self.ssd_manager = MountDeviceManager(
+                device="/dev/sda1", mount_point="/media/usb-ssd"
+            )
+
+    def __setup_network_interface(self):
+        if self.config["debug"]:
+            self.network_interface = NetworkInterfaceConfigFile(self, "eno1", "/tmp")
+        else:
+            self.network_interface = NetworkInterfaceConfigFile(
+                self, self.config["network"]["interface"], "/media/usb-ssd/"
+            )
+            self.ssd_manager.mount()
+            self.network_interface.set_ip_address(None)
+            self.ssd_manager.unmount()
+
+    def __setup_camera(self):
+        if self.config["debug"]:
+            self.camera = CameraNull()
+        elif self.config["use_legacy_camera"]:
+            self.camera = CameraUDP(self)
+            self.camera = CameraNull()
+        else:
+            try:
+                self.camera = CameraPicamera2(self)
+                self.camera.start()
+            except IndexError:
+                self.camera = CameraNull()
+
+    def __setup_acquisition_writer(self):
+        self.acquisition_writer = AcquisitionWriter(
+            self.config["acquisition"]["directory"], self
+        )
 
     def get(self, prop):
         return self.status[prop]

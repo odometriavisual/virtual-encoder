@@ -56,7 +56,7 @@ class WebuiApp:
             """
             The web page.
             """
-            with open("src/webui/dist/index.html", "r") as file:
+            with open("virtual_encoder/webui/dist/index.html", "r") as file:
                 return file.read()
 
         @self.app.route("/status", methods=["GET"])
@@ -90,7 +90,7 @@ class WebuiApp:
             ModoOdometro ignores the parameter pulses_per_second.
             """
             self.gs.send_event(("start_acquisition", pulses_per_second, reason))
-            return ''
+            return ""
 
         @self.app.route("/stop_acquisition", methods=["POST"])
         def stop_acquisition():
@@ -98,7 +98,7 @@ class WebuiApp:
             If in the ModoOdometro or in the ModoTempo at the Aquisição state, stops and saves an aquisition.
             """
             self.gs.send_event("stop_acquisition")
-            return ''
+            return ""
 
         @self.app.route("/start_stream", methods=["POST"])
         def start_stream():
@@ -106,7 +106,7 @@ class WebuiApp:
             Starts the video stream.
             """
             self.gs.send_event("start_stream")
-            return ''
+            return ""
 
         @self.app.route("/stop_stream", methods=["POST"])
         def stop_stream():
@@ -114,7 +114,7 @@ class WebuiApp:
             Stops the video stream.
             """
             self.gs.send_event("stop_stream")
-            return ''
+            return ""
 
         @self.app.route("/set_exposure/<int:value>", methods=["POST"])
         def set_exposure(value):
@@ -122,7 +122,7 @@ class WebuiApp:
             Sets the camera exposure. Value must be an integer in microseconds.
             """
             self.gs.send_event(("set_exposure", value))
-            return ''
+            return ""
 
         @self.app.route("/set_modo/<modo>", methods=["POST"])
         def set_modo(modo):
@@ -137,7 +137,7 @@ class WebuiApp:
             """
             if modo in ["Autonomo", "Tempo", "Odometro", "Download"]:
                 self.gs.send_event(("set_modo", modo))
-                return ''
+                return ""
             else:
                 abort(404)
 
@@ -153,7 +153,7 @@ class WebuiApp:
             """
             if component in ["all", "camera", "relay"]:
                 self.gs.send_event(("shutdown", component))
-                return ''
+                return ""
             else:
                 abort(404)
 
@@ -169,7 +169,7 @@ class WebuiApp:
             """
             if component in ["all", "camera", "relay"]:
                 self.gs.send_event(("reboot", component))
-                return ''
+                return ""
             else:
                 abort(404)
 

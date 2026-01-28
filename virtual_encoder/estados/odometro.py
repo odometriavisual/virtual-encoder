@@ -89,7 +89,9 @@ class EstadoAquisicaoOdometro(Estado):
             timestamp_ns = time.time_ns()
 
             def start_acquisition_helper():
-                self.gs.acquisition_writer.start_acquisition(timestamp_ns, self.reason, 0)
+                self.gs.acquisition_writer.start_acquisition(
+                    timestamp_ns, self.reason, 0
+                )
 
             req_thread = threading.Thread(target=start_acquisition_helper, daemon=True)
 

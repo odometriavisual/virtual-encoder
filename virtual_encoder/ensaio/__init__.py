@@ -71,12 +71,9 @@ class Ensaio:
                 self.__px_p_mm = float(data["px_p_mm"])
                 self.__pulses_period = int(data["pulses_period_ns"])
 
-                
             self.__imu_data = []
             imu_filenames = [
-                filename
-                for filename in zip.namelist()
-                if "imu" in filename
+                filename for filename in zip.namelist() if "imu" in filename
             ]
 
             if len(imu_filenames) > 0:
@@ -88,13 +85,15 @@ class Ensaio:
                     reader = csv.DictReader(file)
 
                     for row in reader:
-                        self.__imu_data.append({
-                            'timestamp': int(row['timestamp']),
-                            'qx': float(row['qx']) if row['qx'] else 0.0,
-                            'qy': float(row['qy']) if row['qy'] else 0.0,
-                            'qz': float(row['qz']) if row['qz'] else 0.0,
-                            'qw': float(row['qw']) if row['qw'] else 0.0,
-                        })
+                        self.__imu_data.append(
+                            {
+                                "timestamp": int(row["timestamp"]),
+                                "qx": float(row["qx"]) if row["qx"] else 0.0,
+                                "qy": float(row["qy"]) if row["qy"] else 0.0,
+                                "qz": float(row["qz"]) if row["qz"] else 0.0,
+                                "qw": float(row["qw"]) if row["qw"] else 0.0,
+                            }
+                        )
 
             self.__imgs = sorted(
                 [filename for filename in zip.namelist() if ".jpg" in filename]
@@ -102,21 +101,24 @@ class Ensaio:
             self.__img_count = len(self.__imgs)
 
         self.__zip = ZipFile(self.__zip_path, "a")
-        
+
     def close(self):
         with io.TextIOWrapper(
             self.__zip.open("data/imu.csv", mode="w"), newline=""
         ) as file:
-            writer = csv.DictWriter(file, fieldnames=[
-                "timestamp",
-                "qw",
-                "qx",
-                "qy",
-                "qz",
-                "acc_x",
-                "acc_y",
-                "acc_z",
-           ])
+            writer = csv.DictWriter(
+                file,
+                fieldnames=[
+                    "timestamp",
+                    "qw",
+                    "qx",
+                    "qy",
+                    "qz",
+                    "acc_x",
+                    "acc_y",
+                    "acc_z",
+                ],
+            )
             writer.writeheader()
             writer.writerows(self.__imu_data)
 
@@ -147,16 +149,18 @@ class Ensaio:
         return self.__imu_data
 
     def add_imu_data(self, data):
-        self.__imu_data.append({
-            'timestamp': data[0],
-            'qx': data[1],
-            'qy': data[2],
-            'qz': data[3],
-            'qw': data[4],
-            'acc_x': data[5],
-            'acc_y': data[6],
-            'acc_z': data[7],
-        })
+        self.__imu_data.append(
+            {
+                "timestamp": data[0],
+                "qx": data[1],
+                "qy": data[2],
+                "qz": data[3],
+                "qw": data[4],
+                "acc_x": data[5],
+                "acc_y": data[6],
+                "acc_z": data[7],
+            }
+        )
 
     def set_displacements(
         self, displacements: NDArray, quaternions: NDArray, timestamps: NDArray
@@ -171,7 +175,7 @@ class Ensaio:
 
     def has_displacements(self) -> bool:
         self.close()
-        
+
         with ZipFile(self.__zip_path, "r") as zip:
             return "data/displacements_data.npz" in zip.namelist()
 
@@ -185,16 +189,15 @@ class Ensaio:
                 data = np.load(displacements_file, allow_pickle=True)
 
                 return {
-                    'displacements': data['displacements'],
-                    'quaternions': data['quaternions'],
-                    'timestamps': data['timestamps'],
+                    "displacements": data["displacements"],
+                    "quaternions": data["quaternions"],
+                    "timestamps": data["timestamps"],
                 }
 
         self.__zip = ZipFile(self.__zip_path, "a")
 
-
     def add_img(self, img: NDArray, timestamp: int):
-        _, buf =  cv2.imencode(".jpg", img)
+        _, buf = cv2.imencode(".jpg", img)
         self.__zip.writestr(f"data/{timestamp}.jpg", buf)
 
         self.__img_count += 1
@@ -224,13 +227,15 @@ class Ensaio:
         try:
             with ZipFile(self.__zip_path, "r") as zip:
                 for filename in self.__imgs:
-                    imgs.append((
-                        int(Path(filename).stem),
-                        cv2.imdecode(
-                            np.frombuffer(zip.read(filename), dtype=np.uint8),
-                            cv2.IMREAD_GRAYSCALE,
-                        ),
-                    ))
+                    imgs.append(
+                        (
+                            int(Path(filename).stem),
+                            cv2.imdecode(
+                                np.frombuffer(zip.read(filename), dtype=np.uint8),
+                                cv2.IMREAD_GRAYSCALE,
+                            ),
+                        )
+                    )
             return imgs
         except KeyboardInterrupt:
             return []

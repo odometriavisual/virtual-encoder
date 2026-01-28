@@ -42,6 +42,11 @@ def load_config(config_path):
                 # Network interface used to access the interface
                 interface = "eth0"
 
+                [camera]
+                min_exposure = 75
+                max_exposure = 1000
+                target_average = 50
+
                 [serdes]
                 # I2c addresses for the serdes' chips
                 serializer_address = 0x40
@@ -63,6 +68,7 @@ def load_config(config_path):
 
     with open(config_path, "rb") as config_file:
         return tomllib.load(config_file)
+
 
 def _get_ip(gs: EncoderGS):
     while True:
@@ -88,7 +94,9 @@ def main():
 
     Rele: 25
     """
-    config = load_config(os.getenv("HOME", default="/home/pi") + "/virtual_encoder.toml")
+    config = load_config(
+        os.getenv("HOME", default="/home/pi") + "/virtual_encoder.toml"
+    )
     gs = EncoderGS(config, default_modo_lambda=lambda gs: ModoTempo(gs))
 
     webui = WebuiApp(gs)
@@ -129,6 +137,13 @@ def main():
 
                 case _, ("set_exposure", value):
                     gs.camera.set_exposure(value)
+
+                case _, "calibrate_exposure":
+                    gs.camera.calibrate_exposure(
+                        min=config["camera"]["min_exposure"],
+                        max=config["camera"]["max_exposure"],
+                        target=config["camera"]["target_average"],
+                    )
 
                 case _, "start_stream":
                     gs.camera.start_stream()

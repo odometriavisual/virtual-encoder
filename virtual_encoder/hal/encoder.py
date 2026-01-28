@@ -60,6 +60,6 @@ try:
 except Exception:
 
     class EncoderGPIO(EncoderNull):
-        def __init__(self):
+        def __init__(self, PIN_A, PIN_B):
             super().__init__()
             raise NotImplementedError

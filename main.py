@@ -5,7 +5,7 @@ import subprocess
 import tomllib
 import os
 
-from virtual_encoder.modos import ModoAutonomo, ModoOdometro, ModoTempo
+from virtual_encoder.modos import ModoAutonomo, ModoOdometro, ModoTempo, ModoCalibracao
 from virtual_encoder.encoder_gs import EncoderGS
 from virtual_encoder.webui.server import WebuiApp
 
@@ -43,8 +43,11 @@ def load_config(config_path):
                 interface = "eth0"
 
                 [camera]
+                # The calibration will choose a exposure in the defined range
                 min_exposure = 75
                 max_exposure = 1000
+                # The calibration will try to match the average pixel value to the target_average
+                # The average is a value between 0 and 255
                 target_average = 50
 
                 [serdes]
@@ -138,12 +141,14 @@ def main():
                 case _, ("set_exposure", value):
                     gs.camera.set_exposure(value)
 
+                case ModoAutonomo(), "calibrate_exposure":
+                    gs.set_modo(ModoCalibracao(gs, config, "Autonomo"))
+                case ModoOdometro(), "calibrate_exposure":
+                    gs.set_modo(ModoCalibracao(gs, config, "Odometro"))
+                case ModoTempo(), "calibrate_exposure":
+                    gs.set_modo(ModoCalibracao(gs, config, "Tempo"))
                 case _, "calibrate_exposure":
-                    gs.camera.calibrate_exposure(
-                        min=config["camera"]["min_exposure"],
-                        max=config["camera"]["max_exposure"],
-                        target=config["camera"]["target_average"],
-                    )
+                    gs.set_modo(ModoCalibracao(gs, config, "Tempo"))
 
                 case _, "start_stream":
                     gs.camera.start_stream()

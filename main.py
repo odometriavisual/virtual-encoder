@@ -2,11 +2,67 @@
 import threading
 import time
 import subprocess
+import tomllib
+import os
 
 from virtual_encoder.modos import ModoAutonomo, ModoOdometro, ModoTempo
 from virtual_encoder.encoder_gs import EncoderGS
 from virtual_encoder.webui.server import WebuiApp
 
+
+def load_config(config_path):
+    if not os.path.isfile(config_path):
+        with open(config_path, "w") as config_file:
+            config_file.write(
+                """# enables mock HALs, ie. runs the encoder without connecting to any hardware peripherals
+                debug = false
+
+                # uses older RPi camera and IMU insted of the new serdes camera
+                use_legacy_camera = false
+
+                [acquisition]
+                # Directory where the acquisitions will be saved to
+                directory = "/home/pi/picam_imgs"
+
+                [gpio]
+                # Sets GPIO/BCM pin numbers
+                sda = 2
+                scl = 3
+                relay = 25
+                led = 17
+                bno_reset = 27
+                serdes_powerdown = 22
+                encoders_panther = [
+                    { A = 26, B = 19 },
+                    { A = 5, B = 23 },
+                    { A = 6, B = 13 },
+                ]
+
+                [network]
+                # Network interface used to access the interface
+                interface = "eth0"
+
+                [serdes]
+                # I2c addresses for the serdes' chips
+                serializer_address = 0x40
+                deserializer_address = 0x2A
+                verbose=false
+                eye_monitor=false
+                force_camera_on=false
+
+                # enable verbose I2C info
+                verbose = false
+
+                # enable monitor for the eye diagram to test cable quality
+                eye_monitor = false
+
+                # non documented configuration from the serdes chip
+                force_camera_on = false
+                """.replace("                ", "")
+            )
+
+    with open(config_path, "rb") as config_file:
+        return tomllib.load(config_file)
 
 def _get_ip(gs: EncoderGS):
     while True:
@@ -32,7 +88,8 @@ def main():
 
     Rele: 25
     """
-    gs = EncoderGS(default_modo_lambda=lambda gs: ModoTempo(gs), debug=False)
+    config = load_config(os.getenv("HOME", default="/home/pi") + "/virtual_encoder.toml")
+    gs = EncoderGS(config, default_modo_lambda=lambda gs: ModoTempo(gs))
 
     webui = WebuiApp(gs)
     threading.Thread(target=webui.run, daemon=True).start()

@@ -15,7 +15,7 @@ from .acquisition_writer import AcquisitionWriter
 
 
 class EncoderGS:
-    def __init__(self, *, default_modo_lambda, debug=False):
+    def __init__(self, config, *, default_modo_lambda):
         self.status = {
             "rpi5": {
                 "temp": 0.0,
@@ -31,7 +31,7 @@ class EncoderGS:
         }
         self.status_lock = threading.Lock()
 
-        if debug:
+        if config["debug"]:
             self.display = DisplayNull()
             self.encoders = (EncoderNull(), EncoderNull(), EncoderNull())
             self.imu = ImuNull()
@@ -45,21 +45,22 @@ class EncoderGS:
             )
             self.camera = CameraNull()
         else:
-            self.encoders = (
-                EncoderGPIO(PIN_A=26, PIN_B=19),
-                EncoderGPIO(PIN_A=5, PIN_B=23),
-                EncoderGPIO(PIN_A=6, PIN_B=13),
-            )
+            self.encoders = [
+                EncoderGPIO(PIN_A=pins["A"], PIN_B=pins["B"]) for pins in config["gpio"]["encoders_panther"]
+            ]
             self.network_interface = NetworkInterfaceConfigFile(
                 self, "eth1", "/media/usb-ssd/"
             )
-            self.relay = RelayGPIO()
-            self.led = LedSerdes(17)
+            self.relay = RelayGPIO(config["gpio"]["relay"])
+            self.led = LedSerdes(config["gpio"]["led"])
             self.serdes = Serdes(
-                bnoreset_pin=27,
-                powerdown_pin=22,
-                seraddr=0x40,
-                desaddr=0x2A,
+                bnoreset_pin=config["gpio"]["bno_reset"],
+                powerdown_pin=config["gpio"]["serdes_powerdown"],
+                seraddr=config["serdes"]["serializer_address"],
+                desaddr=config["serdes"]["deserializer_address"],
+                verbose=config["serdes"]["verbose"],
+                monitor=config["serdes"]["eye_monitor"],
+                force_camera_on=config["serdes"]["force_camera_on"],
             )
             self.serdes.run(enable_driver=True)
             self.thermal_sensors = ThermalSensorsRaspberry(self)

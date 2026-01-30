@@ -56,7 +56,14 @@ class EncoderGS:
             self.display = DisplayNull()
         else:
             try:
-                self.display = DisplaySSD1306(self)
+                self.display = DisplaySSD1306(
+                    self,
+                    width=self.config["display"]["width"],
+                    height=self.config["display"]["height"],
+                    i2c_scl=self.config["gpio"]["scl"],
+                    i2c_sda=self.config["gpio"]["sda"],
+                    addr=self.config["display"]["address"],
+                )
                 self.display.start()
             except Exception:
                 self.display = DisplayNull()

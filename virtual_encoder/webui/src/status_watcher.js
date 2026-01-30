@@ -27,14 +27,19 @@ export function update_status_watcher(status) {
     set_ok(window.status_watcher.camera, status.camera)
     set_ok(window.status_watcher.imu, status.imu)
 
-    window.status_watcher.rpi5.innerText = `Módulo Online
-      Versão ${status.version}
-			Modo ${status.modo}
-			${status.rpi5 === false || status.modo === 'Download'? status.estado:
-        (status.estado === 'Calibrando'? `Calibrando ${status.rpi0.progress}%`: 'Estado' + status.estado)}
-			${status.rpi5 ? `IP: ${status.rpi5.ip}` : ''}
-			${status.rpi5? `Temp: ${status.rpi5.temp?.toFixed(2)} ℃`: ''}
-			${status.display? "":"Display não encontrado"}`
+    if (status.rpi5) {
+        window.status_watcher.rpi5.innerText = `Módulo Online
+          Versão ${status.version}
+    			Modo ${status.modo}
+    			${status.rpi5 === false || status.modo === 'Download'? status.estado:
+            (status.estado === 'Calibrando'? `Calibrando ${status.rpi0.progress}%`: 'Estado' + status.estado)}
+    			${status.rpi5 ? `IP: ${status.rpi5.ip}` : ''}
+    			${status.rpi5? `Temp: ${status.rpi5.temp?.toFixed(2)} ℃`: ''}
+    			${status.display? "":"Display não encontrado"}`
+    }
+    else {
+      window.status_watcher.rpi5.innerText = "Módulo Offline"
+    }
 
     window.status_watcher.rpi0.innerText = `RPi Zero
 			${status.rpi0 ? `Temp: ${status.rpi0.temp?.toFixed(2)} ℃` : ''}`

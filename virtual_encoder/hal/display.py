@@ -71,16 +71,16 @@ try:
             while True:
                 self.gs.set("display", self.is_connected)
 
+                version = self.gs.get("version")
                 camera = "Ok" if self.gs.get("camera") else "Err."
-                rpi_zero = "Ok" if self.gs.get("rpi0") else "Err."
                 imu = "Ok" if self.gs.get("imu") else "Err."
 
                 self.draw_line(0, f"MODO: {self.gs.get('modo')}", "center")
                 self.draw_line(1, f"ESTADO: {self.gs.get('estado')}", "center")
 
                 self.draw_line(2, f"IP: {self.gs.get('rpi5')['ip']}")
-                self.draw_line(3, f"CAM : {camera}")
-                self.draw_line(4, f"piZ: {rpi_zero} | IMU: {imu}")
+                self.draw_line(3, f"CAM : {camera} | IMU: {imu}")
+                self.draw_line(4, f"Versao: {version}")
 
                 self.update()
                 time.sleep(5)

@@ -65,7 +65,7 @@ class WebuiApp:
             Returns a json stream of the system's status.
             The stream contains a series of json objects, separated by \n, according to the following format:
 
-            { "rpi5": { "temp": 0.0, "ip": "0.0.0.0", }, "rpi0": False|{"temp": 0.0}, "camera": False|True, "imu": False|[0., 0., 0., 0., 0.], "pos": {"x": 0, "y": 0}, "modo": "Iniciando", "estado": "", "msg": "" }
+            { "rpi5": { "temp": 0.0, "ip": "0.0.0.0", }, "camera": False|True, "imu": False|[0., 0., 0., 0., 0.], "pos": {"x": 0, "y": 0}, "modo": "Iniciando", "estado": "", "msg": "" }
             """
 
             def generate_status():

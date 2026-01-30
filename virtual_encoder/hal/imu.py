@@ -61,12 +61,24 @@ try:
             self.orientation = [0, 0, 0, 1]
             self.__condition = threading.Condition()
 
-            i2c = board.I2C()
+            self.__connect()
 
+        def __connect(self):
             try:
-                self.__sensor = adafruit_bno055.BNO055_I2C(i2c, 0x28)
+                i2c = board.I2C()
+
+                connected_devices = i2c.scan()
+
+                if 0x28 in connected_devices:
+                    self.__sensor = adafruit_bno055.BNO055_I2C(i2c, 0x28)
+                elif 0x29 in connected_devices:                
+                    self.__sensor = adafruit_bno055.BNO055_I2C(i2c, 0x29)
+                else:
+                    self.gs.set("imu", False)
+
             except Exception:
-                self.__sensor = adafruit_bno055.BNO055_I2C(i2c, 0x29)
+                self.gs.set("imu", False)
+            
 
         def run(self):
             while True:
@@ -80,7 +92,9 @@ try:
                         self.__condition.notify_all()
 
                 except Exception:
-                    pass
+                    self.gs.set("imu", False)
+                    time.sleep(5)
+                    self.__connect()
 
                 time.sleep(0.01)
 

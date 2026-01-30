@@ -18,6 +18,7 @@ class EncoderGS:
     def __init__(self, config, *, default_modo_lambda):
         self.config = config
         self.status = {
+            "version": config["version"],
             "rpi5": {
                 "temp": 0.0,
                 "ip": "0.0.0.0",

@@ -70,7 +70,16 @@ def load_config(config_path):
             )
 
     with open(config_path, "rb") as config_file:
-        return tomllib.load(config_file)
+        config = tomllib.load(config_file)
+
+    config["version"] = "v" + subprocess.run(
+        # "git rev-parse --short HEAD".split(" "),
+        'git --no-pager log -1 --format="%cI"'.split(" "),
+        capture_output=True,
+        encoding="UTF-8",
+    ).stdout.strip().replace("-", "").replace(":", "")[3:9]
+    print(config["version"])
+    return config
 
 
 def _get_ip(gs: EncoderGS):

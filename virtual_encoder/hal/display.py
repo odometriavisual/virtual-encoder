@@ -34,23 +34,43 @@ try:
 
             self.width = width
             self.height = height
+            self.scl = i2c_scl
+            self.sda = i2c_sda
+            self.addr = addr
 
-            # Inicializa o display I2C
-            i2c = busio.I2C(i2c_scl, i2c_sda)
-            self.oled_i2c = adafruit_ssd1306.SSD1306_I2C(width, height, i2c, addr=addr)
+            self.retry_interval = 4
+            
+            self.is_connected = False
+            self.__connect()
 
-            # Limpa o display
-            self.clear()
 
-            # Cria a imagem em branco para desenhar
-            self.image = Image.new("1", (self.oled_i2c.width, self.oled_i2c.height))
-            self.draw = ImageDraw.Draw(self.image)
+        def __connect(self):
+            try:
+                # Inicializa o display I2C
+                i2c = busio.I2C(self.i2c_scl, self.i2c_sda)
+                self.oled_i2c = adafruit_ssd1306.SSD1306_I2C(self.width, self.height, i2c, addr=self.addr)
 
-            # Carrega a fonte padrão
-            self.font = ImageFont.load_default()
+                # Limpa o display
+                self.clear()
+
+                # Cria a imagem em branco para desenhar
+                self.image = Image.new("1", (self.oled_i2c.width, self.oled_i2c.height))
+                self.draw = ImageDraw.Draw(self.image)
+
+                # Carrega a fonte padrão
+                self.font = ImageFont.load_default()
+
+                self.is_connected = True
+                self.retry_interval = 4
+            except Exception:
+                self.is_connected = False
+                self.retry_interval = min(self.retry_interval*2, 3600)
+            
 
         def run(self):
             while True:
+                self.gs.set("display", self.is_connected)
+
                 camera = "Ok" if self.gs.get("camera") else "Err."
                 rpi_zero = "Ok" if self.gs.get("rpi0") else "Err."
                 imu = "Ok" if self.gs.get("imu") else "Err."
@@ -66,23 +86,33 @@ try:
                 time.sleep(5)
 
         def clear(self):
-            self.oled_i2c.fill(0)
-            self.oled_i2c.show()
+            try:
+                self.oled_i2c.fill(0)
+                self.oled_i2c.show()
+            except Exception:
+                pass
 
         def draw_line(self, line: int, text: str, align: str = "left"):
             line_height = 12  # Altura da linha em pixels (ajustável)
             y_position = line * line_height
 
-            # Limpa a linha especificada
-            self.draw.rectangle(
-                (0, y_position, self.width, y_position + line_height), outline=0, fill=0
-            )
-            # Desenha o texto
-            self.draw.text((0, y_position), text, align=align, font=self.font, fill=255)
+            try:
+                # Limpa a linha especificada
+                self.draw.rectangle(
+                    (0, y_position, self.width, y_position + line_height), outline=0, fill=0
+                )
+                # Desenha o texto
+                self.draw.text((0, y_position), text, align=align, font=self.font, fill=255)
+            except Exception:
+                pass
 
         def update(self):
-            self.oled_i2c.image(self.image)
-            self.oled_i2c.show()
+            try:
+                self.oled_i2c.image(self.image)
+                self.oled_i2c.show()
+            except Exception:
+                time.sleep(self.retry_interval)
+                self.__connect()
 except Exception:
 
     class DisplaySSD1306(DisplayNull):

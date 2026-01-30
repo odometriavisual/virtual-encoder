@@ -24,6 +24,7 @@ class EncoderGS:
                 "ip": "0.0.0.0",
             },
             "rpi0": False,
+            "display": False,
             "camera": False,
             "imu": False,
             "pos": {"x": 0, "y": 0},

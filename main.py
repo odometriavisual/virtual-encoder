@@ -79,13 +79,18 @@ def load_config(config_path):
     with open(config_path, "rb") as config_file:
         config = tomllib.load(config_file)
 
-    config["version"] = "v" + subprocess.run(
-        # "git rev-parse --short HEAD".split(" "),
-        'git --no-pager log -1 --format="%cI"'.split(" "),
-        capture_output=True,
-        encoding="UTF-8",
-    ).stdout.strip().replace("-", "").replace(":", "")[3:9]
-    print(config["version"])
+    config["version"] = (
+        "v"
+        + subprocess.run(
+            # "git rev-parse --short HEAD".split(" "),
+            'git --no-pager log -1 --format="%cI"'.split(" "),
+            capture_output=True,
+            encoding="UTF-8",
+        )
+        .stdout.strip()
+        .replace("-", "")
+        .replace(":", "")[3:9]
+    )
     return config
 
 
@@ -102,17 +107,6 @@ def _get_temp(gs: EncoderGS):
 
 
 def main():
-    """
-    OLED: 2 (SDA)
-          3 (SCL)
-
-                A,  B
-    Encoder 1: 26, 19
-    Encoder 2:  5, 23
-    Encoder 3:  6, 13
-
-    Rele: 25
-    """
     config = load_config(
         os.getenv("HOME", default="/home/pi") + "/virtual_encoder.toml"
     )

@@ -23,7 +23,6 @@ class EncoderGS:
                 "temp": 0.0,
                 "ip": "0.0.0.0",
             },
-            "rpi0": False,
             "display": False,
             "camera": False,
             "imu": False,

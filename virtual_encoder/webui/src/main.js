@@ -23,7 +23,6 @@ document.querySelector('#app').innerHTML = `
             <div class="status rpi5 err">
                 RPi 5
             </div>
-            <div class="status rpi0 err">RPi Zero</div>
             <div class="status camera err">Picam</div>
             <div class="status imu err">IMU</div>
         </div>

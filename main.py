@@ -58,6 +58,13 @@ def load_config(config_path):
                 eye_monitor=false
                 force_camera_on=false
 
+                [display]
+                # I2C address for the display
+                address = 0x3C
+                # Display screen size
+                width = 128
+                height = 64
+
                 # enable verbose I2C info
                 verbose = false
 

@@ -129,7 +129,7 @@ try:
             self._picam2 = Picamera2()
             self._picam2.configure(
                 self._picam2.create_video_configuration(
-                    main={"size": (640, 480)}, queue=False
+                    main={"size": (640, 480), "format": "RGB888"}, queue=False
                 )
             )
             self._picam2.controls.FrameRate = 60

@@ -108,6 +108,7 @@ export async function fetch_status_stream(update_status) {
             }
         } catch (err) {
             update_status({
+                version: "",
                 rpi5: false, // { temp: 33., ip: '0.0.0.0', },
                 rpi0: false, // { temp: 82.3, },
                 camera: false,

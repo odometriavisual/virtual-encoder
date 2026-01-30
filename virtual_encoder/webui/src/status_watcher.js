@@ -27,7 +27,8 @@ export function update_status_watcher(status) {
     set_ok(window.status_watcher.camera, status.camera)
     set_ok(window.status_watcher.imu, status.imu)
 
-    window.status_watcher.rpi5.innerText = `RPi 5
+    window.status_watcher.rpi5.innerText = `Módulo Online
+      Versão ${status.version}
 			Modo ${status.modo}
 			${status.rpi5 === false || status.modo === 'Download'? status.estado:
         (status.estado === 'Calibrando'? `Calibrando ${status.rpi0.progress}%`: 'Estado' + status.estado)

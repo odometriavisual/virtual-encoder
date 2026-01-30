@@ -134,22 +134,35 @@ try:
             )
             self._picam2.controls.FrameRate = 60
 
-            self._picam2.start()
             self._frame = self.default_frame.copy()
 
         def run(self):
             while True:
-                frame = self._picam2.capture_array()
+                try:
+                    self.start_stream()
+                    frame = self._picam2.capture_array()
+                    self.gs.set("camera", True)
 
-                with self._new_frame_condition:
-                    self._frame = frame
-                    self._new_frame_condition.notify_all()
+                    while True:
+                        frame = self._picam2.capture_array()
+
+                        with self._new_frame_condition:
+                            self._frame = frame
+                            self._new_frame_condition.notify_all()
+
+                except Exception:
+                    pass
+
+                self.stop_stream()
+                time.sleep(5)
 
         def start_stream(self):
             self._picam2.start()
+            self.gs.set("camera", True)
 
         def stop_stream(self):
             self._picam2.stop()
+            self.gs.set("camera", False)
 
         def get_img(self):
             with self._new_frame_condition:

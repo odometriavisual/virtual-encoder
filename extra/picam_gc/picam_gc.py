@@ -9,20 +9,22 @@ While filesystem usage still is > UPPER_THRESHOLD:
   Delete files from the last directory
 """
 
-UPPER_THRESHOLD = .8
-LOWER_THRESHOLD = .7
+UPPER_THRESHOLD = 0.8
+LOWER_THRESHOLD = 0.7
 
 import os
 from shutil import disk_usage, rmtree
 from os import scandir, mkdir, remove
 from os.path import isdir
 
-imgs_directory = '/home/pi/picam_imgs'
+imgs_directory = "/home/pi/picam_imgs"
+
 
 def list_sorted_directory(directory):
     with os.scandir(directory) as entries:
         sorted_entries = sorted(entries, key=lambda e: e.stat().st_ctime)
         return [e.name for e in sorted_entries]
+
 
 K = 2**10
 M = 2**20
@@ -39,7 +41,7 @@ if percent > UPPER_THRESHOLD:
 
     # first remove full directories
     while percent > LOWER_THRESHOLD and len(directories) > 1:
-        rmtree(f'{imgs_directory}/{directories.pop(0)}')
+        rmtree(f"{imgs_directory}/{directories.pop(0)}")
         # print(f'would remove {imgs_directory}/{directories.pop(0)}')
 
         (total, used, _) = disk_usage(imgs_directory)
@@ -47,11 +49,11 @@ if percent > UPPER_THRESHOLD:
 
     # remove files from last directory
     if percent > LOWER_THRESHOLD:
-        last_directory = f'{imgs_directory}/{directories[0]}'
+        last_directory = f"{imgs_directory}/{directories[0]}"
         files = list_sorted_directory(last_directory)
 
         while percent > LOWER_THRESHOLD:
-            remove(f'{last_directory}/{files.pop(0)}')
+            remove(f"{last_directory}/{files.pop(0)}")
             # print(f'  would remove {last_directory}/{files.pop(0)}')
 
             (total, used, _) = disk_usage(imgs_directory)

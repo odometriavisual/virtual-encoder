@@ -195,13 +195,13 @@ img {
 }
 
 .modal-download .modal-list {
-  grid-column: span 2;
+  grid-column: span 3;
+  overflow: scroll;
 }
 
 .modal-download .modal-row {
-  width: 100%;
   display: flex;
-  padding: 2px 12px 2px 12px;
+  padding: 12px;
   background-color: 1px solid #aaaaaa;
   user-select: none;
   cursor: pointer;
@@ -221,13 +221,6 @@ img {
   align-self: center;
   font-size: 1em;
 }
-
-.modal-download .modal-row :last-child {
-  align-self: center;
-  font-size: 1.8em;
-  color: #cc3030;
-}
-
 
 .modal-download .modal-update {
   grid-area: 3 / 1 / span 1 / span 3;

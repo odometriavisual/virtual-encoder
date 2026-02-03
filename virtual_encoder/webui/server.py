@@ -1,6 +1,7 @@
 import cv2
 import time
 import json
+import pathlib
 
 from flask import Flask, Response, abort
 from werkzeug.serving import BaseWSGIServer
@@ -9,8 +10,9 @@ from virtual_encoder.encoder_gs import EncoderGS
 
 
 class WebuiApp:
-    def __init__(self, gs: EncoderGS, host="0.0.0.0", port=5000):
+    def __init__(self, gs: EncoderGS, config, host="0.0.0.0", port=5000):
         self.gs = gs
+        self.config = config
 
         self.app = Flask(
             __name__, static_url_path="/assets", static_folder="dist/assets"
@@ -74,6 +76,19 @@ class WebuiApp:
                     yield "".join([json.dumps(self.gs.get_status()), "\n"])
 
             return Response(generate_status(), content_type="application/json")
+
+        @self.app.route("/ensaios", methods=["GET"])
+        def get_ensaio():
+            p = pathlib.Path(self.config["acquisition"]["directory"])
+            return [x.name for x in p.iterdir() if x.is_file()]
+
+        @self.app.route("/remove_ensaio/<filename>", methods=["POST"])
+        def remove_ensaio(filename):
+            p = pathlib.Path(self.config["acquisition"]["directory"]) / filename
+            if p.is_file():
+                p.unlink()
+
+            return ""
 
         @self.app.route(
             "/start_acquisition/<int:pulses_per_second>/",

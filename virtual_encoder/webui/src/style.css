@@ -280,8 +280,8 @@ img {
   grid-area: 5 / 10 / span 1 / span 2;
 }
 
-.iniciar-download {
-  grid-area: 5 / auto / span 1 / span 2;
+.listar-ensaios {
+  grid-area: 3 / 13 / span 1 / span 2;
 }
 
 .reiniciar {

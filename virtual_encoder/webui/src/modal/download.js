@@ -9,13 +9,11 @@ export function init_modal_download() {
 
   window.modal_download.close.addEventListener('click', event => {
     window.modal_download.modal.style.display = 'none'
-    encoder_api.set_modo(event, '');
   });
 
   window.addEventListener('click', event => {
     if (event.target === window.modal_download.modal) {
       window.modal_download.modal.style.display = 'none'
-      encoder_api.set_modo(event, '');
     }
   });
 }

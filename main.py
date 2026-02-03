@@ -112,7 +112,7 @@ def main():
     )
     gs = EncoderGS(config, default_modo_lambda=lambda gs: ModoTempo(gs))
 
-    webui = WebuiApp(gs)
+    webui = WebuiApp(gs, config)
     threading.Thread(target=webui.run, daemon=True).start()
 
     time.sleep(1)

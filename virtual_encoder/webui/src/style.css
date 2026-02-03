@@ -189,45 +189,49 @@ img {
   width: 40%;
 
   display: grid;
-  grid-template-rows: auto repeat(4, 1fr);
+  grid-template-rows: auto 50vh 3em;
   grid-template-columns: repeat(2, 1fr) auto;
   grid-gap: 16px;
 }
 
-.modal-download .download-loader {
-  grid-area: 2 / 1 / span 2 / span 3;
+.modal-download .modal-list {
+  grid-column: span 2;
+}
 
+.modal-download .modal-row {
+  width: 100%;
   display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 4px;
-}
-
-.loader {
-  width: calc(80px / cos(45deg));
-  height: 14px;
-  --c: #000 0 15px, #0000 0 20px;
-  background: repeating-linear-gradient(135deg, var(--c)) left top, repeating-linear-gradient(45deg, var(--c)) left bottom;
-  background-size: 200% 50%;
-  background-repeat: no-repeat;
-  animation: download-anim 4s infinite linear;
-}
-
-@keyframes download-anim {
-  100% {
-    background-position: top right, bottom right
-  }
-}
-
-.modal-download .modal-progress {
-  grid-area: 4 / 1 / span 1 / span 3;
+  padding: 2px 12px 2px 12px;
+  background-color: 1px solid #aaaaaa;
   user-select: none;
+  cursor: pointer;
+  border: 1px solid transparent;
 }
 
-.modal-download .modal-info {
-  grid-area: 5 / 1 / span 1 / span 3;
-  color: gray;
-  user-select: none;
+.modal-download .modal-row:hover {
+  border: 1px solid blue;
+}
+
+.modal-download .modal-row:nth-child(even) {
+  background-color: #c6c6c6;
+}
+
+.modal-download .modal-row :first-child {
+  flex-grow: 1;
+  align-self: center;
+  font-size: 1em;
+}
+
+.modal-download .modal-row :last-child {
+  align-self: center;
+  font-size: 1.8em;
+  color: #cc3030;
+}
+
+
+.modal-download .modal-update {
+  grid-area: 3 / 1 / span 1 / span 3;
+  height: auto;
 }
 
 .visualization>canvas {

@@ -91,9 +91,29 @@ export async function fetch_status_stream(update_status) {
   const method = 'GET';
   const keepalive = true;
 
+
+  const offline_status = {
+    version: "",
+    rpi5: false, // { temp: 33., ip: '0.0.0.0', },
+    display: false,
+    camera: false,
+    imu: false,
+    pos: { x: 0., y: 0. },
+    modo: 'Desligado',
+    estado: '',
+    msg: '',
+  };
+
   while (true) {
     try {
       const res = await fetch('/status', { headers, keepalive, method });
+
+      if (res.status !== 200) {
+        update_status(offline_status);
+        await new Promise(resolve => setTimeout(resolve, 5000));
+        continue;
+      }
+
       const decoder = new TextDecoder();
       let result = '';
 
@@ -107,17 +127,7 @@ export async function fetch_status_stream(update_status) {
         }
       }
     } catch (err) {
-      update_status({
-        version: "",
-        rpi5: false, // { temp: 33., ip: '0.0.0.0', },
-        display: false,
-        camera: false,
-        imu: false,
-        pos: { x: 0., y: 0. },
-        modo: 'Desligado',
-        estado: '',
-        msg: '',
-      });
+      update_status(offline_status);
 
       await new Promise(resolve => setTimeout(resolve, 5000));
       window.video_frame.src = '/video_feed'

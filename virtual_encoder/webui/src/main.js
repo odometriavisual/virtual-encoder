@@ -1,14 +1,14 @@
 import './style.css'
 import { fetch_status_stream } from './encoder_api.js'
-import {init_controls, update_controls} from "./controls.js"
-import {init_status_watcher, update_status_watcher} from "./status_watcher.js"
-import {init_imu_canvas, update_imu_canvas} from "./canvas/imu.js";
-import {init_modal_modos } from "./modal/modos.js";
-import {init_modal_desligar} from "./modal/desligar.js";
-import {init_modal_reiniciar} from "./modal/reiniciar.js";
-import {init_log, update_log} from "./log.js";
-import {init_video_feed} from "./video_feed.js";
-import {init_modal_download, update_modal_downloader} from "./modal/download.js";
+import { init_controls, update_controls } from "./controls.js"
+import { init_status_watcher, update_status_watcher } from "./status_watcher.js"
+import { init_imu_canvas, update_imu_canvas } from "./canvas/imu.js";
+import { init_modal_modos } from "./modal/modos.js";
+import { init_modal_desligar } from "./modal/desligar.js";
+import { init_modal_reiniciar } from "./modal/reiniciar.js";
+import { init_log, update_log } from "./log.js";
+import { init_video_feed } from "./video_feed.js";
+import { init_modal_download, update_modal_downloader } from "./modal/download.js";
 
 document.querySelector('#app').innerHTML = `
     <div class="wrapper">
@@ -111,42 +111,42 @@ document.querySelector('#app').innerHTML = `
 `
 
 window.onload = () => {
-    window.canvas = document.querySelector('canvas')
-    const ctx = canvas.getContext('2d')
-    ctx.fillStyle = 'red'
+  window.canvas = document.querySelector('canvas')
+  const ctx = canvas.getContext('2d')
+  ctx.fillStyle = 'red'
 
-    window.draw_point = (x, y) => {
-        const w = canvas.width
-        const h = canvas.height
-        const s = 0.01
-        ctx.fillRect(x*s + w/2 - 1, y*s + h/2 - 1, 2, 2)
+  window.draw_point = (x, y) => {
+    const w = canvas.width
+    const h = canvas.height
+    const s = 0.01
+    ctx.fillRect(x * s + w / 2 - 1, y * s + h / 2 - 1, 2, 2)
 
-    }
-    window.clear_canvas = () => { }
+  }
+  window.clear_canvas = () => { }
 
-    init_status_watcher()
-    init_log()
+  init_status_watcher()
+  init_log()
 
-    init_imu_canvas()
-    init_video_feed()
+  init_imu_canvas()
+  init_video_feed()
 
-    init_modal_modos()
-    init_modal_desligar()
-    init_modal_reiniciar()
-    init_modal_download()
+  init_modal_modos()
+  init_modal_desligar()
+  init_modal_reiniciar()
+  init_modal_download()
 
-    init_controls()
+  init_controls()
 
-    function update_status(status) {
-        update_status_watcher(status)
-        update_controls(status)
-        update_imu_canvas(status)
-        update_log(status)
-        update_modal_downloader(status)
+  function update_status(status) {
+    update_status_watcher(status)
+    update_controls(status)
+    update_imu_canvas(status)
+    update_log(status)
+    update_modal_downloader(status)
 
-        window.canvas.style.display = status.modo === 'Odometro'? 'block': 'none'
-        draw_point(status.pos.x, status.pos.y)
-    }
+    window.canvas.style.display = status.modo === 'Odometro' ? 'block' : 'none'
+    draw_point(status.pos.x, status.pos.y)
+  }
 
-    fetch_status_stream(update_status)
+  fetch_status_stream(update_status)
 }

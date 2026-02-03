@@ -101,11 +101,8 @@ document.querySelector('#app').innerHTML = html`
                 <span class="modal-close">&times;</span>
                 
                 <div class="modal-list">
-                    <div class="modal-row">
-                        <a href="/ensaios/19380183_hello.zip">19380183_hello.zip</a>
-                        <span class="modal-close">&times;</span>
-                    </div>
                 </div>
+
                 <button class="modal-update">Atualizar lista</button>
             </div>
         </div>
@@ -139,8 +136,6 @@ window.onload = () => {
 
   init_controls()
 
-
-  window.modal_download.modal.style.display = 'block';
 
   function update_status(status) {
     update_status_watcher(status)

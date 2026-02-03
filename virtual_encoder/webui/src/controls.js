@@ -1,4 +1,5 @@
 import * as encoder_api from "./encoder_api.js"
+import { open_modal_download } from "./modal/download.js";
 
 export function init_controls() {
   window.btns = {
@@ -49,7 +50,7 @@ export function init_controls() {
   window.btns.mudar_modo.addEventListener('click', event => window.modal_modos.modal.style.display = 'block');
   window.btns.desligar.addEventListener('click', event => window.modal_desligar.modal.style.display = 'block');
   window.btns.reiniciar.addEventListener('click', event => window.modal_reiniciar.modal.style.display = 'block');
-  window.btns.listar_ensaios.addEventListener('click', event => window.modal_download.modal.style.display = 'block');
+  window.btns.listar_ensaios.addEventListener('click', event => open_modal_download(event));
 
   window.streaming_enabled = true;
   window.toggle_streaming.addEventListener('click', async event => {

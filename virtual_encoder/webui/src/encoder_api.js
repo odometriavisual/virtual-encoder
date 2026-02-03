@@ -135,3 +135,20 @@ export async function fetch_status_stream(update_status) {
   }
 }
 
+
+export async function get_ensaios(event) {
+  event.target.disabled = true;
+  set_debounce_button(event.target);
+
+  const method = 'GET';
+  const res = await fetch('/ensaios', { method });
+  return res.json();
+}
+
+export async function remove_ensaios(event, name) {
+  event.target.disabled = true;
+  set_debounce_button(event.target);
+
+  const method = 'POST';
+  await fetch(`/ensaios/${name}`, { method });
+}

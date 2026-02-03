@@ -19,26 +19,31 @@ export function init_modal_download() {
     }
   });
 
-  window.modal_download.update.addEventListener('click', event => {
-    const ensaios = [
-      "a.zip",
-      "b.zip",
-      "c.zip",
-    ];
-    update_modal_downloader(ensaios);
+  window.modal_download.update.addEventListener('click', async event => {
+    const ensaios = await encoder_api.get_ensaios(event);
+    update_modal_download(ensaios);
   });
 }
 
-function update_modal_downloader(ensaios) {
+export function open_modal_download(event) {
+  encoder_api.get_ensaios(event).then(res => update_modal_download(res));
+  window.modal_download.modal.style.display = 'block';
+}
+
+function update_modal_download(ensaios) {
   let inner_html = "";
 
-  for (const ensaio of ensaios) {
-    inner_html += html`
-      <div class="modal-row">
-          <a href="ensaios/${ensaio}">${ensaio}</a>
-          <span class="modal-close">&times;</span>
-      </div>
-    `;
+  if (ensaios.length > 0) {
+    for (const ensaio of ensaios) {
+      inner_html += html`
+        <label class="modal-row">
+            <a href="ensaios/${ensaio}">${ensaio}</a>
+        </label>
+      `;
+    }
+  }
+  else {
+    inner_html += html`<h1>Nenhum ensaio gravado</h1>`;
   }
 
   window.modal_download.list.innerHTML = inner_html;

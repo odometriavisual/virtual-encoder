@@ -10,7 +10,9 @@ import { init_log, update_log } from "./log.js";
 import { init_video_feed } from "./video_feed.js";
 import { init_modal_download, update_modal_downloader } from "./modal/download.js";
 
-document.querySelector('#app').innerHTML = `
+const html = String.raw;
+
+document.querySelector('#app').innerHTML = html`
     <div class="wrapper">
         <div class="visualization">
             <img src="" alt="" class="video-frame"/>
@@ -54,7 +56,7 @@ document.querySelector('#app').innerHTML = `
 
             <button class="iniciar-aquisicao" disabled>Iniciar Aquisição</button>
             <button class="parar-aquisicao" disabled>Parar Aquisição</button>
-            <button class="iniciar-download" disabled>Iniciar Download</button>
+            <button class="listar-ensaios" disabled>Ensaios Gravados</button>
 
             <button class="toggle-streaming">Toggle Streaming</button>
             <button class="toggle-calibracao">Toggle Alinhamento</button>

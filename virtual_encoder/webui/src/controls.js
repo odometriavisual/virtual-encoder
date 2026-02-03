@@ -4,11 +4,11 @@ export function init_controls() {
   window.btns = {
     iniciar_aquisicao: document.querySelector('button.iniciar-aquisicao'),
     parar_aquisicao: document.querySelector('button.parar-aquisicao'),
-    iniciar_download: document.querySelector('button.iniciar-download'),
     mudar_modo: document.querySelector('button.mudar-modo'),
     reiniciar: document.querySelector('button.reiniciar'),
     desligar: document.querySelector('button.desligar'),
     calibrar_exposicao: document.querySelector('.exposicao'),
+    listar_ensaios: document.querySelector('button.listar-ensaios'),
   };
 
   for (let [_, btn] of Object.entries(window.btns)) {
@@ -46,10 +46,10 @@ export function init_controls() {
     encoder_api.stop_acquisition(event);
   })
 
-  window.btns.iniciar_download.addEventListener('click', event => encoder_api.set_modo(event, 'Download'));
   window.btns.mudar_modo.addEventListener('click', event => window.modal_modos.modal.style.display = 'block');
   window.btns.desligar.addEventListener('click', event => window.modal_desligar.modal.style.display = 'block');
   window.btns.reiniciar.addEventListener('click', event => window.modal_reiniciar.modal.style.display = 'block');
+  window.btns.listar_ensaios.addEventListener('click', event => window.modal_download.modal.style.display = 'block');
 
   window.streaming_enabled = true;
   window.toggle_streaming.addEventListener('click', async event => {
@@ -74,23 +74,17 @@ export function init_controls() {
 }
 
 export function update_controls(status) {
-  const global_disable = status.modo === 'Calibracao';
+  const global_disable = status.modo === 'Calibracao' || !status.rpi5;
 
   if (status.modo === 'Tempo' || status.modo === 'Odometro') {
-    window.btns.iniciar_download.disabled = global_disable;
-
     window.btns.iniciar_aquisicao.disabled = window.btns.iniciar_aquisicao.debounce_enabled || global_disable || status.estado !== 'Ready';
     window.btns.parar_aquisicao.disabled = window.btns.parar_aquisicao.debounce_enabled || global_disable || !status.estado.startsWith('Aquisicao');
   }
   else if (status.modo === 'Autonomo') {
-    window.btns.iniciar_download.disabled = global_disable;
-
     window.btns.iniciar_aquisicao.disabled = true;
     window.btns.parar_aquisicao.disabled = true;
   }
   else if (status.modo === 'Download') {
-    window.btns.iniciar_download.disabled = true;
-
     window.btns.iniciar_aquisicao.disabled = true;
     window.btns.parar_aquisicao.disabled = true;
   }
@@ -100,8 +94,6 @@ export function update_controls(status) {
     }
   }
   else if (status.modo === 'Calibracao') {
-    window.btns.iniciar_download.disabled = true;
-
     window.btns.iniciar_aquisicao.disabled = true;
     window.btns.parar_aquisicao.disabled = true;
   }
@@ -111,4 +103,5 @@ export function update_controls(status) {
   window.btns.mudar_modo.disabled = global_disable || status.estado !== 'Ready';
   window.btns.reiniciar.disabled = global_disable || status.rpi5 === false;
   window.btns.desligar.disabled = global_disable || status.rpi5 === false;
+  window.btns.listar_ensaios.disabled = global_disable;
 }

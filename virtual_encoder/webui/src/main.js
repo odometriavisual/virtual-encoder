@@ -8,9 +8,9 @@ import { init_modal_desligar } from "./modal/desligar.js";
 import { init_modal_reiniciar } from "./modal/reiniciar.js";
 import { init_log, update_log } from "./log.js";
 import { init_video_feed } from "./video_feed.js";
-import { init_modal_download, update_modal_downloader } from "./modal/download.js";
+import { init_modal_download } from "./modal/download.js";
 
-const html = String.raw;
+export const html = String.raw;
 
 document.querySelector('#app').innerHTML = html`
     <div class="wrapper">
@@ -97,16 +97,16 @@ document.querySelector('#app').innerHTML = html`
         
         <div class="modal modal-download">
             <div class="modal-content">
-                <span class="modal-titulo">Sincronizando SSD:</span>
+                <span class="modal-titulo">Download de ensaios:</span>
                 <span class="modal-close">&times;</span>
-                <div class="download-loader">
-                    <div style="background:black; width: 32px; height:32px"></div>
-                    <div class="loader"></div>
-                    <div style="background:black; width: 32px; height:32px"></div>
-                </div>
                 
-                <span class="modal-progress"></span>
-                <span class="modal-info">Feche este modal para pausar sincronização</span>
+                <div class="modal-list">
+                    <div class="modal-row">
+                        <a href="/ensaios/19380183_hello.zip">19380183_hello.zip</a>
+                        <span class="modal-close">&times;</span>
+                    </div>
+                </div>
+                <button class="modal-update">Atualizar lista</button>
             </div>
         </div>
     </div>
@@ -139,12 +139,14 @@ window.onload = () => {
 
   init_controls()
 
+
+  window.modal_download.modal.style.display = 'block';
+
   function update_status(status) {
     update_status_watcher(status)
     update_controls(status)
     update_imu_canvas(status)
     update_log(status)
-    update_modal_downloader(status)
 
     window.canvas.style.display = status.modo === 'Odometro' ? 'block' : 'none'
     draw_point(status.pos.x, status.pos.y)

@@ -23,5 +23,6 @@ systemctl enable virtual-encoder.service
 ./boot-counter/install.sh
 ./picam_gc/install.sh
 ./enable_watchdog.sh
+./nginx/install.sh
 
 echo "Services installed, reboot system to start services..."

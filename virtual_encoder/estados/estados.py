@@ -38,7 +38,6 @@ class EstadoAquisicaoTempo(Estado):
         self.is_first_pulse = True
 
         self.gs.set("estado", "Aquisicao")
-        self.gs.add_message(f"Aquisição: {reason} {pulses_frequency} pulsos/s")
 
         self.period = 1_000_000_000 // pulses_frequency
         self.next_time = time.time_ns() + self.period

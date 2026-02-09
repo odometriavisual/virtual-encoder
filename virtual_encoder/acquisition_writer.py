@@ -74,11 +74,17 @@ class AcquisitionWriter:
         for t in self.__threads:
             t.start()
 
+        self.gs.add_message(f"Gravando aquisição: {self.__acquisition.get_name()}")
+
     def stop_acquisition(self):
         self.__recording = False
         for t in self.__threads:
             t.join()
 
         self.__acquisition.close()
+        self.gs.add_message(
+            f'Aquisição completa: <a href="/ensaios/{self.__acquisition.get_name()}.zip">{self.__acquisition.get_name()}</a>'
+        )
         self.__acquisition = None
         self.__threads = []
+        self.__acquistion_name = ""

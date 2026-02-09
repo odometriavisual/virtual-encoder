@@ -132,9 +132,12 @@ def main():
 
                 case _, ("shutdown", "all"):
                     try:
+                        gs.led.turn_off()
                         subprocess.run(["sudo", "poweroff"])
                     except subprocess.SubprocessError:
                         pass
+                case _, ("shutdown", "led"):
+                    gs.led.turn_off()
                 case _, ("shutdown", "relay"):
                     gs.relay.turn_off()
 
@@ -143,6 +146,10 @@ def main():
                         subprocess.run(["sudo", "reboot"])
                     except subprocess.SubprocessError:
                         pass
+                case _, ("reboot", "led"):
+                    gs.led.turn_off()
+                    time.sleep(5)
+                    gs.led.turn_on()
                 case _, ("reboot", "relay"):
                     gs.relay.turn_off()
                     time.sleep(5)

@@ -169,12 +169,12 @@ class WebuiApp:
             """
             Shutdowns a component of the system. The string component must be one of the following:
             - "all": shutdowns everything
-            - "camera": only shutdowns the camera
+            - "led": only shutdowns the led
             - "relay": forced shutdown of camera by opening the relay
 
             Returns 404 if the component string is invalid
             """
-            if component in ["all", "camera", "relay"]:
+            if component in ["all", "led", "relay"]:
                 self.gs.send_event(("shutdown", component))
                 return ""
             else:
@@ -185,12 +185,12 @@ class WebuiApp:
             """
             Reboots a component of the system. The string component must be one of the following:
             - "all": reboots everything
-            - "camera": only reboots the camera
+            - "led": only reboots the camera
             - "relay": forced reboot of camera by opening and closing the relay
 
             Returns 404 if the component string is invalid
             """
-            if component in ["all", "camera", "relay"]:
+            if component in ["all", "led", "relay"]:
                 self.gs.send_event(("reboot", component))
                 return ""
             else:

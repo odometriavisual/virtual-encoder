@@ -5,7 +5,7 @@ export function init_modal_desligar() {
     modal: document.querySelector('.modal-desligar'),
     close: document.querySelector('.modal-desligar .modal-close'),
     encoder: document.querySelector('.modal-desligar .encoder'),
-    camera_subsea: document.querySelector('.modal-desligar .camera-subsea'),
+    camera_subsea: document.querySelector('.modal-desligar .led'),
     rele: document.querySelector('.modal-desligar .rele'),
   };
 
@@ -20,7 +20,7 @@ export function init_modal_desligar() {
 
   window.modal_desligar.camera_subsea.addEventListener('click', event => {
     window.modal_desligar.modal.style.display = 'none';
-    encoder_api.shutdown(event, 'camera');
+    encoder_api.shutdown(event, 'led');
   });
 
   window.modal_desligar.rele.addEventListener('click', event => {

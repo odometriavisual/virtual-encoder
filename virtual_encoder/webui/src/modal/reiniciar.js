@@ -5,7 +5,7 @@ export function init_modal_reiniciar() {
     modal: document.querySelector('.modal-reiniciar'),
     close: document.querySelector('.modal-reiniciar .modal-close'),
     encoder: document.querySelector('.modal-reiniciar .encoder'),
-    camera_subsea: document.querySelector('.modal-reiniciar .camera-subsea'),
+    camera_subsea: document.querySelector('.modal-reiniciar .led'),
     rele: document.querySelector('.modal-reiniciar .rele'),
   };
 
@@ -20,7 +20,7 @@ export function init_modal_reiniciar() {
 
   window.modal_reiniciar.camera_subsea.addEventListener('click', event => {
     window.modal_reiniciar.modal.style.display = 'none';
-    encoder_api.reboot(event, 'camera');
+    encoder_api.reboot(event, 'led');
   });
 
   window.modal_reiniciar.rele.addEventListener('click', event => {

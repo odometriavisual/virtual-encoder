@@ -98,6 +98,7 @@ class EncoderGS:
             self.led = LedNull()
         else:
             self.led = LedSerdes(self.config["gpio"]["led"])
+            self.led.turn_on()
 
     def __setup_serdes(self):
         if self.config["debug"] or self.config["use_legacy_camera"]:

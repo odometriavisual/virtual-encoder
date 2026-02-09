@@ -27,10 +27,10 @@ try:
             )
 
         def turn_off(self):
-            self.__led.set_value(self.__pin, Value.ACTIVE)
+            self.__gpio.set_value(self.__pin, Value.ACTIVE)
 
         def turn_on(self):
-            self.__led.set_value(self.__pin, Value.INACTIVE)
+            self.__gpio.set_value(self.__pin, Value.INACTIVE)
 except Exception:
 
     class LedSerdes(LedNull):

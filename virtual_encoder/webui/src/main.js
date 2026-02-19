@@ -113,6 +113,7 @@ document.querySelector('#app').innerHTML = html`
                 <span class="modal-titulo">Atualização de software:</span>
                 <span class="modal-close">&times;</span>
                 
+                <span class="modal-info">Envie o arquivo para iniciar atualização:</span>
                 <input type="file" accept=".zip"> </input>
             </div>
         </div>

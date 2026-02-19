@@ -228,6 +228,10 @@ img {
 }
 
 .modal-upgrade input {
+  grid-area: 3 / 1 / auto / span 3;
+}
+
+.modal-upgrade .modal-info {
   grid-area: 2 / 1 / auto / span 3;
 }
 

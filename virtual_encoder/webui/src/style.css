@@ -227,6 +227,10 @@ img {
   height: auto;
 }
 
+.modal-upgrade input {
+  grid-area: 2 / 1 / auto / span 3;
+}
+
 .visualization>canvas {
   position: absolute;
   top: 0;

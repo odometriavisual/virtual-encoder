@@ -152,3 +152,11 @@ export async function remove_ensaios(event, name) {
   const method = 'POST';
   await fetch(`/ensaios/${name}`, { method });
 }
+
+export async function send_upgrade_zip(event, files) {
+  let body = new FormData()
+  body.append("file", files[0])
+
+  const method = 'POST';
+  await fetch("/upgrade", { method, body })
+}

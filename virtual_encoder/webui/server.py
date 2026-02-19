@@ -196,6 +196,10 @@ class WebuiApp:
             else:
                 abort(404)
 
+        @self.app.route("/upgrade", methods=["POST"])
+        def upgrade():
+            print(self.app.request)
+
     def run(self):
         BaseWSGIServer.protocol_version = "HTTP/1.1"
         self.app.run(host=self.host, port=self.port)

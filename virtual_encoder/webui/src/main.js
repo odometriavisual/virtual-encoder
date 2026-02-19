@@ -9,6 +9,7 @@ import { init_modal_reiniciar } from "./modal/reiniciar.js";
 import { init_log, update_log } from "./log.js";
 import { init_video_feed } from "./video_feed.js";
 import { init_modal_download } from "./modal/download.js";
+import { init_modal_upgrade } from "./modal/upgrade.js";
 
 export const html = String.raw;
 
@@ -106,6 +107,15 @@ document.querySelector('#app').innerHTML = html`
                 <button class="modal-update">Atualizar lista</button>
             </div>
         </div>
+
+        <div class="modal modal-upgrade">
+            <div class="modal-content">
+                <span class="modal-titulo">Atualização de software:</span>
+                <span class="modal-close">&times;</span>
+                
+                <input type="file" accept=".zip"> </input>
+            </div>
+        </div>
     </div>
 `
 
@@ -133,6 +143,7 @@ window.onload = () => {
   init_modal_desligar()
   init_modal_reiniciar()
   init_modal_download()
+  init_modal_upgrade()
 
   init_controls()
 

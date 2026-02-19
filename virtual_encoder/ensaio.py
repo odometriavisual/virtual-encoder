@@ -8,7 +8,7 @@ import cv2
 from numpy.typing import NDArray
 
 
-class Ensaio:
+class EnsaioWriter:
     def __init__(
         self,
         name: str,
@@ -162,82 +162,8 @@ class Ensaio:
             }
         )
 
-    def set_displacements(
-        self, displacements: NDArray, quaternions: NDArray, timestamps: NDArray
-    ) -> dict:
-        with self.__zip.open("data/displacements_data.npz", "w") as displacements_file:
-            np.savez(
-                displacements_file,
-                displacements=displacements,
-                quaternions=quaternions,
-                timestamps=timestamps,
-            )
-
-    def has_displacements(self) -> bool:
-        self.close()
-
-        with ZipFile(self.__zip_path, "r") as zip:
-            return "data/displacements_data.npz" in zip.namelist()
-
-        self.__zip = ZipFile(self.__zip_path, "a")
-
-    def get_displacements(self) -> dict:
-        self.close()
-
-        with ZipFile(self.__zip_path, "r") as zip:
-            with zip.open("data/displacements_data.npz", "r") as displacements_file:
-                data = np.load(displacements_file, allow_pickle=True)
-
-                return {
-                    "displacements": data["displacements"],
-                    "quaternions": data["quaternions"],
-                    "timestamps": data["timestamps"],
-                }
-
-        self.__zip = ZipFile(self.__zip_path, "a")
-
     def add_img(self, img: NDArray, timestamp: int):
         _, buf = cv2.imencode(".jpg", img)
         self.__zip.writestr(f"data/{timestamp}.jpg", buf)
 
         self.__img_count += 1
-
-    def get_img(self, i: int) -> (int, NDArray):
-        self.close()
-
-        filename = self.__imgs[i]
-        try:
-            with ZipFile(self.__zip_path, "r") as zip:
-                return (
-                    int(Path(filename).stem),
-                    cv2.imdecode(
-                        np.frombuffer(zip.read(filename), dtype=np.uint8),
-                        cv2.IMREAD_GRAYSCALE,
-                    ),
-                )
-        except KeyboardInterrupt:
-            pass
-        finally:
-            self.__zip = ZipFile(self.__zip_path, "a")
-
-    def get_all_imgs(self) -> [(int, NDArray)]:
-        self.close()
-
-        imgs = []
-        try:
-            with ZipFile(self.__zip_path, "r") as zip:
-                for filename in self.__imgs:
-                    imgs.append(
-                        (
-                            int(Path(filename).stem),
-                            cv2.imdecode(
-                                np.frombuffer(zip.read(filename), dtype=np.uint8),
-                                cv2.IMREAD_GRAYSCALE,
-                            ),
-                        )
-                    )
-            return imgs
-        except KeyboardInterrupt:
-            return []
-        finally:
-            self.__zip = ZipFile(self.__zip_path, "a")

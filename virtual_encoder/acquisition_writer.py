@@ -2,7 +2,7 @@ import time
 import threading
 from pathlib import Path
 
-from .ensaio import Ensaio
+from .ensaio import EnsaioWriter
 
 
 class AcquisitionWriter:
@@ -58,7 +58,7 @@ class AcquisitionWriter:
                 self.__acquisition.add_imu_data(orientation)
 
     def start_acquisition(self, timestamp_ns, reason, pulses_period_ns):
-        self.__acquisition = Ensaio(
+        self.__acquisition = EnsaioWriter(
             f"{timestamp_ns} {reason}" if len(reason) > 0 else f"{timestamp_ns}",
             dir=self.ENSAIOS_DIR,
         )

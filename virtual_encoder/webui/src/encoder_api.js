@@ -158,5 +158,6 @@ export async function send_upgrade_zip(event, files) {
   body.append("file", files[0])
 
   const method = 'POST';
-  await fetch("/upgrade", { method, body })
+  let res = await fetch("/upgrade", { method, body })
+  return await res.text();
 }

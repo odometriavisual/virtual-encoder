@@ -2,9 +2,12 @@ import cv2
 import time
 import json
 import pathlib
+import subprocess
+import zipfile
 
-from flask import Flask, Response, abort
+from flask import Flask, Response, abort, request
 from werkzeug.serving import BaseWSGIServer
+from werkzeug.utils import secure_filename
 
 from virtual_encoder.encoder_gs import EncoderGS
 
@@ -198,7 +201,26 @@ class WebuiApp:
 
         @self.app.route("/upgrade", methods=["POST"])
         def upgrade():
-            print(self.app.request)
+            try:
+                file = request.files["file"]
+                filename = pathlib.Path("/tmp") / secure_filename(file.filename)
+                file.save(filename)
+
+                with zipfile.ZipFile(filename, "r") as zip:
+                    zip.extractall(path="/tmp/virtual_encoder/")
+
+                subprocess.run(["git", "checkout", "main"], check=True)
+                subprocess.run(["git", "pull", "tmp", "main"], check=True)
+
+                return "<h1>Software atualizado! Reinicie o encoder para aplicar atualização</h1>"
+
+            except zipfile.BadZipFile:
+                return "<h1>Erro na atualização: Arquivo corrompido</h1>"
+            except subprocess.CalledProcessError:
+                return "<h1>Erro na atualização: Remote inválido</h1>"
+            except Exception:
+                return "<h1>Erro na atualização: Não foi possível salvar o arquivo de atualização</h1>"
+                
 
     def run(self):
         BaseWSGIServer.protocol_version = "HTTP/1.1"

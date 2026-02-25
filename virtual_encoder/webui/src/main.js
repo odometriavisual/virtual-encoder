@@ -133,7 +133,10 @@ window.onload = () => {
     ctx.fillRect(x * s + w / 2 - 1, y * s + h / 2 - 1, 2, 2)
 
   }
-  window.clear_canvas = () => { }
+
+  window.clear_canvas = () => {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+  }
 
   init_status_watcher()
   init_log()

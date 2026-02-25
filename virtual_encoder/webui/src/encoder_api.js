@@ -1,3 +1,6 @@
+// "undefined" means the URL will be computed from the `window.location` object
+const URL = process.env.NODE_ENV === 'production' ? undefined : 'http://localhost:5000';
+
 export function set_debounce_button(btn) {
   btn.debounce_enabled = true;
 
@@ -17,7 +20,7 @@ export async function start_acquisition(event, pulses_per_second, reason) {
   set_debounce_button(event.target);
 
   const method = 'POST';
-  await fetch(`/start_acquisition/${pulses_per_second}/${reason}`, { method });
+  await fetch(`${URL}/start_acquisition/${pulses_per_second}/${reason}`, { method });
 }
 
 export async function stop_acquisition(event) {
@@ -25,7 +28,7 @@ export async function stop_acquisition(event) {
   set_debounce_button(event.target);
 
   const method = 'POST';
-  await fetch('/stop_acquisition', { method });
+  await fetch(`${URL}/stop_acquisition`, { method });
 }
 
 export async function start_stream(event) {
@@ -33,7 +36,7 @@ export async function start_stream(event) {
   set_debounce_button(event.target);
 
   const method = 'POST';
-  await fetch('/start_stream', { method });
+  await fetch(`${URL}/start_stream`, { method });
 }
 
 export async function stop_stream(event) {
@@ -41,7 +44,7 @@ export async function stop_stream(event) {
   set_debounce_button(event.target);
 
   const method = 'POST';
-  await fetch('/stop_stream', { method });
+  await fetch(`${URL}/stop_stream`, { method });
 }
 
 export async function set_modo(event, modo) {
@@ -49,7 +52,7 @@ export async function set_modo(event, modo) {
   set_debounce_button(event.target);
 
   const method = 'POST';
-  await fetch(`/set_modo/${modo}`, { method });
+  await fetch(`${URL}/set_modo/${modo}`, { method });
 }
 
 export async function calibrate_exposure(event) {
@@ -57,7 +60,7 @@ export async function calibrate_exposure(event) {
   set_debounce_button(event.target);
 
   const method = 'POST';
-  await fetch('/calibrate_exposure', { method });
+  await fetch(`${URL}/calibrate_exposure`, { method });
 }
 
 export async function set_exposure(event, value) {
@@ -65,7 +68,7 @@ export async function set_exposure(event, value) {
   set_debounce_button(event.target);
 
   const method = 'POST';
-  await fetch(`/set_exposure/${window.exposicao.value}`, { method });
+  await fetch(`${URL}/set_exposure/${window.exposicao.value}`, { method });
 }
 
 export async function shutdown(event, component) {
@@ -73,7 +76,7 @@ export async function shutdown(event, component) {
   set_debounce_button(event.target);
 
   const method = 'POST';
-  await fetch(`/shutdown/${component}`, { method });
+  await fetch(`${URL}/shutdown/${component}`, { method });
 }
 
 export async function reboot(event, component) {
@@ -81,7 +84,7 @@ export async function reboot(event, component) {
   set_debounce_button(event.target);
 
   const method = 'POST';
-  await fetch(`/reboot/${component}`, { method });
+  await fetch(`${URL}/reboot/${component}`, { method });
 }
 
 export async function fetch_status_stream(update_status) {
@@ -106,7 +109,7 @@ export async function fetch_status_stream(update_status) {
 
   while (true) {
     try {
-      const res = await fetch('/status', { headers, keepalive, method });
+      const res = await fetch(`${URL}/status`, { headers, keepalive, method });
 
       if (res.status !== 200) {
         update_status(offline_status);
@@ -141,7 +144,7 @@ export async function get_ensaios(event) {
   set_debounce_button(event.target);
 
   const method = 'GET';
-  const res = await fetch('/ensaios', { method });
+  const res = await fetch(`${URL}/ensaios`, { method });
   return res.json();
 }
 
@@ -150,7 +153,7 @@ export async function remove_ensaios(event, name) {
   set_debounce_button(event.target);
 
   const method = 'POST';
-  await fetch(`/ensaios/${name}`, { method });
+  await fetch(`${URL}/ensaios/${name}`, { method });
 }
 
 export async function send_upgrade_zip(event, files) {
@@ -158,6 +161,6 @@ export async function send_upgrade_zip(event, files) {
   body.append("file", files[0])
 
   const method = 'POST';
-  let res = await fetch("/upgrade", { method, body })
+  let res = await fetch(`${URL}/upgrade`, { method, body })
   return await res.text();
 }

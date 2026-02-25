@@ -6,6 +6,7 @@ import subprocess
 import zipfile
 
 from flask import Flask, Response, abort, request
+from flask_cors import CORS
 from werkzeug.serving import BaseWSGIServer
 from werkzeug.utils import secure_filename
 
@@ -20,6 +21,7 @@ class WebuiApp:
         self.app = Flask(
             __name__, static_url_path="/assets", static_folder="dist/assets"
         )
+        CORS(self.app)
         self.setup_routes()
 
         self.host = host

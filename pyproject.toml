@@ -6,9 +6,9 @@ readme = "README.md"
 requires-python = ">=3.11"
 dependencies = [
     "flask",
+    "flask-cors>=6.0.2",
     "opencv-python",
     "requests",
-
     # add with pip -e $VISUAL_ODOMETER_DIR
     # "visual-odometer"
 ]

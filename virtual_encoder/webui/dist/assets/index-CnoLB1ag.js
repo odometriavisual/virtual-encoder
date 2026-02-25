@@ -7,6 +7,7 @@
           Versão ${i.version}
     			Modo ${i.modo}
     			${i.rpi5===!1||i.modo==="Download"?i.estado:"Estado"+i.estado}
+    			${i.rpi5===!1||i.modo==="Odometro"?"Pos: "+i.pos.x+", "+i.pos.y:""}
     			${i.rpi5?`IP: ${i.rpi5.ip}`:""}
     			${i.rpi5?`Temp: ${i.rpi5.temp?.toFixed(2)} ℃`:""}
     			${i.display?"":"Display não encontrado"}`:window.status_watcher.rpi5.innerText="Módulo Offline"}/**

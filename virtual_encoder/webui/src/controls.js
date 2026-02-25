@@ -12,6 +12,7 @@ export function init_controls() {
     upgrade: document.querySelector('button.upgrade'),
     calibrar_exposicao: document.querySelector('.exposicao'),
     listar_ensaios: document.querySelector('button.listar-ensaios'),
+    zerar_deslocamento: document.querySelector('button.zerar-deslocamento'),
   };
 
   for (let [_, btn] of Object.entries(window.btns)) {
@@ -38,6 +39,10 @@ export function init_controls() {
     window.video_frame.style = 'filter: brightness(1.0)';
     window.brightness_slider.value = 1;
   }
+
+  window.btns.zerar_deslocamento.addEventListener('click', event => {
+    window.clear_canvas();
+  });
 
   window.btns.iniciar_aquisicao.addEventListener('click', event => {
     window.clear_canvas();
@@ -109,4 +114,8 @@ export function update_controls(status) {
   window.btns.desligar.disabled = global_disable || status.rpi5 === false;
   window.btns.upgrade.disabled = global_disable || status.rpi5 === false;
   window.btns.listar_ensaios.disabled = global_disable;
+
+  window.btns.zerar_deslocamento.disabled = global_disable || status.modo !== "Odometro";
+  window.btns.zerar_deslocamento.style.display = global_disable || status.modo !== "Odometro" ? "none" : "block";
+  window.pulsos_por_segundo.parentElement.style.display = global_disable || status.modo !== "Tempo" ? "none" : "flex";
 }

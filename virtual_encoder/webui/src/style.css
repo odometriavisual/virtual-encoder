@@ -311,6 +311,10 @@ img {
   flex-direction: column;
 }
 
+.zerar-deslocamento {
+  grid-area: 3 / 3 / span 1 / span 2;
+}
+
 
 .motivo {
   grid-area: 3 / 5 / span 1 / span 5;

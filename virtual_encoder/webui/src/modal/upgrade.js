@@ -26,6 +26,6 @@ export function init_modal_upgrade() {
 
 }
 
-export function update_modal_upgrade() {
-
+export function open_modal_upgrade() {
+  window.modal_upgrade.modal.style.display = 'block';
 }

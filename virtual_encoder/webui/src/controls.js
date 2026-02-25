@@ -1,5 +1,6 @@
 import * as encoder_api from "./encoder_api.js"
 import { open_modal_download } from "./modal/download.js";
+import { open_modal_upgrade } from "./modal/upgrade.js";
 
 export function init_controls() {
   window.btns = {
@@ -8,6 +9,7 @@ export function init_controls() {
     mudar_modo: document.querySelector('button.mudar-modo'),
     reiniciar: document.querySelector('button.reiniciar'),
     desligar: document.querySelector('button.desligar'),
+    upgrade: document.querySelector('button.upgrade'),
     calibrar_exposicao: document.querySelector('.exposicao'),
     listar_ensaios: document.querySelector('button.listar-ensaios'),
   };
@@ -51,6 +53,7 @@ export function init_controls() {
   window.btns.desligar.addEventListener('click', event => window.modal_desligar.modal.style.display = 'block');
   window.btns.reiniciar.addEventListener('click', event => window.modal_reiniciar.modal.style.display = 'block');
   window.btns.listar_ensaios.addEventListener('click', event => open_modal_download(event));
+  window.btns.upgrade.addEventListener('click', event => open_modal_upgrade());
 
   window.streaming_enabled = true;
   window.toggle_streaming.addEventListener('click', async event => {
@@ -104,5 +107,6 @@ export function update_controls(status) {
   window.btns.mudar_modo.disabled = global_disable || status.estado !== 'Ready';
   window.btns.reiniciar.disabled = global_disable || status.rpi5 === false;
   window.btns.desligar.disabled = global_disable || status.rpi5 === false;
+  window.btns.upgrade.disabled = global_disable || status.rpi5 === false;
   window.btns.listar_ensaios.disabled = global_disable;
 }

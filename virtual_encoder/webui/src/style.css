@@ -274,18 +274,22 @@ img {
 }
 
 .mudar-modo {
-  grid-area: 5 / 7 / span 1 / span 2;
+  grid-area: 5 / 8 / span 1 / span 2;
 }
 
 .toggle-streaming {
-  grid-area: 4 / 10 / span 1 / span 2;
+  grid-area: 4 / 11 / span 1 / span 2;
 }
 
 .toggle-calibracao {
-  grid-area: 5 / 10 / span 1 / span 2;
+  grid-area: 5 / 11 / span 1 / span 2;
 }
 
 .listar-ensaios {
+  grid-area: 3 / 11 / span 1 / span 2;
+}
+
+.upgrade {
   grid-area: 3 / 13 / span 1 / span 2;
 }
 
@@ -298,15 +302,20 @@ img {
 }
 
 .exposicao {
-  grid-area: 3 / 1 / span 1 / span 3;
+  grid-area: 3 / 1 / span 1 / span 2;
 }
 
 .pulsos-por-segundo {
-  grid-area: 3 / 5 / span 1 / span 3;
+  grid-area: 3 / 3 / span 1 / span 2;
+  display: flex;
+  flex-direction: column;
 }
 
+
 .motivo {
-  grid-area: 3 / 9 / span 1 / span 3;
+  grid-area: 3 / 5 / span 1 / span 5;
+  display: flex;
+  flex-direction: column;
 }
 
 /* Chrome, Safari, Edge, Opera */
@@ -325,11 +334,14 @@ label>div {
   align-self: center;
 }
 
-.brilho>input,
+.brilho>input {
+  flex-grow: 1;
+  width: 100%;
+}
+
 .pulsos-por-segundo>input,
 .motivo>input {
   flex-grow: 1;
-  width: 100%;
 }
 
 .monitoramento>div {

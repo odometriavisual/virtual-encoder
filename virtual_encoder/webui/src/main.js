@@ -57,12 +57,12 @@ document.querySelector('#app').innerHTML = html`
 
             <button class="iniciar-aquisicao" disabled>Iniciar Aquisição</button>
             <button class="parar-aquisicao" disabled>Parar Aquisição</button>
-            <button class="listar-ensaios" disabled>Ensaios Gravados</button>
+            <button class="listar-ensaios" disabled>Baixar Ensaios Gravados</button>
 
             <button class="toggle-streaming">Toggle Streaming</button>
             <button class="toggle-calibracao">Toggle Alinhamento</button>
-
             <button class="mudar-modo" disabled>Mudar modo</button>
+            <button class="upgrade" disabled>Atualizar Software</button>
             <button class="reiniciar" disabled>Reiniciar</button>
             <button class="desligar" disabled>Desligar</button>
         </div>

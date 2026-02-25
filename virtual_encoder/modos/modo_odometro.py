@@ -20,7 +20,9 @@ class ModoOdometro:
         self.estado.pending_pulses = np.zeros(2)
 
         img = to_grayscale(self.gs.camera.get_img())
-        self.odometer = VisualOdometer(img.shape)
+        self.odometer = VisualOdometer(
+            img.shape, frequency_window_params={"factor": 0.2}, async_mode=True
+        )
 
         # Fill odometer buffers
         self.odometer.feed_image(img)

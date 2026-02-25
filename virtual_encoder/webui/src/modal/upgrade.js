@@ -18,6 +18,12 @@ export function init_modal_upgrade() {
     window.modal_upgrade.info.innerHTML = text;
   });
 
+  window.addEventListener('click', event => {
+    if (event.target === window.modal_upgrade.modal) {
+      window.modal_upgrade.modal.style.display = 'none';
+    }
+  });
+
 }
 
 export function update_modal_upgrade() {

@@ -59,11 +59,11 @@ class AcquisitionWriter:
                 self.__acquisition.add_imu_data(orientation)
 
     def start_acquisition(self, timestamp_ns, reason, pulses_period_ns):
-        datenow = datetime.fromtimestamp(timestamp_ns // 1_000_000_000).strftime(
+        ensaio_date = datetime.fromtimestamp(timestamp_ns // 1_000_000_000).strftime(
             "%Y%m%dT%H%M%S"
         )
         self.__acquisition = EnsaioWriter(
-            f"{datenow} {reason}" if len(reason) > 0 else f"{timestamp_ns}",
+            f"{ensaio_date} {reason}" if len(reason) > 0 else f"{ensaio_date}",
             dir=self.ENSAIOS_DIR,
         )
         self.__recording = True

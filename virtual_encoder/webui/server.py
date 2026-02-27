@@ -215,6 +215,8 @@ class WebuiApp:
                     repo_path = "/tmp/virtual_encoder"
                 elif pathlib.Path("/tmp/virtual_encoder/virtual_encoder/.git").is_dir():
                     repo_path = "/tmp/virtual_encoder/virtual_encoder"
+                elif pathlib.Path("/tmp/virtual_encoder/virtual-encoder/.git").is_dir():
+                    repo_path = "/tmp/virtual_encoder/virtual-encoder"
                 else:
                     raise zipfile.BadZipFile
 

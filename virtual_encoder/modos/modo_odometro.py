@@ -90,6 +90,9 @@ class ModoOdometro:
 
     def handle_event(self, ev):
         match self.estado, ev:
+            case _, "reset_position":
+                self.acc = np.zeros(2)
+                
             case _, ("Erro", message):
                 self.estado = EstadoErro(self.gs, message)
                 self.estado.pending_pulses = np.zeros(2)

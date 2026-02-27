@@ -42,6 +42,7 @@ export function init_controls() {
 
   window.btns.zerar_deslocamento.addEventListener('click', event => {
     window.clear_canvas();
+    encoder_api.reset_position(event);
   });
 
   window.btns.iniciar_aquisicao.addEventListener('click', event => {

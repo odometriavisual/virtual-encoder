@@ -30,6 +30,14 @@ export async function stop_acquisition(event) {
   await fetch(`${URL}/stop_acquisition`, { method });
 }
 
+export async function reset_position(event) {
+  event.target.disabled = true;
+  set_debounce_button(event.target);
+
+  const method = 'POST';
+  await fetch(`${URL}/reset_position`, { method });
+}
+
 export async function start_stream(event) {
   event.target.disabled = true;
   set_debounce_button(event.target);

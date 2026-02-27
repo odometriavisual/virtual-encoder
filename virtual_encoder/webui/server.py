@@ -120,6 +120,14 @@ class WebuiApp:
             self.gs.send_event("stop_acquisition")
             return ""
 
+        @self.app.route("/reset_position", methods=["POST"])
+        def reset_position():
+            """
+            If in the ModoOdometro, resets the accumulated displacement
+            """
+            self.gs.send_event("reset_position")
+            return ""
+
         @self.app.route("/start_stream", methods=["POST"])
         def start_stream():
             """

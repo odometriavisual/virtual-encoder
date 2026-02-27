@@ -92,6 +92,7 @@ class ModoOdometro:
         match self.estado, ev:
             case _, ("Erro", message):
                 self.estado = EstadoErro(self.gs, message)
+                self.estado.pending_pulses = np.zeros(2)
 
             case EstadoErro(), "return_from_error":
                 self.estado = EstadoReady(self.gs)
@@ -102,7 +103,8 @@ class ModoOdometro:
                 _,
                 reason,
             ):  # ESTADO, PULSOS P/ SEG, REASON
-                self.estado = EstadoAquisicaoOdometro(self.gs, self.odometer, reason)
+                self.estado = EstadoAquisicaoOdometro(self.gs, reason)
+                self.estado.pending_pulses = np.zeros(2)
                 self.pending_pulses = np.zeros(2)
                 self.acc = np.zeros(2)
 

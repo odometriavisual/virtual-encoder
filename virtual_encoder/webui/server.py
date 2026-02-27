@@ -223,7 +223,7 @@ class WebuiApp:
                 subprocess.run(["git", "checkout", "main"], check=True)
                 subprocess.run(["git", "pull", "tmp", "main"], check=True)
 
-                return "<h1>Software atualizado! Reinicie o encoder para aplicar atualização</h1>"
+                return "<h1>Software atualizado com sucesso! O enconder será reiniciado para aplicação da atualização, aguarde...</h1>"
 
             except zipfile.BadZipFile:
                 return "<h1>Erro na atualização: Arquivo corrompido ou inválido</h1>"

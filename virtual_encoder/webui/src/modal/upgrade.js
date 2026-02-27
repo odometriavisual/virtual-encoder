@@ -1,4 +1,4 @@
-import { send_upgrade_zip } from "../encoder_api";
+import { send_upgrade_zip, reboot } from "../encoder_api";
 
 export function init_modal_upgrade() {
   window.modal_upgrade = {
@@ -16,6 +16,13 @@ export function init_modal_upgrade() {
   window.modal_upgrade.input.addEventListener("change", async e => {
     let text = await send_upgrade_zip(e, e.target.files);
     window.modal_upgrade.info.innerHTML = text;
+    if (text.indexOf("sucesso") > 0) {
+      reboot(e, "all");
+
+      setTimeout(() => {
+        window.location.reload();
+      }, 30 * 1000);
+    }
   });
 
   window.addEventListener('click', event => {

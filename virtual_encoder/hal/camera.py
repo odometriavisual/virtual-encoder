@@ -28,6 +28,9 @@ class CameraNull:
     def calibrate_exposure(self, *, min, max, target):
         pass
 
+    def get_exposure(self):
+        pass
+
     def set_exposure(self, exposure: int):
         pass
 
@@ -105,6 +108,9 @@ class CameraUDP(CameraNull, threading.Thread):
             return self._frame.copy()
 
     def calibrate_exposure(self, *, min, max, target):
+        pass
+
+    def get_exposure(self):
         pass
 
     def set_exposure(self, exposure: int):
@@ -187,6 +193,10 @@ try:
                 bot, cur, top = CameraNull.binsearch_exposicao(
                     target, self.peek_img(), bot, cur, top
                 )
+
+        def get_exposure(self):
+            metadata = self._picam2.controls.capture_metadata()
+            return metadata.ExposureTime
 
         def set_exposure(self, exposure: int):
             self._picam2.controls.ExposureTime = exposure

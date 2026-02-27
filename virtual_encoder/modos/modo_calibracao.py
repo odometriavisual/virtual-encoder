@@ -20,6 +20,9 @@ class ModoCalibracao:
             target=self.config["camera"]["target_average"],
         )
         self.gs.send_event(("set_modo", self.return_modo))
+        self.gs.add_message(
+            f"Exposição calibrada para {self.gs.camera.get_exposure()} us"
+        )
 
     def handle_event(self, ev):
         pass

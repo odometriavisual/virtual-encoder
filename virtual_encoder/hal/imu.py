@@ -10,6 +10,7 @@ if TYPE_CHECKING:
 
 class ImuNull:
     def get_orientation(self) -> list[float]:
+        time.sleep(0.1)
         return [0, 0, 0, 1, 0, 0, 0]
 
 

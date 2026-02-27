@@ -20,6 +20,7 @@ class CameraNull:
         pass
 
     def get_img(self):
+        time.sleep(0.1)
         return self.default_frame.copy()
 
     def peek_img(self):

@@ -43,7 +43,9 @@ class EstadoAquisicaoTempo(Estado):
         self.next_time = time.time_ns() + self.period
 
     def stop(self):
+        self.gs.set("estado", "Gravando...")
         self.gs.acquisition_writer.stop_acquisition()
+        self.gs.set("estado", "Aquisicao")
 
     def run(self):
         if self.is_first_pulse:

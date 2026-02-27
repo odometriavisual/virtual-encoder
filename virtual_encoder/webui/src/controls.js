@@ -83,7 +83,7 @@ export function init_controls() {
 }
 
 export function update_controls(status) {
-  const global_disable = status.modo === 'Calibracao' || !status.rpi5;
+  const global_disable = status.estado === 'Gravando...' || status.modo === 'Calibracao' || !status.rpi5;
 
   if (status.modo === 'Tempo' || status.modo === 'Odometro') {
     window.btns.iniciar_aquisicao.disabled = window.btns.iniciar_aquisicao.debounce_enabled || global_disable || status.estado !== 'Ready';

@@ -196,8 +196,8 @@ try:
                 )
 
         def get_exposure(self):
-            metadata = self._picam2.controls.capture_metadata()
-            return metadata.ExposureTime
+            metadata = self._picam2.capture_metadata()
+            return metadata["ExposureTime"]
 
         def set_exposure(self, exposure: int):
             self._picam2.controls.ExposureTime = exposure

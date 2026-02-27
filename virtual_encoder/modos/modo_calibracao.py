@@ -7,8 +7,7 @@ class ModoCalibracao:
         self.config = config
         self.return_modo = last_modo
 
-        self.gs.set("modo", "Calibracao")
-        self.gs.set("estado", "")
+        self.gs.set("estado", "Calibracao")
 
     def stop(self):
         pass

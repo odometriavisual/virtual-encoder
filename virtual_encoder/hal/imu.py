@@ -10,7 +10,7 @@ if TYPE_CHECKING:
 
 class ImuNull:
     def get_orientation(self) -> list[float]:
-        return [0, 0, 0, 1]
+        return [0, 0, 0, 1, 0, 0, 0]
 
 
 class ImuUDP(ImuNull, threading.Thread):
@@ -84,7 +84,7 @@ try:
             while True:
                 try:
                     quat = self.__sensor.quaternion
-                    acc = self.__sensor.acceleration
+                    acc = self.__sensor.linear_acceleration
 
                     with self.__condition:
                         self.orientation = [*quat, *acc]

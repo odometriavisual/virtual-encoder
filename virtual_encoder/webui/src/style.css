@@ -11,7 +11,7 @@ body {
   height: 98vh;
   padding: 1vh 1vw;
 
-  grid-template-columns: max-content 168px auto;
+  grid-template-columns: min-content 168px auto;
   grid-template-rows: auto 240px;
   grid-template-areas:
     "img       monitoramento log"
@@ -54,7 +54,11 @@ body {
 }
 
 .video-frame {
-  grid-area: 1/1;
+  object-fit: contain;
+  min-height: 480px;
+  height: 100%;
+  aspect-ratio: 4/3;
+  grid-area: "img";
 }
 
 .crosshair.hidden {
@@ -110,11 +114,6 @@ body {
   padding: 0.35em;
   border-bottom: 1px solid #aaaaaa;
   box-sizing: border-box;
-}
-
-img {
-  object-fit: contain;
-  height: 100%;
 }
 
 .modal {

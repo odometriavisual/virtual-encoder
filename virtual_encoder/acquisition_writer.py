@@ -1,6 +1,6 @@
 import time
 import threading
-import datetime
+from datetime import datetime
 from pathlib import Path
 
 from .ensaio import EnsaioWriter

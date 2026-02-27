@@ -211,13 +211,22 @@ class WebuiApp:
                 with zipfile.ZipFile(filename, "r") as zip:
                     zip.extractall(path="/tmp/virtual_encoder/")
 
+                if pathlib.Path("/tmp/virtual_encoder/.git").is_dir():
+                    repo_path = "/tmp/virtual_encoder"
+                elif pathlib.Path("/tmp/virtual_encoder/virtual_encoder/.git").is_dir():
+                    repo_path = "/tmp/virtual_encoder/virtual_encoder"
+                else:
+                    raise zipfile.BadZipFile
+
+                subprocess.run(["git", "remote", "remove", "tmp"])
+                subprocess.run(["git", "remote", "add", "tmp", repo_path], check=True)
                 subprocess.run(["git", "checkout", "main"], check=True)
                 subprocess.run(["git", "pull", "tmp", "main"], check=True)
 
                 return "<h1>Software atualizado! Reinicie o encoder para aplicar atualização</h1>"
 
             except zipfile.BadZipFile:
-                return "<h1>Erro na atualização: Arquivo corrompido</h1>"
+                return "<h1>Erro na atualização: Arquivo corrompido ou inválido</h1>"
             except subprocess.CalledProcessError:
                 return "<h1>Erro na atualização: Remote inválido</h1>"
             except Exception:

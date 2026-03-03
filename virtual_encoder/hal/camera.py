@@ -11,7 +11,7 @@ if TYPE_CHECKING:
 
 class CameraNull:
     def __init__(self):
-        self.default_frame = np.full((240, 320, 3), (150, 150, 150), dtype=np.uint8)
+        self.default_frame = np.full((240, 320, 3), (150, 0, 0), dtype=np.uint8)
 
     def start_stream(self):
         pass
@@ -24,6 +24,12 @@ class CameraNull:
         return self.default_frame.copy()
 
     def peek_img(self):
+        data = np.random.rand(240, 320)
+
+        self.default_frame = np.array(
+            155 * np.stack((data, data, data), axis=2)
+        ).astype(np.uint8)
+
         return self.default_frame.copy()
 
     def calibrate_exposure(self, *, min, max, target):

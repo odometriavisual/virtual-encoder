@@ -149,7 +149,6 @@ class EncoderGS:
             self.camera = CameraNull()
         elif self.config["use_legacy_camera"]:
             self.camera = CameraUDP(self)
-            self.camera = CameraNull()
         else:
             try:
                 self.camera = CameraPicamera2(self)

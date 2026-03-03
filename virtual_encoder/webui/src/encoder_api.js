@@ -138,9 +138,7 @@ export async function fetch_status_stream(update_status) {
       }
     } catch (err) {
       update_status(offline_status);
-
       await new Promise(resolve => setTimeout(resolve, 5000));
-      window.video_frame.src = '/video_feed'
     }
   }
 }

@@ -53,10 +53,13 @@ class WebuiApp:
             """
             The camera's MJPEG stream.
             """
-            return Response(
+            res = Response(
                 self.generate_frames(),
                 mimetype="multipart/x-mixed-replace; boundary=frame",
             )
+
+            res.headers["Cache-control"] = "no-cache"
+            return res
 
         @self.app.route("/")
         def index():
@@ -241,7 +244,6 @@ class WebuiApp:
                 return "<h2>Erro na atualização: Remote inválido</h2>"
             except Exception:
                 return "<h2>Erro na atualização: Não foi possível salvar o arquivo de atualização</h2>"
-                
 
     def run(self):
         BaseWSGIServer.protocol_version = "HTTP/1.1"

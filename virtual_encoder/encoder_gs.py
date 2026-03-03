@@ -117,7 +117,7 @@ class EncoderGS:
             def __thread_serdes_run():
                 self.serdes.run(enable_driver=True)
 
-            threading.Thread(target=__thread_serdes_run, daemon=True)
+            threading.Thread(target=__thread_serdes_run, daemon=True).start()
 
     def __setup_thermal_sensors(self):
         if self.config["debug"]:

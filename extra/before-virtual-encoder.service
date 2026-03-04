@@ -5,7 +5,7 @@ Description=Before Virtual Encoder
 Type=oneshot
 User=pi
 Group=pi
-WorkingDirectory=/home/pi/virtual-encoder/rpi5
+WorkingDirectory=/home/pi/virtual-encoder/extras
 ExecStart=/home/pi/virtual-encoder/venv/bin/python3 before_main.py
 
 [Install]

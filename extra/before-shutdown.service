@@ -4,8 +4,9 @@ Description=Clear OLED display before shutdown
 [Service]
 Type=oneshot
 RemainAfterExit=true
+WorkingDirectory=/home/pi/virtual-encoder/extras
 ExecStart=/bin/true
-ExecStop=/home/pi/virtual-encoder/venv/bin/python3 /home/pi/virtual-encoder/rpi5/before_shutdown.py
+ExecStop=/home/pi/virtual-encoder/venv/bin/python3 /home/pi/virtual-encoder/extras/before_shutdown.py
 
 [Install]
 WantedBy=multi-user.target

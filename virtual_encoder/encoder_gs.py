@@ -1,4 +1,5 @@
 import threading
+import time
 from queue import Queue
 
 from .hal.camera import CameraNull, CameraUDP, CameraPicamera2
@@ -33,14 +34,19 @@ class EncoderGS:
         }
         self.status_lock = threading.Lock()
 
+        def __parallel_setup_camera():
+            self.__setup_serdes()
+            time.sleep(1)
+            self.__setup_camera()
+
+        threading.Thread(target=__parallel_setup_camera, daemon=True).start()
+
         self.__setup_display()
         self.__setup_encoders()
         self.__setup_relay()
         self.__setup_imu()
         self.__setup_led()
-        self.__setup_serdes()
         self.__setup_thermal_sensors()
-        self.__setup_camera()
         self.__setup_acquisition_writer()
 
         # ssd_manager must be set up before network interface
@@ -114,10 +120,7 @@ class EncoderGS:
                 force_camera_on=self.config["serdes"]["force_camera_on"],
             )
 
-            def __thread_serdes_run():
-                self.serdes.run(enable_driver=True)
-
-            threading.Thread(target=__thread_serdes_run, daemon=True).start()
+            self.serdes.run(enable_driver=True)
 
     def __setup_thermal_sensors(self):
         if self.config["debug"]:

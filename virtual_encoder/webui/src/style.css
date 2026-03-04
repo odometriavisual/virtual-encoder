@@ -58,7 +58,7 @@ body {
   min-height: 480px;
   height: 100%;
   aspect-ratio: 4/3;
-  grid-area: "img";
+  grid-area: 1/1;
 }
 
 .crosshair.hidden {

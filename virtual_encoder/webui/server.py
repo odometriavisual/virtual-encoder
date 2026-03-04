@@ -129,6 +129,7 @@ class WebuiApp:
             If in the ModoOdometro, resets the accumulated displacement
             """
             self.gs.send_event("reset_position")
+            time.sleep(0.2)
             return ""
 
         @self.app.route("/start_stream", methods=["POST"])

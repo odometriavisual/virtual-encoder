@@ -10,6 +10,7 @@ import { init_log, update_log } from "./log.js";
 import { init_video_feed } from "./video_feed.js";
 import { init_modal_download } from "./modal/download.js";
 import { init_modal_upgrade } from "./modal/upgrade.js";
+import { init_trajectory_graph, update_trajectory_graph } from './trajectory_graph.js';
 
 export const html = String.raw;
 
@@ -31,7 +32,7 @@ document.querySelector('#app').innerHTML = html`
         </div>
 
         <div class="log">
-            <canvas style="display: none"></canvas>
+            <div class="trajectory-container"></div>
             <div class="log-window"></div>
             <button>Apagar log</button>
         </div>
@@ -122,22 +123,7 @@ document.querySelector('#app').innerHTML = html`
 `
 
 window.onload = () => {
-  window.canvas = document.querySelector('canvas')
-  const ctx = canvas.getContext('2d')
-  ctx.fillStyle = 'red'
-
-  window.draw_point = (x, y) => {
-    const w = canvas.width
-    const h = canvas.height
-    const s = 0.01
-    ctx.fillRect(x * s + w / 2 - 1, y * s + h / 2 - 1, 2, 2)
-
-  }
-
-  window.clear_canvas = () => {
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-  }
-
+  init_trajectory_graph()
   init_status_watcher()
   init_log()
 
@@ -152,15 +138,12 @@ window.onload = () => {
 
   init_controls()
 
-
   function update_status(status) {
     update_status_watcher(status)
     update_controls(status)
     update_imu_canvas(status)
     update_log(status)
-
-    window.canvas.style.display = status.modo === 'Odometro' ? 'block' : 'none'
-    draw_point(status.pos.x, status.pos.y)
+    update_trajectory_graph(status)
   }
 
   fetch_status_stream(update_status)

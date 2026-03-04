@@ -1,4 +1,5 @@
-import * as encoder_api from "./encoder_api.js"
+import * as encoder_api from "./encoder_api.js";
+import * as trajectory_graph from "./trajectory_graph.js";
 import { open_modal_download } from "./modal/download.js";
 import { open_modal_upgrade } from "./modal/upgrade.js";
 
@@ -40,13 +41,15 @@ export function init_controls() {
     window.brightness_slider.value = 1;
   }
 
-  window.btns.zerar_deslocamento.addEventListener('click', event => {
-    window.clear_canvas();
-    encoder_api.reset_position(event);
+  window.btns.zerar_deslocamento.addEventListener('click', async event => {
+    await encoder_api.reset_position(event);
+    trajectory_graph.clear_trajectory_graph();
   });
 
-  window.btns.iniciar_aquisicao.addEventListener('click', event => {
-    window.clear_canvas();
+  window.btns.iniciar_aquisicao.addEventListener('click', async event => {
+    await encoder_api.reset_position(event);
+    trajectory_graph.clear_trajectory_graph();
+
     const pps = parseInt(window.pulsos_por_segundo.value);
     const reason = window.motivo.value;
     encoder_api.start_acquisition(event, pps, reason);

@@ -15,3 +15,11 @@ dependencies = [
 
 [tool.setuptools.packages.find]
 include = ["virtual_encoder"]
+
+[project.optional-dependencies]
+raspberry = [
+    "gpiod",
+    "picamera2",
+    "adafruit-circuitpython-bno055",
+    "adafruit-circuitpython-ssd1306",
+]

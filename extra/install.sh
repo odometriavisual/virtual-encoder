@@ -19,10 +19,13 @@ systemctl enable before-virtual-encoder.service
 systemctl enable before-shutdown.service
 systemctl enable virtual-encoder.service
 
-./chrony/install.sh
-./boot-counter/install.sh
-./picam_gc/install.sh
+for dir in {./chrony,./boot-counter,./picam_gc,./nginx}
+do
+        cd $dir
+        ./install.sh
+        cd -
+done
+
 ./enable_watchdog.sh
-./nginx/install.sh
 
 echo "Services installed, reboot system to start services..."

@@ -2,7 +2,7 @@
 Description=Boot Counter Service
 
 [Service]
-ExecStart=/home/pi/virtual-encoder/rpi5/boot-counter/boot-counter.sh
+ExecStart=/home/pi/virtual-encoder/extra/boot-counter/boot-counter.sh
 
 [Install]
 WantedBy=multi-user.target

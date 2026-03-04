@@ -9,7 +9,7 @@ Type=exec
 Restart=always
 User=pi
 Group=pi
-WorkingDirectory=/home/pi/virtual-encoder/rpi5
+WorkingDirectory=/home/pi/virtual-encoder/
 ExecStart=/home/pi/virtual-encoder/venv/bin/python3 main.py
 
 [Install]

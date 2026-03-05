@@ -120,6 +120,9 @@ export function update_controls(status) {
   window.btns.listar_ensaios.disabled = global_disable;
 
   window.btns.zerar_deslocamento.disabled = global_disable || status.modo !== "Odometro";
-  window.btns.zerar_deslocamento.style.display = global_disable || status.modo !== "Odometro" ? "none" : "block";
-  window.pulsos_por_segundo.parentElement.style.display = global_disable || status.modo !== "Tempo" ? "none" : "flex";
+  window.btns.zerar_deslocamento.disabled = global_disable;
+  window.pulsos_por_segundo.parentElement.disabled = global_disable;
+
+  window.btns.zerar_deslocamento.style.display = status.modo !== "Odometro" ? "none" : "block";
+  window.pulsos_por_segundo.parentElement.style.display = status.modo !== "Tempo" ? "none" : "flex";
 }

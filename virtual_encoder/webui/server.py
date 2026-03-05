@@ -88,7 +88,7 @@ class WebuiApp:
         @self.app.route("/ensaios", methods=["GET"])
         def get_ensaio():
             p = pathlib.Path(self.config["acquisition"]["directory"])
-            return [x.name for x in p.iterdir() if x.is_file()]
+            return sorted([x.name for x in p.iterdir() if x.is_file()])
 
         @self.app.route("/remove_ensaio/<filename>", methods=["POST"])
         def remove_ensaio(filename):

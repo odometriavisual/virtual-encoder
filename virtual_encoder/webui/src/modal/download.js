@@ -23,8 +23,6 @@ export function init_modal_download() {
     const ensaios = await encoder_api.get_ensaios(event);
     update_modal_download(ensaios);
   });
-
-  open_modal_download({ target: { disabled: false } });
 }
 
 export function open_modal_download(event) {
@@ -65,10 +63,7 @@ function update_modal_download(ensaios) {
       restore_button.addEventListener("click", async event => {
         await encoder_api.restore_ensaio(event, ensaio);
 
-        a.style.textDecoration = "";
-        a.style.color = "green";
-        a.style.cursor = "";
-        a.style.pointerEvents = "";
+        a.style = "";
 
         row.removeChild(restore_button);
         row.appendChild(remove_button);

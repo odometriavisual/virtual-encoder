@@ -92,21 +92,26 @@ class WebuiApp:
 
         @self.app.route("/remove_ensaio/<filename>", methods=["POST"])
         def remove_ensaio(filename):
-            p = pathlib.Path(self.config["acquisition"]["directory"]) / filename
-            p_target = pathlib.Path("/tmp") / filename
+            dir = pathlib.Path(self.config["acquisition"]["directory"])
+            p = dir / filename
+            target_dir = dir / "trash"
 
             if p.is_file():
-                p.move(p_target)
+                if not target_dir.is_dir():
+                    target_dir.mkdir(parents=True)
+
+                p.move_into(target_dir)
 
             return ""
 
         @self.app.route("/restore_ensaio/<filename>", methods=["POST"])
         def restore_ensaio(filename):
-            p = pathlib.Path("/tmp") / filename
-            p_target = pathlib.Path(self.config["acquisition"]["directory"]) / filename
+            dir = pathlib.Path(self.config["acquisition"]["directory"])
+            p = dir / "trash" / filename
+            target_dir = dir 
 
             if p.is_file():
-                p.move(p_target)
+                p.move_into(target_dir)
 
             return ""
 
@@ -247,7 +252,8 @@ class WebuiApp:
                 subprocess.run(["git", "remote", "remove", "tmp"])
                 subprocess.run(["git", "remote", "add", "tmp", repo_path], check=True)
                 subprocess.run(["git", "checkout", "main"], check=True)
-                subprocess.run(["git", "pull", "tmp", "main"], check=True)
+                subprocess.run(["git", "fetch", "tmp"], check=True)
+                subprocess.run(["git", "reset", "--hard", "tmp/main"], check=True)
 
                 return "<h2>Software atualizado com sucesso! <br>O enconder será reiniciado para aplicação da atualização, aguarde...</h2>"
 

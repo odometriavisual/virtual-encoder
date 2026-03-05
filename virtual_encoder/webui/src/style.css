@@ -207,25 +207,31 @@ body {
 
 .modal-download .modal-row {
   display: flex;
+  justify-content: space-between;
+
   padding: 12px;
   background-color: 1px solid #aaaaaa;
   user-select: none;
-  cursor: pointer;
   border: 1px solid transparent;
 }
 
-.modal-download .modal-row:hover {
-  border: 1px solid blue;
+.modal-download .modal-row a:hover {
+  text-decoration: underline;
 }
 
-.modal-download .modal-row:nth-child(even) {
-  background-color: #c6c6c6;
-}
-
-.modal-download .modal-row :first-child {
-  flex-grow: 1;
+.modal-download .modal-row a {
+  cursor: pointer;
+  text-decoration: none;
   align-self: center;
   font-size: 1em;
+}
+
+.modal-download .modal-row button {
+  cursor: pointer;
+}
+
+.modal-download .modal-row:nth-child(odd) {
+  background-color: #c6c6c6;
 }
 
 .modal-download .modal-update {

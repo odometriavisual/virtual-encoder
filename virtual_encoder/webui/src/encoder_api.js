@@ -153,12 +153,14 @@ export async function get_ensaios(event) {
   return res.json();
 }
 
-export async function remove_ensaios(event, name) {
-  event.target.disabled = true;
-  set_debounce_button(event.target);
-
+export async function remove_ensaio(event, name) {
   const method = 'POST';
-  await fetch(`${URL}/ensaios/${name}`, { method });
+  await fetch(`${URL}/remove_ensaio/${name}`, { method });
+}
+
+export async function restore_ensaio(event, name) {
+  const method = 'POST';
+  await fetch(`${URL}/restore_ensaio/${name}`, { method });
 }
 
 export async function send_upgrade_zip(event, files) {

@@ -93,8 +93,20 @@ class WebuiApp:
         @self.app.route("/remove_ensaio/<filename>", methods=["POST"])
         def remove_ensaio(filename):
             p = pathlib.Path(self.config["acquisition"]["directory"]) / filename
+            p_target = pathlib.Path("/tmp") / filename
+
             if p.is_file():
-                p.unlink()
+                p.move(p_target)
+
+            return ""
+
+        @self.app.route("/restore_ensaio/<filename>", methods=["POST"])
+        def restore_ensaio(filename):
+            p = pathlib.Path("/tmp") / filename
+            p_target = pathlib.Path(self.config["acquisition"]["directory"]) / filename
+
+            if p.is_file():
+                p.move(p_target)
 
             return ""
 

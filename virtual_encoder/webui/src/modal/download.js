@@ -23,6 +23,8 @@ export function init_modal_download() {
     const ensaios = await encoder_api.get_ensaios(event);
     update_modal_download(ensaios);
   });
+
+  open_modal_download({ target: { disabled: false } });
 }
 
 export function open_modal_download(event) {
@@ -31,20 +33,53 @@ export function open_modal_download(event) {
 }
 
 function update_modal_download(ensaios) {
-  let inner_html = "";
-
   if (ensaios.length > 0) {
+    window.modal_download.list.innerHTML = "";
+
     for (const ensaio of ensaios) {
-      inner_html += html`
-        <label class="modal-row">
-            <a href="ensaios/${ensaio}">${ensaio}</a>
-        </label>
-      `;
+      const row = document.createElement("div");
+      const a = document.createElement("a");
+      const remove_button = document.createElement("button");
+      const restore_button = document.createElement("button");
+
+      row.classList.add("modal-row");
+      a.href = `ensaios/${ensaio}`;
+      a.innerText = ensaio;
+      remove_button.innerText = "Deletar";
+      restore_button.innerText = "Restaurar";
+
+      remove_button.addEventListener("click", async event => {
+        if (confirm(`Deseja realmente deletar ${ensaio}?`)) {
+          await encoder_api.remove_ensaio(event, ensaio);
+
+          a.style.textDecoration = "line-through";
+          a.style.color = "red";
+          a.style.cursor = "auto";
+          a.style.pointerEvents = "none";
+
+          row.removeChild(remove_button);
+          row.appendChild(restore_button);
+        }
+      })
+
+      restore_button.addEventListener("click", async event => {
+        await encoder_api.restore_ensaio(event, ensaio);
+
+        a.style.textDecoration = "";
+        a.style.color = "green";
+        a.style.cursor = "";
+        a.style.pointerEvents = "";
+
+        row.removeChild(restore_button);
+        row.appendChild(remove_button);
+      })
+
+      row.appendChild(a);
+      row.appendChild(remove_button);
+      window.modal_download.list.appendChild(row);
     }
   }
   else {
-    inner_html += html`<h1>Nenhum ensaio gravado</h1>`;
+    window.modal_download.list.innerHTML = html`<h1>Nenhum ensaio gravado</h1>`;
   }
-
-  window.modal_download.list.innerHTML = inner_html;
 }

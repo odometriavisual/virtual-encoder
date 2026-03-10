@@ -1,18 +1,18 @@
 class SerdesNull:
-    def run(self, *, enable_driver=False):
-        pass
+    pass
 
 
 try:
     from time import sleep
     import subprocess
+    import threading
 
     import gpiod
     from gpiod import LineRequest
     from gpiod.line import Direction, Value
     from smbus2 import SMBus, i2c_msg
 
-    class Serdes(SerdesNull):
+    class Serdes(SerdesNull, threading.Thread):
         def __init__(
             self,
             *,
@@ -25,9 +25,12 @@ try:
             **kwargs,
         ):
             SerdesNull.__init__(self)
+            threading.Thread.__init__(self)
+            
             self.__verbose = kwargs.get("verbose", False)
             self.__monitor = kwargs.get("monitor", False)
             self.__fcon = kwargs.get("force_camera_on", False)
+            self.__enable_driver = kwargs.get("enable_driver", False)
 
             self.__seraddr = seraddr
             self.__desaddr = desaddr
@@ -295,52 +298,77 @@ try:
             eye: int = self.__wait_eye()
             return eye
 
-        def monitor(self):
+        def print_stats(self):
+            print("\33[2J")
+            print("------ SERIALIZER STATS -------")
+            self.read_ser(0x0112, "Video Receiver Status")
+            self.read_ser(0x033B, "PHY1 LP status (D-PHY only)")
+            self.read_ser(0x033C, "PHY1 high-speed status (D-PHY only)")
+            self.read_ser(0x033D, "PHY2 LP status (D-PHY only)")
+            self.read_ser(0x033E, "PHY2 high-speed status (D-PHY only)")
+
+            print("----- DESERIALIZER STATS ------")
+            self.read_des(0x0341, "Tunnel Mode ECC Errors")
+            self.read_des(0x0442, "Individual MIPI PHY Status")
+
+            print("----- EYE STATS ------")
+            horizontal_eye: float = float(self.get_eye(False) & 0x7F) / 0.64
+            vertical_eye: float = float(self.get_eye(True) & 0x7F) / 0.64
+            self.printv("Horizontal eye: %2.0f%%" % horizontal_eye)
+            self.printv("Vertical eye: %2.0f%%" % vertical_eye)
+
+            print("")
+
+        def is_des_connected(self):
+            try:
+                return self.read_des(0x000D, "Checking deserializer device ID") == 0xCA
+            except IOError:
+                return False
+
+        def is_ser_connected(self):
+            try:
+                return self.read_ser(0x000D, "Checking serializer device ID") == 0xC8
+            except IOError:
+                return False
+
+        def run(self):
             while True:
-                print("\33[2J")
-                print("------ SERIALIZER STATS -------")
-                self.read_ser(0x0112, "Video Receiver Status")
-                self.read_ser(0x033B, "PHY1 LP status (D-PHY only)")
-                self.read_ser(0x033C, "PHY1 high-speed status (D-PHY only)")
-                self.read_ser(0x033D, "PHY2 LP status (D-PHY only)")
-                self.read_ser(0x033E, "PHY2 high-speed status (D-PHY only)")
+                if not self.is_des_connected():
+                    print("Deserializer not found, trying again...")
+                    sleep(10)
+                    continue
 
-                print("----- DESERIALIZER STATS ------")
-                self.read_des(0x0341, "Tunnel Mode ECC Errors")
-                self.read_des(0x0442, "Individual MIPI PHY Status")
+                if not self.is_ser_connected():
+                    print("Serializer not found, trying again...")
+                    sleep(10)
+                    continue
 
-                print("----- EYE STATS ------")
-                horizontal_eye: float = float(self.get_eye(False) & 0x7F) / 0.64
-                vertical_eye: float = float(self.get_eye(True) & 0x7F) / 0.64
-                self.printv("Horizontal eye: %2.0f%%" % horizontal_eye)
-                self.printv("Vertical eye: %2.0f%%" % vertical_eye)
-
-                print("")
-
-                sleep(1)
-
-        def run(self, *, enable_driver=False):
-            if self.read_des(0x000D, "Checking deserializer device ID") != 0xCA:
-                print("Error talking to deserializer. Fatal error. Aborting...")
-                exit(1)
-            if self.read_ser(0x000D, "Checking serializer device ID") != 0xC8:
-                print("Error talking to serializer. Fatal error. Aborting...")
-                exit(1)
-            self.config_serializer()
-            self.config_deserializer()
-
-            print("Serdes link configured SUCCESSFULLY.")
-
-            if enable_driver:
-                print("Running driver initialization")
                 try:
-                    subprocess.run("sudo dtoverlay imx219,cam0=CSI0".split(" "))
-                    sleep(0.5)
-                finally:
-                    pass
+                    self.config_serializer()
+                    self.config_deserializer()
+                except Exception:
+                    continue
 
-            if self.__monitor:
-                self.monitor()
+                print("Serdes link configured SUCCESSFULLY.")
+
+                if self.__enable_driver:
+                    print("Running driver initialization")
+                    subprocess.run(
+                        "sudo dtoverlay imx219,cam0=CSI0".split(" "), check=False
+                    )
+                    sleep(0.5)
+
+                while True:
+                    if not (self.is_des_connected() and self.is_ser_connected()):
+                        sleep(10)
+                        break
+
+                    if self.__monitor:
+                        self.print_stats()
+                        sleep(1)
+                    else:
+                        sleep(60)
+
 
 except Exception:
 

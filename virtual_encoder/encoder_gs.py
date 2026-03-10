@@ -118,9 +118,10 @@ class EncoderGS:
                 verbose=self.config["serdes"]["verbose"],
                 monitor=self.config["serdes"]["eye_monitor"],
                 force_camera_on=self.config["serdes"]["force_camera_on"],
+                enable_driver=True,
             )
 
-            self.serdes.run(enable_driver=True)
+            self.serdes.start()
 
     def __setup_thermal_sensors(self):
         if self.config["debug"]:

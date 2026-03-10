@@ -24,12 +24,6 @@ class CameraNull:
         return self.default_frame.copy()
 
     def peek_img(self):
-        data = np.random.rand(240, 320)
-
-        self.default_frame = np.array(
-            155 * np.stack((data, data, data), axis=2)
-        ).astype(np.uint8)
-
         return self.default_frame.copy()
 
     def calibrate_exposure(self, *, min, max, target):
@@ -55,6 +49,21 @@ class CameraNull:
 
         cur = (bot + top) // 2
         return bot, cur, top
+
+class CameraNoise(CameraNull):
+    def peek_img(self):
+        data = np.random.rand(48, 64)
+
+        self.default_frame = np.array(
+            155 * np.stack((data, data, data), axis=2)
+        ).astype(np.uint8)
+
+        return self.default_frame.copy()
+
+class CameraError(CameraNull):
+    def __init__(self):
+        CameraNull.__init__(self)
+        self.default_frame = cv2.imread("extra/nocamera.jpg")
 
 
 class CameraUDP(CameraNull, threading.Thread):

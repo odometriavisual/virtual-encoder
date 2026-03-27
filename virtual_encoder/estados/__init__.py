@@ -5,7 +5,7 @@ from virtual_encoder.estados.estados import (
     EstadoReady,
     EstadoErro,
 )
-from virtual_encoder.estados.odometro import EstadoAquisicaoOdometro
+from virtual_encoder.estados.odometro import EstadoAquisicaoOdometro, EstadoReadyOdometro
 
 __all__ = [
     "Estado",
@@ -14,4 +14,5 @@ __all__ = [
     "EstadoErro",
     "EstadoReady",
     "EstadoSet",
+    "EstadoReadyOdometro"
 ]

@@ -5,7 +5,11 @@ import numpy as np
 
 from visual_odometer import VisualOdometer
 
-from virtual_encoder.estados import EstadoAquisicaoOdometro, EstadoErro, EstadoReady
+from virtual_encoder.estados import (
+    EstadoAquisicaoOdometro,
+    EstadoErro,
+    EstadoReadyOdometro,
+)
 from virtual_encoder.encoder_gs import EncoderGS
 from virtual_encoder.dsp import to_grayscale
 
@@ -16,8 +20,7 @@ class ModoOdometro:
 
         self.gs.set("modo", "Odometro")
 
-        self.estado = EstadoReady(self.gs)
-        self.estado.pending_pulses = np.zeros(2)
+        self.estado = EstadoReadyOdometro(self.gs)
 
         img = to_grayscale(self.gs.camera.get_img())
         self.odometer = VisualOdometer(
@@ -83,35 +86,32 @@ class ModoOdometro:
         self.estado.stop()
 
     def run(self):
-        self.estado.pending_pulses += self.pending_pulses.copy()
-        self.pending_pulses = np.zeros(2)
-
-        self.estado.run()
+        match self.estado:
+            case EstadoReadyOdometro() | EstadoAquisicaoOdometro():
+                self.pending_pulses = self.estado.run(self.pending_pulses)
+            case _:
+                self.estado.run()
 
     def handle_event(self, ev):
         match self.estado, ev:
             case _, "reset_position":
                 self.acc = np.zeros(2)
-                
+
             case _, ("Erro", message):
                 self.estado = EstadoErro(self.gs, message)
-                self.estado.pending_pulses = np.zeros(2)
 
             case EstadoErro(), "return_from_error":
-                self.estado = EstadoReady(self.gs)
-                self.estado.pending_pulses = np.zeros(2)
+                self.estado = EstadoReadyOdometro(self.gs)
 
-            case EstadoReady(), (
+            case EstadoReadyOdometro(), (
                 "start_acquisition",
                 _,
                 reason,
             ):  # ESTADO, PULSOS P/ SEG, REASON
                 self.estado = EstadoAquisicaoOdometro(self.gs, reason)
-                self.estado.pending_pulses = np.zeros(2)
                 self.pending_pulses = np.zeros(2)
                 self.acc = np.zeros(2)
 
             case EstadoAquisicaoOdometro(), "stop_acquisition":
                 self.estado.stop()
-                self.estado = EstadoReady(self.gs)
-                self.estado.pending_pulses = np.zeros(2)
+                self.estado = EstadoReadyOdometro(self.gs)

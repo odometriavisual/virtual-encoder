@@ -1,4 +1,3 @@
-import time
 import threading
 import multiprocessing
 import numpy as np
@@ -39,14 +38,8 @@ class ModoOdometro:
         self.acc = np.zeros(2)
 
         def _preprocess_last_img():
-            last_t = time.time()
             while self.is_running:
                 self.odometer.feed_image(to_grayscale(self.gs.camera.get_img()))
-                t1 = time.time()
-                dt = (t1 - last_t) * 1000
-                last_t = t1
-                # print(f"camera {dt=:.3f} ms")
-
                 self.new_image_event.set()
 
         def _estimate_distance():
@@ -56,20 +49,14 @@ class ModoOdometro:
                 self.new_image_event.wait()
                 self.new_image_event.clear()
 
-                t0 = time.time()
                 try:
                     new_pulses = self.odometer.get_displacement()
                 except ValueError:
                     new_pulses = (0, 0)
-                t1 = time.time()
 
                 if self.is_running:
                     # Checking again to avoid setting status after is_running was set to False
                     self.gs.set("pos", {"x": self.acc[0], "y": self.acc[1]})
-                    dt = (t1 - t0) * 1000
-                    # print(
-                    #     f"deslocamento {dt=:.3f}, acumulado {self.acc[0]: 6.02f} {self.acc[1]: 6.02f}"
-                    # )
 
                 self.pending_pulses += new_pulses
                 self.acc += new_pulses

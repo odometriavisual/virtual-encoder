@@ -10,4 +10,9 @@ server {
 		alias /home/pi/picam_imgs/;
 		autoindex off;
 	}
+
+    error_page 502 /502.html;
+    location /502.html {
+	    root /home/pi/virtual-encoder/extra/nginx/;
+    }
 }

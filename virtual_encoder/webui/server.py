@@ -100,7 +100,7 @@ class WebuiApp:
                 if not target_dir.is_dir():
                     target_dir.mkdir(parents=True)
 
-                p.move_into(target_dir)
+                p.rename(target_dir / filename)
 
             return ""
 
@@ -111,7 +111,7 @@ class WebuiApp:
             target_dir = dir 
 
             if p.is_file():
-                p.move_into(target_dir)
+                p.rename(target_dir / filename)
 
             return ""
 

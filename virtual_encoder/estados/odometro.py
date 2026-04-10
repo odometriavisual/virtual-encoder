@@ -10,7 +10,7 @@ class EstadoReadyOdometro(Estado):
 
         self.gs.set("estado", "Ready")
 
-    def run(self, *, pending_pulses):
+    def run(self, pending_pulses):
         for i in range(2):
             if pending_pulses[i] > 10:
                 self.gs.encoders[i].send_pulse("+")
@@ -53,7 +53,7 @@ class EstadoAquisicaoOdometro(Estado):
         self.gs.acquisition_writer.stop_acquisition()
         self.gs.set("estado", "Aquisicao")
 
-    def run(self, *, pending_pulses):
+    def run(self, pending_pulses):
         for i in range(2):
             if pending_pulses[i] > 10:
                 self.gs.encoders[i].send_pulse("+")

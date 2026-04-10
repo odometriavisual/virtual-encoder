@@ -36,8 +36,11 @@ to_delete = sorted(imgs_directory.glob("trash/*")) + sorted([p for p in imgs_dir
 
 while get_percent() > LOWER_THRESHOLD and len(to_delete) > 0:
     p = to_delete.pop(0)
+    print(f"Deletando: {p}")
 
     if p.is_file():
         p.unlink()
     else:
         rmtree(p)
+else:
+    print(f"Nenhum arquivo deletado, uso de disco: {get_percent() * 100:.2f}%")

@@ -64,6 +64,9 @@ class AcquisitionWriter:
         )
         self.__acquisition = EnsaioWriter(
             f"{ensaio_date} {reason}" if len(reason) > 0 else f"{ensaio_date}",
+            first_pulse_timestamp=timestamp_ns,
+            exposure=self.gs.camerag.get_exposure(),
+            pulses_period=pulses_period_ns,
             dir=self.ENSAIOS_DIR,
         )
         self.__recording = True

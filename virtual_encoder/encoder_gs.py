@@ -50,7 +50,7 @@ class EncoderGS:
         self.__setup_acquisition_writer()
 
         # ssd_manager must be set up before network interface
-        self.__setup_ssd_manager()
+        # self.__setup_ssd_manager()
         self.__setup_network_interface()
 
         self._event_queue = Queue(4)
@@ -142,11 +142,11 @@ class EncoderGS:
             self.network_interface = NetworkInterfaceConfigFile(self, "eno1", "/tmp")
         else:
             self.network_interface = NetworkInterfaceConfigFile(
-                self, self.config["network"]["interface"], "/media/usb-ssd/"
+                self, self.config["network"]["interface"], "/home/pi/"
             )
-            self.ssd_manager.mount()
+            # self.ssd_manager.mount()
             self.network_interface.set_ip_address(None)
-            self.ssd_manager.unmount()
+            # self.ssd_manager.unmount()
 
     def __setup_camera(self):
         if self.config["debug"]:

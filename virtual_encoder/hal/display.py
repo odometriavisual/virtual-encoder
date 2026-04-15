@@ -47,7 +47,7 @@ try:
         def __connect(self):
             try:
                 # Inicializa o display I2C
-                i2c = busio.I2C(self.i2c_scl, self.i2c_sda)
+                i2c = busio.I2C(self.scl, self.sda)
                 self.oled_i2c = adafruit_ssd1306.SSD1306_I2C(self.width, self.height, i2c, addr=self.addr)
 
                 # Limpa o display

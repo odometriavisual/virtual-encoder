@@ -110,7 +110,7 @@ def main():
     config = load_config(
         os.getenv("HOME", default="/home/pi") + "/virtual_encoder.toml"
     )
-    gs = EncoderGS(config, default_modo_lambda=lambda gs: ModoTempo(gs))
+    gs = EncoderGS(config, default_modo_lambda=lambda gs: ModoOdometro(gs))
 
     webui = WebuiApp(gs, config)
     threading.Thread(target=webui.run, daemon=True).start()

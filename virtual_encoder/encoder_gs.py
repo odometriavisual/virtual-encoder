@@ -40,7 +40,8 @@ class EncoderGS:
             time.sleep(1)
             self.__setup_camera()
 
-        threading.Thread(target=__parallel_setup_camera, daemon=True).start()
+        setup_camera_thread = threading.Thread(target=__parallel_setup_camera, daemon=True)
+        setup_camera_thread.start()
 
         self.__setup_display()
         self.__setup_encoders()
@@ -56,6 +57,7 @@ class EncoderGS:
 
         self._event_queue = Queue(4)
 
+        setup_camera_thread.join()
         self.modo = default_modo_lambda(self)
 
     def __setup_display(self):

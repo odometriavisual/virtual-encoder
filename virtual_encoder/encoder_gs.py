@@ -1,5 +1,6 @@
 import threading
 import time
+from pathlib import Path
 from queue import Queue
 
 from .hal.camera import CameraError, CameraNoise, CameraUDP, CameraPicamera2
@@ -155,7 +156,17 @@ class EncoderGS:
             self.camera = CameraUDP(self)
         else:
             try:
-                self.camera = CameraPicamera2(self)
+                exposure_cache_path = Path(self.config["exposure_cache"])
+                exposure = None
+
+                if exposure_cache_path.is_file():
+                    try:
+                        with open(exposure_cache_file) as file:
+                            exposure = int(f.read())
+                    except:
+                        pass
+        
+                self.camera = CameraPicamera2(self, exposure)
                 self.camera.start()
             except IndexError:
                 self.camera = CameraError()

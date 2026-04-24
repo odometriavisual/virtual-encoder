@@ -140,7 +140,7 @@ try:
     from picamera2 import Picamera2
 
     class CameraPicamera2(CameraNull, threading.Thread):
-        def __init__(self, gs: "EncoderGS"):
+        def __init__(self, gs: "EncoderGS", exposure: int|None):
             CameraNull.__init__(self)
             threading.Thread.__init__(self, daemon=True)
 
@@ -157,6 +157,9 @@ try:
             self._picam2.controls.FrameRate = 60
 
             self._frame = self.default_frame.copy()
+
+            if exposure:
+                self.set_exposure(exposure)
 
         def run(self):
             while True:

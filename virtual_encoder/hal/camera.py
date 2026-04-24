@@ -51,7 +51,8 @@ class CameraNull:
         return bot, cur, top
 
 class CameraNoise(CameraNull):
-    def peek_img(self):
+    def get_img(self):
+        time.sleep(0.1)
         data = np.random.rand(48, 64)
 
         self.default_frame = np.array(

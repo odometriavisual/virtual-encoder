@@ -30,7 +30,7 @@ class CameraNull:
         pass
 
     def get_exposure(self):
-        pass
+        return 0
 
     def set_exposure(self, exposure: int):
         pass

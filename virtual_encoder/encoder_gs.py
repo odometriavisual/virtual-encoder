@@ -152,21 +152,22 @@ class EncoderGS:
             # self.ssd_manager.unmount()
 
     def __setup_camera(self):
+        exposure_cache_path = Path(self.config.get("camera", dict()).get("exposure_cache", "/home/pi/exposure.txt"))
+        exposure = None
+
+        if exposure_cache_path.is_file():
+            try:
+                with open(exposure_cache_path) as file:
+                    exposure = int(file.read())
+            except Exception:
+                pass
+
         if self.config["debug"]:
             self.camera = CameraNoise()
         elif self.config["use_legacy_camera"]:
             self.camera = CameraUDP(self)
         else:
             try:
-                exposure_cache_path = Path(self.config["exposure_cache"])
-                exposure = None
-
-                if exposure_cache_path.is_file():
-                    try:
-                        with open(exposure_cache_file) as file:
-                            exposure = int(f.read())
-                    except:
-                        pass
         
                 self.camera = CameraPicamera2(self, exposure)
                 self.camera.start()

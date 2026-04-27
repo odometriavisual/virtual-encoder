@@ -75,7 +75,6 @@ document.querySelector('#app').innerHTML = html`
                 <span class="modal-close">&times;</span>
                 <button class="encoder">Desligar encoder e câmera subsea</button>
                 <button class="led">Desligar LED</button>
-                <button class="rele">Desligar relê</button>
             </div>
         </div>
 
@@ -85,7 +84,6 @@ document.querySelector('#app').innerHTML = html`
                 <span class="modal-close">&times;</span>
                 <button class="encoder">Reiniciar encoder e câmera subsea</button>
                 <button class="led">Reiniciar LED</button>
-                <button class="rele">Reiniciar relê</button>
             </div>
         </div>
 

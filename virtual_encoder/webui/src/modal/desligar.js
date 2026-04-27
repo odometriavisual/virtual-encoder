@@ -9,21 +9,21 @@ export function init_modal_desligar() {
     rele: document.querySelector('.modal-desligar .rele'),
   };
 
-  window.modal_desligar.close.addEventListener('click', event => {
+  window.modal_desligar.close?.addEventListener('click', event => {
     window.modal_desligar.modal.style.display = 'none'
   });
 
-  window.modal_desligar.encoder.addEventListener('click', event => {
+  window.modal_desligar.encoder?.addEventListener('click', event => {
     window.modal_desligar.modal.style.display = 'none';
     encoder_api.shutdown(event, 'all');
   });
 
-  window.modal_desligar.camera_subsea.addEventListener('click', event => {
+  window.modal_desligar.camera_subsea?.addEventListener('click', event => {
     window.modal_desligar.modal.style.display = 'none';
     encoder_api.shutdown(event, 'led');
   });
 
-  window.modal_desligar.rele.addEventListener('click', event => {
+  window.modal_desligar.rele?.addEventListener('click', event => {
     window.modal_desligar.modal.style.display = 'none';
     encoder_api.shutdown(event, 'relay');
   });

@@ -9,21 +9,21 @@ export function init_modal_reiniciar() {
     rele: document.querySelector('.modal-reiniciar .rele'),
   };
 
-  window.modal_reiniciar.close.addEventListener('click', event => {
+  window.modal_reiniciar.close?.addEventListener('click', event => {
     window.modal_reiniciar.modal.style.display = 'none'
   });
 
-  window.modal_reiniciar.encoder.addEventListener('click', event => {
+  window.modal_reiniciar.encoder?.addEventListener('click', event => {
     window.modal_reiniciar.modal.style.display = 'none';
     encoder_api.reboot(event, 'all');
   });
 
-  window.modal_reiniciar.camera_subsea.addEventListener('click', event => {
+  window.modal_reiniciar.camera_subsea?.addEventListener('click', event => {
     window.modal_reiniciar.modal.style.display = 'none';
     encoder_api.reboot(event, 'led');
   });
 
-  window.modal_reiniciar.rele.addEventListener('click', event => {
+  window.modal_reiniciar.rele?.addEventListener('click', event => {
     window.modal_reiniciar.modal.style.display = 'none';
     encoder_api.reboot(event, 'relay');
   });

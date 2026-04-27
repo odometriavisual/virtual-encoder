@@ -160,13 +160,13 @@ def main():
                     gs.camera.set_exposure(value)
 
                 case ModoAutonomo(), "calibrate_exposure":
-                    gs.set_modo(ModoCalibracao(gs, config, "Autonomo"))
+                    gs.set_modo(ModoCalibracao(gs, config, "exposure", "Autonomo"))
                 case ModoOdometro(), "calibrate_exposure":
-                    gs.set_modo(ModoCalibracao(gs, config, "Odometro"))
+                    gs.set_modo(ModoCalibracao(gs, config, "exposure", "Odometro"))
                 case ModoTempo(), "calibrate_exposure":
-                    gs.set_modo(ModoCalibracao(gs, config, "Tempo"))
+                    gs.set_modo(ModoCalibracao(gs, config, "exposure", "Tempo"))
                 case _, "calibrate_exposure":
-                    gs.set_modo(ModoCalibracao(gs, config, "Tempo"))
+                    gs.set_modo(ModoCalibracao(gs, config, "exposure", "Tempo"))
 
                 case _, "start_stream":
                     gs.camera.start_stream()

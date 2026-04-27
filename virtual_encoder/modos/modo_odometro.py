@@ -34,7 +34,7 @@ class ModoOdometro:
         self.new_image_event = multiprocessing.Event()
         self.is_running = True
 
-        self.pending_pulses = np.zeros(2)
+        self.pending_displacement = np.zeros(2)
         self.acc = np.zeros(2)
 
         def _preprocess_last_img():
@@ -50,16 +50,16 @@ class ModoOdometro:
                 self.new_image_event.clear()
 
                 try:
-                    new_pulses = self.odometer.get_displacement()
+                    new_displacement = self.odometer.get_displacement() * self.gs.spatial_resolution
                 except ValueError:
-                    new_pulses = (0, 0)
+                    new_displacement = (0, 0)
 
                 if self.is_running:
                     # Checking again to avoid setting status after is_running was set to False
                     self.gs.set("pos", {"x": self.acc[0], "y": self.acc[1]})
 
-                self.pending_pulses += new_pulses
-                self.acc += new_pulses
+                self.pending_displacement += new_displacement
+                self.acc += new_displacement
 
         self.preprocess_thread = threading.Thread(
             target=_preprocess_last_img, daemon=True
@@ -75,7 +75,7 @@ class ModoOdometro:
     def run(self):
         match self.estado:
             case EstadoReadyOdometro() | EstadoAquisicaoOdometro():
-                self.pending_pulses = self.estado.run(self.pending_pulses)
+                self.pending_displacement = self.estado.run(self.pending_displacement)
             case _:
                 self.estado.run()
 
@@ -96,7 +96,7 @@ class ModoOdometro:
                 reason,
             ):  # ESTADO, PULSOS P/ SEG, REASON
                 self.estado = EstadoAquisicaoOdometro(self.gs, reason)
-                self.pending_pulses = np.zeros(2)
+                self.pending_displacement = np.zeros(2)
                 self.acc = np.zeros(2)
 
             case EstadoAquisicaoOdometro(), "stop_acquisition":

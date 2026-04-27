@@ -10,19 +10,19 @@ class EstadoReadyOdometro(Estado):
 
         self.gs.set("estado", "Ready")
 
-    def run(self, pending_pulses):
+    def run(self, pending_displacement):
         for i in range(2):
-            if pending_pulses[i] > 10:
+            if pending_displacement[i] > 1:
                 self.gs.encoders[i].send_pulse("+")
-                pending_pulses[i] -= 10
+                pending_displacement[i] -= 1
 
-            elif pending_pulses[i] < 10:
+            elif pending_displacement[i] < 1:
                 self.gs.encoders[i].send_pulse("-")
-                pending_pulses[i] += 10
+                pending_displacement[i] += 1
 
         time.sleep(0.001)
 
-        return pending_pulses
+        return pending_displacement
 
 
 class EstadoAquisicaoOdometro(Estado):
@@ -53,15 +53,15 @@ class EstadoAquisicaoOdometro(Estado):
         self.gs.acquisition_writer.stop_acquisition()
         self.gs.set("estado", "Aquisicao")
 
-    def run(self, pending_pulses):
+    def run(self, pending_displacement):
         for i in range(2):
-            if pending_pulses[i] > 10:
+            if pending_displacement[i] > 1:
                 self.gs.encoders[i].send_pulse("+")
-                pending_pulses[i] -= 10
-            elif pending_pulses[i] < 10:
+                pending_displacement[i] -= 1
+            elif pending_displacement[i] < 1:
                 self.gs.encoders[i].send_pulse("-")
-                pending_pulses[i] += 10
+                pending_displacement[i] += 1
 
         time.sleep(0.001)
 
-        return pending_pulses
+        return pending_displacement

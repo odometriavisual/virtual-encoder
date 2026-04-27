@@ -19,6 +19,7 @@ from .acquisition_writer import AcquisitionWriter
 class EncoderGS:
     def __init__(self, config, *, default_modo_lambda):
         self.config = config
+        self.spatial_resolution = 1
         self.status = {
             "version": config["version"],
             "rpi5": {

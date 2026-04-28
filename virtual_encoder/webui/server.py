@@ -170,7 +170,15 @@ class WebuiApp:
             """
             Calibrates the camera exposure according to the configuration present in the config file.
             """
-            self.gs.send_event("calibrate_exposure")
+            self.gs.send_event(("calibrate", "exposure"))
+            return ""
+
+        @self.app.route("/calibrate_resolution/<int:diameter>", methods=["POST"])
+        def calibrate_resolution(diameter):
+            """
+            Calibrates the spatial resolution by capturing an image of the calibration pattern of a given diameter.
+            """
+            self.gs.send_event(("calibrate", ("spatial_resolution", diameter)))
             return ""
 
         @self.app.route("/set_exposure/<int:value>", methods=["POST"])

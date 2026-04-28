@@ -45,6 +45,7 @@ def load_config(config_path):
                 [camera]
                 # The calibration will choose a exposure in the defined range
                 exposure_cache = "/home/pi/exposure.txt"
+                spatial_resolution_cache = "/home/pi/spatial_resolution.txt"
                 min_exposure = 75
                 max_exposure = 1000
                 # The calibration will try to match the average pixel value to the target_average

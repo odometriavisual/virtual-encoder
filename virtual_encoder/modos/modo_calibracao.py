@@ -83,6 +83,9 @@ class ModoCalibracao:
             )
             self.gs.send_event("reset_position")
 
+            spatial_resolution_cache_file = self.config.get("camera", dict()).get("spatial_resolution_cache", "/home/pi/spatial_resolution.txt")
+            with open(spatial_resolution_cache_file, "w") as f:
+                f.write(f"{self.gs.spatial_resolution}")
         else:
             self.gs.add_message("Padrão de calibração não encontrado! Tente novamente")
 

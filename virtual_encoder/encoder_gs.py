@@ -19,7 +19,17 @@ from .acquisition_writer import AcquisitionWriter
 class EncoderGS:
     def __init__(self, config, *, default_modo_lambda):
         self.config = config
+
+        spatial_resolution_cache_path = Path(self.config.get("camera", dict()).get("spatial_resolution_cache", "/home/pi/spatial_resolution.txt"))
         self.spatial_resolution = 1
+
+        if spatial_resolution_cache_path.is_file():
+            try:
+                with open(spatial_resolution_cache_path) as file:
+                    self.spatial_resolution = float(file.read())
+            except Exception:
+                pass
+        
         self.status = {
             "version": config["version"],
             "rpi5": {

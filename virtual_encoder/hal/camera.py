@@ -61,10 +61,10 @@ class CameraNoise(CameraNull):
 
         return self.default_frame.copy()
 
-class CameraError(CameraNull):
-    def __init__(self):
+class CameraImage(CameraNull):
+    def __init__(self, path):
         CameraNull.__init__(self)
-        self.default_frame = cv2.imread("extra/nocamera.jpg")
+        self.default_frame = cv2.imread(path)
 
 
 class CameraUDP(CameraNull, threading.Thread):

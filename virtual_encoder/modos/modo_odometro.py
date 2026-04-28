@@ -50,7 +50,7 @@ class ModoOdometro:
                 self.new_image_event.clear()
 
                 try:
-                    new_displacement = self.odometer.get_displacement() * self.gs.spatial_resolution
+                    new_displacement = np.array(self.odometer.get_displacement()) * self.gs.spatial_resolution
                 except ValueError:
                     new_displacement = (0, 0)
 

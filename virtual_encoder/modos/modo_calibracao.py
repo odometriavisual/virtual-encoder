@@ -1,17 +1,21 @@
 from pathlib import Path
 
+import cv2
+import numpy as np
 from virtual_encoder.encoder_gs import EncoderGS
+import matplotlib.pyplot as plt
 
 def find_circle_and_bbox(frame, min_radius=0, max_radius=0):
-    gray = cv2.GaussianBlur(frame, (5, 5), 1)
+    frame = cv2.cvtColor(frame, cv2.COLOR_RGB2GRAY)
+    frame = cv2.GaussianBlur(frame, (5, 5), 1)
 
     circles = cv2.HoughCircles(
-        gray,
+        frame,
         cv2.HOUGH_GRADIENT_ALT,
         dp=1,
         minDist=20,
         param1=300,
-        param2=0.90,
+        param2=0.85,
         minRadius=min_radius,
         maxRadius=max_radius,
     )
@@ -55,7 +59,6 @@ class ModoCalibracao:
             max=self.config["camera"]["max_exposure"],
             target=self.config["camera"]["target_average"],
         )
-        self.gs.send_event(("set_modo", self.return_modo))
 
         exposure = self.gs.camera.get_exposure()
 
@@ -76,7 +79,7 @@ class ModoCalibracao:
         if width and height:
             self.gs.spatial_resolution = printed_diameter / (2 * radius)
             self.gs.add_message(
-                f"Resolução espacial calibrada para {self.gs.spatial_resolution} mm/px"
+                f"Resolução espacial calibrada para {self.gs.spatial_resolution*1000:.3f} μm/px"
             )
             self.gs.send_event("reset_position")
 
@@ -90,6 +93,8 @@ class ModoCalibracao:
 
             case ("spatial_resolution", printed_diameter):
                 self.__calibrate_spatial_resolution(printed_diameter)
+
+        self.gs.send_event(("set_modo", self.return_modo))
 
     def handle_event(self, ev):
         pass

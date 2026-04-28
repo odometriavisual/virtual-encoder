@@ -12,6 +12,7 @@ export function init_controls() {
     desligar: document.querySelector('button.desligar'),
     upgrade: document.querySelector('button.upgrade'),
     calibrar_exposicao: document.querySelector('.exposicao'),
+    calibrar_resolucao: document.querySelector('.resolucao-espacial'),
     listar_ensaios: document.querySelector('button.listar-ensaios'),
     zerar_deslocamento: document.querySelector('button.zerar-deslocamento'),
   };
@@ -83,6 +84,10 @@ export function init_controls() {
     encoder_api.calibrate_exposure(event)
   });
 
+  window.btns.calibrar_resolucao.addEventListener('click', async event => {
+    encoder_api.calibrate_resolution(event, 8)
+  });
+
   window.log_clear.addEventListener('click', () => window.log_text.innerText = '');
 }
 
@@ -112,6 +117,7 @@ export function update_controls(status) {
   }
 
   window.btns.calibrar_exposicao.disabled = global_disable || status.modo === 'Calibracao' || status.estado !== "Ready";
+  window.btns.calibrar_resolucao.disabled = global_disable || status.modo === 'Calibracao' || status.estado !== "Ready";
   window.toggle_streaming.disabled = window.toggle_streaming.debounce_enabled || global_disable;
   window.btns.mudar_modo.disabled = global_disable || status.estado !== 'Ready';
   window.btns.reiniciar.disabled = global_disable || status.rpi5 === false;

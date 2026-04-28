@@ -3,7 +3,7 @@ import time
 from pathlib import Path
 from queue import Queue
 
-from .hal.camera import CameraError, CameraNoise, CameraUDP, CameraPicamera2
+from .hal.camera import CameraImage, CameraNoise, CameraUDP, CameraPicamera2
 from .hal.display import DisplayNull, DisplaySSD1306
 from .hal.encoder import EncoderNull, EncoderGPIO
 from .hal.imu import ImuNull, ImuI2C, ImuUDP
@@ -173,7 +173,7 @@ class EncoderGS:
                 self.camera = CameraPicamera2(self, exposure)
                 self.camera.start()
             except IndexError:
-                self.camera = CameraError()
+                self.camera = CameraImage("extra/nocamera.jpg")
 
     def __setup_acquisition_writer(self):
         self.acquisition_writer = AcquisitionWriter(

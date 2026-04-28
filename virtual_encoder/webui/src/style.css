@@ -317,6 +317,10 @@ body {
   grid-area: 3 / 1 / span 1 / span 2;
 }
 
+.resolucao-espacial {
+  grid-area: 4 / 1 / span 1 / span 2;
+}
+
 .pulsos-por-segundo {
   grid-area: 3 / 3 / span 1 / span 2;
   display: flex;

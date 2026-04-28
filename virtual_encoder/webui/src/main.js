@@ -45,6 +45,7 @@ document.querySelector('#app').innerHTML = html`
             </label>
 
             <button class="exposicao">Calibrar Exposição</button>
+            <button class="resolucao-espacial">Calibrar Resolução</button>
             <button class="zerar-deslocamento" style="display: none;" disabled>Zerar deslocamento</button>
 
             <label class="pulsos-por-segundo">

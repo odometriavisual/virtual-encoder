@@ -3,7 +3,6 @@ from pathlib import Path
 import cv2
 import numpy as np
 from virtual_encoder.encoder_gs import EncoderGS
-import matplotlib.pyplot as plt
 
 def find_circle_and_bbox(frame, min_radius=0, max_radius=0):
     frame = cv2.cvtColor(frame, cv2.COLOR_RGB2GRAY)

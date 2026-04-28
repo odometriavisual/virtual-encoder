@@ -88,7 +88,10 @@ export function init_controls() {
     encoder_api.calibrate_resolution(event, 8)
   });
 
-  window.log_clear.addEventListener('click', () => window.log_text.innerText = '');
+  window.log_clear.addEventListener('click', () => {
+    window.log_text.innerText = '';
+    trajectory_graph.clear_trajectory_graph();
+  });
 }
 
 export function update_controls(status) {

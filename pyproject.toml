@@ -14,7 +14,10 @@ dependencies = [
 ]
 
 [tool.setuptools.packages.find]
-include = ["virtual_encoder"]
+include = [
+    "virtual_encoder",
+    "virtual_encoder.hal"
+]
 
 [project.optional-dependencies]
 raspberry = [

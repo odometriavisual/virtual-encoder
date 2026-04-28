@@ -149,7 +149,7 @@ class EncoderGS:
                 self, self.config["network"]["interface"], "/home/pi/"
             )
             # self.ssd_manager.mount()
-            self.network_interface.set_ip_address(None)
+            # self.network_interface.set_ip_address(None)
             # self.ssd_manager.unmount()
 
     def __setup_camera(self):

@@ -66,6 +66,21 @@ class CameraImage(CameraNull):
         CameraNull.__init__(self)
         self.default_frame = cv2.imread(path)
 
+class CameraDrawing(CameraNull):
+    def __init__(self, camera_src):
+        self.camera_src = camera_src
+        self.calib_img = self.camera_src.peek_img()
+
+    def set_img(self, img):
+        self.calib_img = img
+
+    def get_img(self):
+        return self.camera_src.get_img()
+
+    def peek_img(self):
+        return self.calib_img.copy()
+        
+
 
 class CameraUDP(CameraNull, threading.Thread):
     def __init__(self, gs: "EncoderGS"):

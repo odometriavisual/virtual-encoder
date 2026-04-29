@@ -175,6 +175,7 @@ class EncoderGS:
 
         if self.config["debug"]:
             self.camera = CameraNoise()
+            # self.camera = CameraImage("/tmp/picam_imgs/data/1776190388308226990.jpg")
         elif self.config["use_legacy_camera"]:
             self.camera = CameraUDP(self)
         else:

@@ -94,7 +94,7 @@ try:
 
         def draw_line(self, line: int, text: str, align: str = "left"):
             line_height = 12  # Altura da linha em pixels (ajustável)
-            y_position = line * line_height
+            y_position = line * line_height + (2 if line > 0 else 0)
 
             try:
                 # Limpa a linha especificada

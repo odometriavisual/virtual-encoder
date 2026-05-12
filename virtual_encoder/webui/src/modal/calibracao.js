@@ -20,12 +20,12 @@ export function init_modal_calibracao() {
     });
 
     window.modal_calibracao.btn_foto.addEventListener("click", async event => {
-        encoder_api.calibrate_resolution(event, 8);
+        encoder_api.calibrate_resolution(event, "photo", 8);
         window.modal_calibracao.modal.style.display = 'none';
     });
 
     window.modal_calibracao.btn_movimento.addEventListener("click", async event => {
-        alert('not implemented')
+        encoder_api.calibrate_resolution(event, "displacement", window.modal_calibracao.input_dist.value);
         window.modal_calibracao.modal.style.display = 'none';
     });
 }

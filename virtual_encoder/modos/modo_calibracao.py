@@ -77,7 +77,7 @@ class ModoCalibracao:
         with open(exposure_cache_file, "w") as f:
             f.write(f"{exposure}")
 
-    def __calibrate_spatial_resolution(self, printed_diameter):
+    def __calibrate_spatial_resolution_photo(self, printed_diameter):
         radius_found = []
 
         self.gs.add_message("Realizando calibração, aguarde...")
@@ -101,7 +101,7 @@ class ModoCalibracao:
                 self.gs.spatial_resolution = printed_diameter / (2 * radius)
 
                 self.gs.add_message(
-                    f"Resolução espacial calibrada para {self.gs.spatial_resolution*1000:.3f} μm/px"
+                    f"Resolução espacial calibrada para {1/self.gs.spatial_resolution:.3f} px/mm"
                 )
                 self.gs.send_event("reset_position")
 
@@ -113,15 +113,31 @@ class ModoCalibracao:
         finally:
             self.gs.camera = real_camera
 
-        
+
+    def __calibrate_spatial_resolution_displacement(self, displacement):
+        try:
+            pos = self.gs.get("pos")
+            x, y = pos["x"], pos["y"]
+            d = (x*x + y*y)**0.5
+
+            self.gs.spatial_resolution = d / (self.gs.spatial_resolution * displacement)
+
+            self.gs.add_message(
+                f"Resolução espacial calibrada para {1/self.gs.spatial_resolution:.3f} px/mm"
+            )
+        except Exception as e:
+            self.gs.add_message("Erro na calibração")
 
     def run(self):
         match self.tipo:
             case "exposure":
                 self.__calibrate_exposure()
 
-            case ("spatial_resolution", printed_diameter):
-                self.__calibrate_spatial_resolution(printed_diameter)
+            case ("spatial_resolution", "photo", printed_diameter):
+                self.__calibrate_spatial_resolution_photo(round(printed_diameter))
+
+            case ("spatial_resolution", "displacement", displacement):
+                self.__calibrate_spatial_resolution_displacement(displacement)
 
         self.gs.send_event(("set_modo", self.return_modo))
 

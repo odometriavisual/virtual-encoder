@@ -129,7 +129,7 @@ document.querySelector('#app').innerHTML = html`
 
                 <button class="btn-movimento">Calibrar por movimento</button>
                 <label> Distância percorrida (mm):
-                    <input class="input-dist" type="number" min="0" rer />
+                    <input class="input-dist" type="number" min="0" value="1" rer />
                 </label>
             </div>
         </div>

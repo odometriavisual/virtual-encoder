@@ -70,12 +70,12 @@ export async function calibrate_exposure(event) {
   await fetch(`${URL}/calibrate_exposure`, { method });
 }
 
-export async function calibrate_resolution(event, diameter) {
+export async function calibrate_resolution(event, modo, diameter_distance) {
   event.target.disabled = true;
   set_debounce_button(event.target);
 
   const method = 'POST';
-  await fetch(`${URL}/calibrate_resolution/${diameter}`, { method });
+  await fetch(`${URL}/calibrate_resolution/${modo}/${diameter_distance}`, { method });
 }
 
 export async function set_exposure(event, value) {

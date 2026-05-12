@@ -173,12 +173,14 @@ class WebuiApp:
             self.gs.send_event(("calibrate", "exposure"))
             return ""
 
-        @self.app.route("/calibrate_resolution/<int:diameter>", methods=["POST"])
-        def calibrate_resolution(diameter):
+        @self.app.route("/calibrate_resolution/<string:modo>/<string:diameter_distance>", methods=["POST"])
+        def calibrate_resolution(modo, diameter_distance):
             """
-            Calibrates the spatial resolution by capturing an image of the calibration pattern of a given diameter.
+            Calibrates the spatial resolution by capturing an image of the calibration pattern of a given diameter or
+            by correlating the distance movement with the estimated displacement.
+            Valid modos are "photo" and "displacement"
             """
-            self.gs.send_event(("calibrate", ("spatial_resolution", diameter)))
+            self.gs.send_event(("calibrate", ("spatial_resolution", modo, float(diameter_distance))))
             return ""
 
         @self.app.route("/set_exposure/<int:value>", methods=["POST"])

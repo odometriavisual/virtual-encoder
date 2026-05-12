@@ -150,7 +150,7 @@ def main():
                         pass
                 case _, ("reboot", "led"):
                     gs.led.turn_off()
-                    time.sleep(5)
+                    time.sleep(0.5)
                     gs.led.turn_on()
                 case _, ("reboot", "relay"):
                     gs.relay.turn_off()

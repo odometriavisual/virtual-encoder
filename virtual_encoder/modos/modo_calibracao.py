@@ -64,6 +64,8 @@ class ModoCalibracao:
             target=self.config["camera"]["target_average"],
         )
 
+        self.gs.add_message("Realizando calibração, aguarde...")
+
         exposure = self.gs.camera.get_exposure()
 
         self.gs.add_message(

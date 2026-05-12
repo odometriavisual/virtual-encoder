@@ -24,13 +24,18 @@ export function update_status_watcher(status) {
   set_ok(window.status_watcher.imu, status.imu);
 
   if (status.rpi5) {
+    const x = status?.pos?.x || 0;
+    const y = status?.pos?.u || 0;
+    const d = Math.sqrt(x*x + y*y);
+
     window.status_watcher.rpi5.innerText = `Módulo Online
           Versão ${status.version}
     			Modo ${status.modo}
-    			${status.rpi5 === false || status.modo === 'Download' ? status.estado : 'Estado ' + status.estado}
-    			${status.rpi5 === false || status.modo === 'Odometro' ? 'Pos: (' + status.pos.x.toFixed(1) + ', ' + status.pos.y.toFixed(1) + ')': ''}
-    			${status.rpi5 ? `IP: ${status.rpi5.ip}` : ''}
-    			${status.rpi5 ? `Temp: ${status.rpi5.temp?.toFixed(2)} ℃` : ''}
+    			${status.modo === 'Download' ? status.estado : 'Estado ' + status.estado}
+    			${status.modo === 'Odometro' ? 'Pos: (' + x.toFixed(1) + ', ' + y.toFixed(1) + ')': ''}
+    			${status.modo === 'Odometro' ? 'Dist: ' + d.toFixed(2): ''}
+    			IP: ${status.rpi5.ip}
+    			Temp: ${status.rpi5.temp?.toFixed(2)} ℃
     			${status.display ? "" : "Display não encontrado"}`;
   }
   else {

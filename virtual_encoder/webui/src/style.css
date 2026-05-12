@@ -2,6 +2,10 @@ body {
   margin: 0;
 }
 
+button:not([disabled]) {
+  cursor: pointer;
+}
+
 .wrapper {
   display: grid;
   grid-gap: 4px;
@@ -245,6 +249,41 @@ body {
 
 .modal-upgrade .modal-info {
   grid-area: 2 / 1 / auto / span 3;
+}
+
+.modal.modal-calibracao {
+  .modal-content {
+    width: 40%;
+
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    grid-template-rows: auto repeat(3, auto);
+
+    grid-gap: 16px;
+
+    .modal-titulo {
+      max-width: calc(100% - 2em);
+    }
+
+    .modal-close {
+      justify-self: end;
+      grid-area: 1 / 2;
+
+      user-select: none;
+      font-size: 42px;
+      font-weight: bold;
+      color: #aaaaaa;
+    }
+
+    .btn-foto, .btn-movimento {
+      height: 4em;
+      grid-area: auto / auto / auto / span 1;
+    }
+
+    label {
+      grid-area: -1 / 1/ auto / span 2;
+    }
+  }
 }
 
 .visualization>canvas {

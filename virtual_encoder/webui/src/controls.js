@@ -2,6 +2,7 @@ import * as encoder_api from "./encoder_api.js";
 import * as trajectory_graph from "./trajectory_graph.js";
 import { open_modal_download } from "./modal/download.js";
 import { open_modal_upgrade } from "./modal/upgrade.js";
+import { open_modal_calibracao } from "./modal/calibracao.js";
 
 export function init_controls() {
   window.btns = {
@@ -84,8 +85,8 @@ export function init_controls() {
     encoder_api.calibrate_exposure(event)
   });
 
-  window.btns.calibrar_resolucao.addEventListener('click', async event => {
-    encoder_api.calibrate_resolution(event, 8)
+  window.btns.calibrar_resolucao.addEventListener('click', event => {
+    open_modal_calibracao(event);
   });
 
   window.log_clear.addEventListener('click', () => {

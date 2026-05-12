@@ -11,6 +11,7 @@ import { init_video_feed } from "./video_feed.js";
 import { init_modal_download } from "./modal/download.js";
 import { init_modal_upgrade } from "./modal/upgrade.js";
 import { init_trajectory_graph, update_trajectory_graph } from './trajectory_graph.js';
+import { init_modal_calibracao } from './modal/calibracao.js';
 
 export const html = String.raw;
 
@@ -118,6 +119,20 @@ document.querySelector('#app').innerHTML = html`
                 <input type="file" accept=".zip"> </input>
             </div>
         </div>
+
+        <div class="modal modal-calibracao">
+            <div class="modal-content">
+                <span class="modal-titulo">Calibrar resolução espacial</span>
+                <span class="modal-close">&times;</span>
+
+                <button class="btn-foto">Calibrar por foto</button>
+
+                <button class="btn-movimento">Calibrar por movimento</button>
+                <label> Distância percorrida (mm):
+                    <input class="input-dist" type="number" min="0" rer />
+                </label>
+            </div>
+        </div>
     </div>
 `
 
@@ -134,6 +149,7 @@ window.onload = () => {
   init_modal_reiniciar()
   init_modal_download()
   init_modal_upgrade()
+  init_modal_calibracao()
 
   init_controls()
 

@@ -99,6 +99,7 @@ class ModoCalibracao:
 
             if len(radius_found) > 0:
                 self.gs.spatial_resolution = printed_diameter / (2 * radius)
+
                 self.gs.add_message(
                     f"Resolução espacial calibrada para {self.gs.spatial_resolution*1000:.3f} μm/px"
                 )

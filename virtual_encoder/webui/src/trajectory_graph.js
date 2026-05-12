@@ -2,6 +2,7 @@ import * as d3 from "d3";
 
 let points = [
 ];
+let k = 0.05;
 
 const svg = d3.create("svg")
   .attr("width", "100%")
@@ -27,26 +28,31 @@ export function init_trajectory_graph() {
 
   const zoom = d3.zoom()
     .on("zoom", ({ transform }) => {
+      k = transform.k;
+
       path
         .attr("d", build_svg_line(points))
-        .attr("transform", transform)
-        .attr("stroke-width", 2 / transform.k);
+        .attr("stroke-width", 2 / k);
 
-    const cx = window.trajectory_container.clientWidth / (2 / transform.k);
-    const cy = window.trajectory_container.clientHeight / (2 / transform.k);
-      center_g.attr("transform", `translate(${cx} ${cy})`)
+      const cx = window.trajectory_container.clientWidth / 2;
+      const cy = window.trajectory_container.clientHeight / 2;
+      center_g.attr("transform", transform.translate(cx, cy));
     });
 
   const cx = window.trajectory_container.clientWidth / 2;
   const cy = window.trajectory_container.clientHeight / 2;
-  center_g.attr("transform", `translate(${cx} ${cy})`)
-  svg.call(zoom);
+
+  // center_g.attr("transform", `translate(${cx} ${cy})`);
+  svg
+    .call(zoom)
+    .call(zoom.transform, d3.zoomIdentity.translate(cx, cy).scale(k));
 
   window.trajectory_container.append(svg.node());
+
   window.addEventListener("resize", () => {
     const cx = window.trajectory_container.clientWidth / 2;
     const cy = window.trajectory_container.clientHeight / 2;
-    center_g.attr("transform", `translate(${cx} ${cy})`)
+    center_g.attr("transform", d3.zoomIdentity.translate(cx, cy).scale(k));
   });
 }
 
@@ -54,6 +60,7 @@ export function update_trajectory_graph(status) {
   window.trajectory_container.style.display = status.modo === 'Odometro' ? 'block' : 'none'
   points.push(status.pos)
   path.attr("d", build_svg_line(points))
+
 }
 
 export function clear_trajectory_graph() {

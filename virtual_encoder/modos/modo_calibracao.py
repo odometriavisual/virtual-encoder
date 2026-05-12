@@ -6,17 +6,19 @@ import numpy as np
 from virtual_encoder.encoder_gs import EncoderGS
 from virtual_encoder.hal.camera import CameraDrawing
 
-def find_circle_and_bbox(frame, min_radius=0, max_radius=0):
+def find_circle_and_bbox(frame):
     gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-    gray = cv2.GaussianBlur(gray, (5, 5), 1)
+    gray = cv2.GaussianBlur(gray, (7, 7), 9999999)
+    min_radius = 50
+    max_radius = 150
 
     circles = cv2.HoughCircles(
         gray,
         cv2.HOUGH_GRADIENT_ALT,
-        dp=2,
+        dp=1.5,
         minDist=20,
         param1=200,
-        param2=0.90,
+        param2=0.95,
         minRadius=min_radius,
         maxRadius=max_radius,
     )
@@ -39,6 +41,7 @@ def find_circle_and_bbox(frame, min_radius=0, max_radius=0):
         cv2.circle(frame, (int(round(x)), int(round(y))), int(round(r)), (0, 255, 0), 3)
 
         return float(d), float(d), float(r), frame
+
     else:
         return None, None, None, frame
 
@@ -83,9 +86,7 @@ class ModoCalibracao:
         try:
             t0 = time.time()
             while time.time() - t0 < 5:
-                width, height, radius, output_img = find_circle_and_bbox(
-                    real_camera.peek_img(), min_radius=30, max_radius=600
-                )
+                width, height, radius, output_img = find_circle_and_bbox(real_camera.peek_img())
 
                 if width and height:
                     self.gs.camera.set_img(output_img)

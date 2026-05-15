@@ -92,40 +92,44 @@ button:not([disabled]) {
   grid-gap: 4px;
   width: 100%;
   height: 98vh;
+
+  .trajectory-container {
+    box-sizing: border-box;
+    border: solid 1px black;
+    overflow-x: clip;
+    height: 40%;
+    flex-shrink: 0;
+  }
+
+  button {
+    height: 48px;
+    flex-shrink: 0;
+  }
+
+  .log-window {
+    overflow: scroll;
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1;
+    width: 100%;
+    border: 1px solid #aaaaaa;
+    box-sizing: border-box;
+  }
+
+  .log-line:nth-child(even) {
+    background-color: #c6c6c6;
+  }
+
+  .log-line {
+    font-family: mono, monospace;
+    font-size: 1.5em;
+    padding: 0.35em;
+    border-bottom: 1px solid #aaaaaa;
+    box-sizing: border-box;
+  }
 }
 
-.trajectory-container {
-  box-sizing: border-box;
-  border: solid 1px black;
-  overflow-x: clip;
-  height: 40%;
-}
 
-.log>button {
-  height: 48px;
-}
-
-.log-window {
-  overflow: scroll;
-  display: flex;
-  flex-direction: column;
-  flex-grow: 2;
-  width: 100%;
-  border: 1px solid #aaaaaa;
-  box-sizing: border-box;
-}
-
-.log-line:nth-child(even) {
-  background-color: #c6c6c6;
-}
-
-.log-line {
-  font-family: mono, monospace;
-  font-size: 1.5em;
-  padding: 0.35em;
-  border-bottom: 1px solid #aaaaaa;
-  box-sizing: border-box;
-}
 
 .modal {
   display: none;

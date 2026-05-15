@@ -120,6 +120,11 @@ class ModoCalibracao:
 
     def __calibrate_spatial_resolution_displacement(self, displacement_mm):
         try:
+            if displacement_mm < 0.9:
+                self.gs.add_message("Valor de deslocamento inválido. O valor é muito pequeno")
+                return
+
+
             pos = self.gs.get("pos")
             x, y = pos["x"], pos["y"]
 

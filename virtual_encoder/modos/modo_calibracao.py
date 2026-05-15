@@ -57,6 +57,12 @@ class ModoCalibracao:
     def stop(self):
         pass
 
+    def __save_to_cache(self, spatial_resolution):
+        spatial_resolution_cache_file = self.config.get("camera", dict()).get("spatial_resolution_cache", "/home/pi/spatial_resolution.txt")
+
+        with open(spatial_resolution_cache_file, "w") as f:
+            f.write(f"{spatial_resolution}")
+
     def __calibrate_exposure(self):
         self.gs.camera.calibrate_exposure(
             min=self.config["camera"]["min_exposure"],
@@ -105,26 +111,27 @@ class ModoCalibracao:
                 )
                 self.gs.send_event("reset_position")
 
-                spatial_resolution_cache_file = self.config.get("camera", dict()).get("spatial_resolution_cache", "/home/pi/spatial_resolution.txt")
-                with open(spatial_resolution_cache_file, "w") as f:
-                    f.write(f"{self.gs.spatial_resolution}")
+                self.__save_to_cache(self.gs.spatial_resolution)
             else:
                 self.gs.add_message("Padrão de calibração não encontrado! Tente novamente")
         finally:
             self.gs.camera = real_camera
 
 
-    def __calibrate_spatial_resolution_displacement(self, displacement):
+    def __calibrate_spatial_resolution_displacement(self, displacement_mm):
         try:
             pos = self.gs.get("pos")
             x, y = pos["x"], pos["y"]
-            d = (x*x + y*y)**0.5
 
-            self.gs.spatial_resolution = d / (self.gs.spatial_resolution * displacement)
+            displacement_px =  (x*x + y*y)**0.5 / self.gs.spatial_resolution
+            self.gs.spatial_resolution = displacement_mm / displacement_px
 
             self.gs.add_message(
                 f"Resolução espacial calibrada para {1/self.gs.spatial_resolution:.3f} px/mm"
             )
+
+            self.__save_to_cache(self.gs.spatial_resolution)
+
         except Exception as e:
             self.gs.add_message("Erro na calibração")
 

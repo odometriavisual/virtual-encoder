@@ -118,26 +118,22 @@ class ModoCalibracao:
             self.gs.camera = real_camera
 
 
-    def __calibrate_spatial_resolution_displacement(self, displacement_mm):
+    def __calibrate_spatial_resolution_displacement(self, inverse_spatial_resolution):
         try:
-            if displacement_mm < 0.9:
+            if inverse_spatial_resolution < 0.000001:
                 self.gs.add_message("Valor de deslocamento inválido. O valor é muito pequeno")
                 return
 
-
-            pos = self.gs.get("pos")
-            x, y = pos["x"], pos["y"]
-
-            displacement_px =  (x*x + y*y)**0.5 / self.gs.spatial_resolution
-            self.gs.spatial_resolution = displacement_mm / displacement_px
+            self.gs.spatial_resolution = 1/inverse_spatial_resolution
 
             self.gs.add_message(
-                f"Resolução espacial calibrada para {1/self.gs.spatial_resolution:.3f} px/mm"
+                f"Resolução espacial calibrada para {inverse_spatial_resolution:.2f} px/mm"
             )
 
             self.__save_to_cache(self.gs.spatial_resolution)
 
         except Exception as e:
+            print(e)
             self.gs.add_message("Erro na calibração")
 
     def run(self):
@@ -148,8 +144,8 @@ class ModoCalibracao:
             case ("spatial_resolution", "photo", printed_diameter):
                 self.__calibrate_spatial_resolution_photo(round(printed_diameter))
 
-            case ("spatial_resolution", "displacement", displacement):
-                self.__calibrate_spatial_resolution_displacement(displacement)
+            case ("spatial_resolution", "displacement", inverse_spatial_resolution):
+                self.__calibrate_spatial_resolution_displacement(inverse_spatial_resolution)
 
         self.gs.send_event(("set_modo", self.return_modo))
 

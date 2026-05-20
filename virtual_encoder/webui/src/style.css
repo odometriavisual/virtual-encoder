@@ -246,17 +246,31 @@ body {
       width: 40%;
 
       grid-template-columns: repeat(2, 1fr);
-      grid-template-rows: auto repeat(3, auto);
+      grid-template-rows: repeat(5, auto);
 
+      hr {
+        width: 100%;
+        grid-area: auto / 1 / auto / -1;
+      }
 
       .btn-foto, .btn-movimento {
         height: 4em;
-        grid-area: auto / auto / auto / span 1;
+        grid-area: auto / 1 / auto / -1;
       }
 
-      label {
-        grid-area: -1 / 1/ auto / span 2;
-        padding: 16px;
+      label, div {
+        grid-area: auto / 1 / auto / -1;
+        padding: 8px 16px;
+
+        display: flex;
+        flex-direction: row;
+        gap: 16px;
+        justify-content: space-between;
+
+        span {
+          font-size: 0.9em;
+          cursor: pointer;
+        }
       }
     }
   }

@@ -70,12 +70,12 @@ export async function calibrate_exposure(event) {
   await fetch(`${URL}/calibrate_exposure`, { method });
 }
 
-export async function calibrate_resolution(event, modo, diameter_distance) {
+export async function calibrate_resolution(event, modo, param) {
   event.target.disabled = true;
   set_debounce_button(event.target);
 
   const method = 'POST';
-  await fetch(`${URL}/calibrate_resolution/${modo}/${diameter_distance}`, { method });
+  await fetch(`${URL}/calibrate_resolution/${modo}/${param}`, { method });
 }
 
 export async function set_exposure(event, value) {
@@ -116,7 +116,7 @@ export async function fetch_status_stream(update_status) {
     display: false,
     camera: false,
     imu: false,
-    pos: { x: 0., y: 0. },
+    pos: { x: 0., y: 0., sr: 1. },
     modo: 'Desligado',
     estado: '',
     msg: '',

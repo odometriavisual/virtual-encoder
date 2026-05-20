@@ -11,7 +11,7 @@ import { init_video_feed } from "./video_feed.js";
 import { init_modal_download } from "./modal/download.js";
 import { init_modal_upgrade } from "./modal/upgrade.js";
 import { init_trajectory_graph, update_trajectory_graph } from './trajectory_graph.js';
-import { init_modal_calibracao } from './modal/calibracao.js';
+import { init_modal_calibracao, update_modal_calibracao } from './modal/calibracao.js';
 
 export const html = String.raw;
 
@@ -127,10 +127,22 @@ document.querySelector('#app').innerHTML = html`
 
                 <button class="btn-foto">Calibrar por foto</button>
 
-                <button class="btn-movimento">Calibrar por movimento</button>
-                <label> Distância percorrida (mm):
-                    <input class="input-dist" type="number" min="0" value="1" rer />
+                <hr/>
+
+                <label>
+                    <span> Distância percorrida (mm): </span>
+                    <input class="dist-mm" type="number" min="0" value="1" rer />
                 </label>
+                <div>
+                    <span> Distância percorrida (px): </span>
+                    <span class="dist-px"></span>
+                </div>
+                <div>
+                    <span> Resolução espacial: </span>
+
+                    <span class="spatial-res"></span>
+                </div>
+                <button class="btn-movimento">Calibrar por movimento</button>
             </div>
         </div>
     </div>
@@ -159,6 +171,7 @@ window.onload = () => {
     update_imu_canvas(status)
     update_log(status)
     update_trajectory_graph(status)
+    update_modal_calibracao(status)
   }
 
   fetch_status_stream(update_status)

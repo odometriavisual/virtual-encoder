@@ -56,7 +56,7 @@ class ModoOdometro:
 
                 if self.is_running:
                     # Checking again to avoid setting status after is_running was set to False
-                    self.gs.set("pos", {"x": self.acc[0], "y": self.acc[1]})
+                    self.gs.set("pos", {"x": self.acc[0], "y": self.acc[1], "sr": self.gs.spatial_resolution})
 
                 self.pending_displacement += new_displacement
                 self.acc += new_displacement

@@ -39,7 +39,7 @@ class EncoderGS:
             "display": False,
             "camera": False,
             "imu": False,
-            "pos": {"x": 0, "y": 0},
+            "pos": {"x": 0, "y": 0, "sr": 1},
             "modo": "Iniciando",
             "estado": "",
             "msg": "",
@@ -175,7 +175,7 @@ class EncoderGS:
 
         if self.config["debug"]:
             self.camera = CameraNoise()
-            # self.camera = CameraImage("/tmp/picam_imgs/data/1776190388308226990.jpg")
+            # self.camera = CameraImage("/tmp/picam_imgs/data/1776189949719039126.jpg")
         elif self.config["use_legacy_camera"]:
             self.camera = CameraUDP(self)
         else:

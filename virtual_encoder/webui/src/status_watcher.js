@@ -24,8 +24,9 @@ export function update_status_watcher(status) {
   set_ok(window.status_watcher.imu, status.imu);
 
   if (status.rpi5) {
-    const x = status?.pos?.x || 0;
-    const y = status?.pos?.u || 0;
+    const sr = status?.pos?.sr || 0;
+    const x = status?.pos?.x * sr || 0;
+    const y = status?.pos?.y * sr || 0;
     const d = Math.sqrt(x*x + y*y);
 
     window.status_watcher.rpi5.innerText = `Módulo Online

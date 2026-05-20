@@ -57,8 +57,11 @@ export function init_trajectory_graph() {
 }
 
 export function update_trajectory_graph(status) {
-  window.trajectory_container.style.display = status.modo === 'Odometro' ? 'block' : 'none'
-  points.push(status.pos)
+  window.trajectory_container.style.display = status.modo === 'Odometro' ? 'block' : 'none';
+  let { x, y, sr } = status.pos;
+  x *= sr;
+  y *= sr;
+  points.push({ x, y, sr })
   path.attr("d", build_svg_line(points))
 
 }

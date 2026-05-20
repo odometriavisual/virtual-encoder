@@ -46,8 +46,9 @@ export function open_modal_calibracao(event) {
 }
 
 export function update_modal_calibracao(status) {
-    const {x, y, sr} = status.pos;
-    const r_px = Math.sqrt(x*x + y*y) / sr;
+    const {x, y} = status.pos;
+    const r_px = Math.sqrt(x*x + y*y);
+
     const r_mm = window.modal_calibracao.dist_mm.value;
     const spatial_resolution = r_px/r_mm;
 

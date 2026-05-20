@@ -11,21 +11,23 @@ class EstadoReadyOdometro(Estado):
         self.gs.set("estado", "Ready")
 
     def run(self, pending_displacement):
-        for i in range(2):
-            if pending_displacement[i] > 1:
-                self.gs.encoders[i].send_pulse("+")
-                pending_displacement[i] -= 1
+        step = 1 / self.gs.spatial_resolution
 
-            elif pending_displacement[i] < 1:
+        for i in range(2):
+            if pending_displacement[i] > step:
+                self.gs.encoders[i].send_pulse("+")
+                pending_displacement[i] -= step
+
+            elif pending_displacement[i] < step:
                 self.gs.encoders[i].send_pulse("-")
-                pending_displacement[i] += 1
+                pending_displacement[i] += step
 
         time.sleep(0.001)
 
         return pending_displacement
 
 
-class EstadoAquisicaoOdometro(Estado):
+class EstadoAquisicaoOdometro(EstadoReadyOdometro):
     def __init__(self, gs: EncoderGS, reason: str):
         self.gs = gs
         self.reason = reason
@@ -52,16 +54,3 @@ class EstadoAquisicaoOdometro(Estado):
         self.gs.set("estado", "Gravando...")
         self.gs.acquisition_writer.stop_acquisition()
         self.gs.set("estado", "Aquisicao")
-
-    def run(self, pending_displacement):
-        for i in range(2):
-            if pending_displacement[i] > 1:
-                self.gs.encoders[i].send_pulse("+")
-                pending_displacement[i] -= 1
-            elif pending_displacement[i] < 1:
-                self.gs.encoders[i].send_pulse("-")
-                pending_displacement[i] += 1
-
-        time.sleep(0.001)
-
-        return pending_displacement

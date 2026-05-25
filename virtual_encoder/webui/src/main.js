@@ -125,24 +125,35 @@ document.querySelector('#app').innerHTML = html`
                 <span class="modal-titulo">Calibrar resolução espacial</span>
                 <span class="modal-close">&times;</span>
 
-                <button class="btn-foto">Calibrar por foto</button>
+                <section class="calib-foto">
+                    <header>
+                        <span>Método 1:</span>
+                        <span>Aponte a câmera para o padrão de calibração e aperte o botão abaixo:</span>
+                    </header>
+                    <button class="btn-foto">Calibrar por foto</button>
+                </section>
 
-                <hr/>
+                <section class="calib-movimento">
+                    <header>
+                        <span>Método 2:</span>
+                        <span>Mova a câmera uma distância conhecida, preencha a tabela e aperte o botão abaixo:</span>
+                    </header>
 
-                <label>
-                    <span> Distância percorrida (mm): </span>
-                    <input class="dist-mm" type="number" min="0" value="1" rer />
-                </label>
-                <div>
-                    <span> Distância percorrida (px): </span>
-                    <span class="dist-px"></span>
-                </div>
-                <div>
-                    <span> Resolução espacial: </span>
+                    <label>
+                        <span> Distância percorrida (mm): </span>
+                        <input class="dist-mm" type="number" min="0" value="1" rer />
+                    </label>
+                    <div>
+                        <span> Distância percorrida (px): </span>
+                        <span class="dist-px"></span>
+                    </div>
+                    <div>
+                        <span> Resolução espacial: </span>
 
-                    <span class="spatial-res"></span>
-                </div>
-                <button class="btn-movimento">Calibrar por movimento</button>
+                        <span class="spatial-res"></span>
+                    </div>
+                    <button class="btn-movimento">Calibrar por movimento</button>
+                </section>
             </div>
         </div>
     </div>

@@ -59,7 +59,7 @@ export function update_modal_calibracao(status) {
         window.modal_calibracao.btn_movimento.disabled = false;
     }
     else {
-        window.modal_calibracao.spatial_res.innerText = "Erro no cálculo da resolução espacial"
+        window.modal_calibracao.spatial_res.innerText = "Erro no cálculo"
         window.modal_calibracao.btn_movimento.disabled = true;
     }
 }

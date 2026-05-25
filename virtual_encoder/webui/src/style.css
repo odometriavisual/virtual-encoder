@@ -243,33 +243,55 @@ body {
 
   &.modal-calibracao {
     .modal-content {
-      width: 40%;
+      width: 45%;
 
       grid-template-columns: repeat(2, 1fr);
-      grid-template-rows: repeat(5, auto);
+      grid-template-rows: repeat(2, auto);
 
-      hr {
-        width: 100%;
-        grid-area: auto / 1 / auto / -1;
-      }
-
-      .btn-foto, .btn-movimento {
-        height: 4em;
-        grid-area: auto / 1 / auto / -1;
-      }
-
-      label, div {
-        grid-area: auto / 1 / auto / -1;
-        padding: 8px 16px;
+      section {
+        border: 2px solid hsl(0deg, 0%, 60%);
+        border-radius: 8px;
+        padding: 16px;
 
         display: flex;
-        flex-direction: row;
-        gap: 16px;
+        flex-direction: column;
         justify-content: space-between;
 
-        span {
-          font-size: 0.9em;
-          cursor: pointer;
+        header {
+          display: flex;
+          flex-direction: column;
+          align-items: start;
+
+          margin-bottom: 2em;
+
+          >span:first-child {
+            font-size: 1em;
+            font-weight: bold;
+          }
+        }
+
+        .btn-foto,
+        .btn-movimento {
+          height: 4em;
+          margin-top: 1em;
+        }
+
+        label,
+        div {
+          padding: 8px 16px;
+
+          display: flex;
+          flex-direction: row;
+          justify-content: space-between;
+          align-items: center;
+
+          input {
+            width: 5em;
+          }
+
+          span {
+            font-size: 0.9em;
+          }
         }
       }
     }

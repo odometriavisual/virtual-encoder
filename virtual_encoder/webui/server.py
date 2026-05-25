@@ -198,11 +198,10 @@ class WebuiApp:
             - "Autonomo"
             - "Tempo"
             - "Odometro"
-            - "Download"
 
             Returns 404 if the modo string is invalid
             """
-            if modo in ["Autonomo", "Tempo", "Odometro", "Download"]:
+            if modo in ["Autonomo", "Tempo", "Odometro"]:
                 self.gs.send_event(("set_modo", modo))
                 return ""
             else:

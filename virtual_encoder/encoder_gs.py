@@ -12,7 +12,6 @@ from .hal.relay import RelayNull, RelayGPIO
 from .hal.led import LedNull, LedSerdes
 from .hal.serdes import SerdesNull, Serdes
 from .hal.thermal_sensors import ThermalSensorsNull, ThermalSensorsRaspberry
-from .mount_device_manager import MountDeviceManager
 from .acquisition_writer import AcquisitionWriter
 
 
@@ -61,9 +60,6 @@ class EncoderGS:
         self.__setup_led()
         self.__setup_thermal_sensors()
         self.__setup_acquisition_writer()
-
-        # ssd_manager must be set up before network interface
-        # self.__setup_ssd_manager()
         self.__setup_network_interface()
 
         self._event_queue = Queue(4)
@@ -143,14 +139,6 @@ class EncoderGS:
         else:
             self.thermal_sensors = ThermalSensorsRaspberry(self)
 
-    def __setup_ssd_manager(self):
-        if self.config["debug"]:
-            self.ssd_manager = None
-        else:
-            self.ssd_manager = MountDeviceManager(
-                device="/dev/sda1", mount_point="/media/usb-ssd"
-            )
-
     def __setup_network_interface(self):
         if self.config["debug"]:
             self.network_interface = NetworkInterfaceConfigFile(self, "eno1", "/tmp")
@@ -158,9 +146,6 @@ class EncoderGS:
             self.network_interface = NetworkInterfaceConfigFile(
                 self, self.config["network"]["interface"], "/home/pi/"
             )
-            # self.ssd_manager.mount()
-            # self.network_interface.set_ip_address(None)
-            # self.ssd_manager.unmount()
 
     def __setup_camera(self):
         exposure_cache_path = Path(self.config.get("camera", dict()).get("exposure_cache", "/home/pi/exposure.txt"))

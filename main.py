@@ -12,71 +12,11 @@ from virtual_encoder.webui.server import WebuiApp
 
 def load_config(config_path):
     if not os.path.isfile(config_path):
+        with open("extra/default_config.toml", "r") as default_config_file:
+            default_config = default_config_file.read()
+
         with open(config_path, "w") as config_file:
-            config_file.write(
-                """# enables mock HALs, ie. runs the encoder without connecting to any hardware peripherals
-                debug = false
-
-                # uses older RPi camera and IMU insted of the new serdes camera
-                use_legacy_camera = false
-
-                [acquisition]
-                # Directory where the acquisitions will be saved to
-                directory = "/home/pi/picam_imgs"
-
-                [gpio]
-                # Sets GPIO/BCM pin numbers
-                sda = 2
-                scl = 3
-                relay = 25
-                led = 17
-                bno_reset = 27
-                serdes_powerdown = 22
-                encoders_panther = [
-                    { A = 26, B = 19 },
-                    { A = 5, B = 23 },
-                    { A = 6, B = 13 },
-                ]
-
-                [network]
-                # Network interface used to access the interface
-                interface = "eth0"
-
-                [camera]
-                # The calibration will choose a exposure in the defined range
-                exposure_cache = "/home/pi/exposure.txt"
-                spatial_resolution_cache = "/home/pi/spatial_resolution.txt"
-                min_exposure = 75
-                max_exposure = 1000
-                # The calibration will try to match the average pixel value to the target_average
-                # The average is a value between 0 and 255
-                target_average = 50
-
-                [serdes]
-                # I2c addresses for the serdes' chips
-                serializer_address = 0x40
-                deserializer_address = 0x2A
-                verbose=false
-                eye_monitor=false
-                force_camera_on=false
-
-                [display]
-                # I2C address for the display
-                address = 0x3C
-                # Display screen size
-                width = 128
-                height = 64
-
-                # enable verbose I2C info
-                verbose = false
-
-                # enable monitor for the eye diagram to test cable quality
-                eye_monitor = false
-
-                # non documented configuration from the serdes chip
-                force_camera_on = false
-                """.replace("                ", "")
-            )
+            config_file.write(default_config)
 
     with open(config_path, "rb") as config_file:
         config = tomllib.load(config_file)

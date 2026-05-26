@@ -94,13 +94,17 @@ class ModoCalibracao:
         try:
             t0 = time.time()
             while time.time() - t0 < 5:
-                width, height, radius, output_img = find_circle_and_bbox(real_camera.peek_img())
+                input_img = real_camera.peek_img()
+                width, height, radius, output_img = find_circle_and_bbox(input_img)
 
                 if width and height:
                     self.gs.camera.set_img(output_img)
                     radius_found.append(radius)
+                else:
+                    self.gs.camera.set_img(input_img)
+                    
 
-                time.sleep(0.1)
+                time.sleep(1/60)
 
 
             if len(radius_found) > 0:

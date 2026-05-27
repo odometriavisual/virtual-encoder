@@ -5,8 +5,8 @@ Description=Before Virtual Encoder
 Type=oneshot
 User=pi
 Group=pi
-WorkingDirectory=/home/pi/virtual-encoder/extras
-ExecStart=/home/pi/virtual-encoder/venv/bin/python3 before_main.py
+WorkingDirectory=/home/pi/virtual-encoder/extra
+ExecStart=/home/pi/virtual-encoder/venv/bin/python3 /home/pi/virtual-encoder/extra/before_main.py
 
 [Install]
 WantedBy=multi-user.target

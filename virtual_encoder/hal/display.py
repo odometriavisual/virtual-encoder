@@ -1,5 +1,6 @@
 import threading
 import time
+import traceback
 
 from typing import TYPE_CHECKING
 
@@ -113,7 +114,9 @@ try:
             except Exception:
                 time.sleep(self.retry_interval)
                 self.__connect()
-except Exception:
+
+except Exception as e:
+    traceback.print_exception(e)
 
     class DisplaySSD1306(DisplayNull):
         def __init__(self):

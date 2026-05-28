@@ -1,6 +1,5 @@
 import threading
 import time
-import traceback
 
 from typing import TYPE_CHECKING
 
@@ -116,9 +115,12 @@ try:
                 self.__connect()
 
 except Exception as e:
+    import traceback
     traceback.print_exception(e)
 
     class DisplaySSD1306(DisplayNull):
-        def __init__(self):
+        def __init__(
+            self, gs: "EncoderGS", width=128, height=64, i2c_scl=3, i2c_sda=2, addr=0x3C
+        ):
             super().__init__()
             raise NotImplementedError

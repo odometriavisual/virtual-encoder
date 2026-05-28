@@ -370,9 +370,21 @@ try:
                         sleep(60)
 
 
-except Exception:
+except Exception as e:
+    import traceback
+    traceback.print_exception(e)
 
     class Serdes(SerdesNull):
-        def __init__(self):
+        def __init__(
+            self,
+            *,
+            bnoreset_pin: int,
+            powerdown_pin: int,
+            seraddr: int,
+            desaddr: int,
+            desbus: int = 1,
+            gpio_chip: str = "/dev/gpiochip0",
+            **kwargs,
+        ):
             super().__init__()
             raise NotImplementedError

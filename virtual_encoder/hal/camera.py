@@ -240,8 +240,10 @@ try:
             pass
 
 
-except Exception:
+except Exception as e:
+    import traceback
+    traceback.print_exception(e)
 
     class CameraPicamera2:
-        def __init__(self, gs: "EncoderGS"):
+        def __init__(self, gs: "EncoderGS", exposure: int|None):
             raise NotImplementedError

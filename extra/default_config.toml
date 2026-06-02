@@ -44,13 +44,6 @@ verbose=false
 eye_monitor=false
 force_camera_on=false
 
-[display]
-# I2C address for the display
-address = 0x3C
-# Display screen size
-width = 128
-height = 64
-
 # enable verbose I2C info
 verbose = false
 
@@ -59,3 +52,10 @@ eye_monitor = false
 
 # non documented configuration from the serdes chip
 force_camera_on = false
+
+[display]
+# I2C address for the display
+address = 0x3C
+# Display screen size
+width = 128
+height = 64

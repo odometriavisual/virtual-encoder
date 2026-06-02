@@ -1,12 +1,15 @@
 import threading
 import time
 
+import numpy as np
+
 from virtual_encoder.estados import Estado
 from virtual_encoder.encoder_gs import EncoderGS
 
 class EstadoReadyOdometro(Estado):
     def __init__(self, gs: EncoderGS):
         self.gs = gs
+        self.last_displacement_position = np.array([0., 0.])
 
         self.gs.set("estado", "Ready")
 
@@ -21,6 +24,14 @@ class EstadoReadyOdometro(Estado):
             elif pending_displacement[i] < step:
                 self.gs.encoders[i].send_pulse("-")
                 pending_displacement[i] += step
+
+        if np.linalg.norm(self.last_displacement_position - pending_displacement) > step:
+            self.gs.encoders[2].send_pulse("+")
+
+            displacement_step = step * (pending_displacement / np.linalg.norm(pending_displacement))
+
+            self.last_displacement_position += displacement_step
+            pending_displacement -= displacement_step
 
         time.sleep(0.001)
 

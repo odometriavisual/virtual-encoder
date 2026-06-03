@@ -9,19 +9,19 @@ from virtual_encoder.estados import (
     EstadoErro,
     EstadoReadyOdometro,
 )
-from virtual_encoder.encoder_gs import EncoderGS
+from virtual_encoder.virtual_encoder import VirtualEncoder
 from virtual_encoder.dsp import to_grayscale
 
 
 class ModoOdometro:
-    def __init__(self, gs: EncoderGS):
-        self.gs = gs
+    def __init__(self, ve: VirtualEncoder):
+        self.ve = ve
 
-        self.gs.set("modo", "Odometro")
+        self.ve.set("modo", "Odometro")
 
-        self.estado = EstadoReadyOdometro(self.gs)
+        self.estado = EstadoReadyOdometro(self.ve)
 
-        img = to_grayscale(self.gs.camera.get_img())
+        img = to_grayscale(self.ve.camera.get_img())
         self.odometer = VisualOdometer(
             img.shape, frequency_window_params={"factor": 0.1}, async_mode=True
         )
@@ -39,7 +39,7 @@ class ModoOdometro:
 
         def _preprocess_last_img():
             while self.is_running:
-                self.odometer.feed_image(to_grayscale(self.gs.camera.get_img()))
+                self.odometer.feed_image(to_grayscale(self.ve.camera.get_img()))
                 self.new_image_event.set()
 
         def _estimate_distance():
@@ -56,7 +56,7 @@ class ModoOdometro:
 
                 if self.is_running:
                     # Checking again to avoid setting status after is_running was set to False
-                    self.gs.set("pos", {"x": self.acc[0], "y": self.acc[1], "sr": self.gs.spatial_resolution})
+                    self.ve.set("pos", {"x": self.acc[0], "y": self.acc[1], "sr": self.ve.spatial_resolution})
 
                 self.pending_displacement += new_displacement
                 self.acc += new_displacement
@@ -85,20 +85,20 @@ class ModoOdometro:
                 self.acc = np.zeros(2)
 
             case _, ("Erro", message):
-                self.estado = EstadoErro(self.gs, message)
+                self.estado = EstadoErro(self.ve, message)
 
             case EstadoErro(), "return_from_error":
-                self.estado = EstadoReadyOdometro(self.gs)
+                self.estado = EstadoReadyOdometro(self.ve)
 
             case EstadoReadyOdometro(), (
                 "start_acquisition",
                 _,
                 reason,
             ):  # ESTADO, PULSOS P/ SEG, REASON
-                self.estado = EstadoAquisicaoOdometro(self.gs, reason)
+                self.estado = EstadoAquisicaoOdometro(self.ve, reason)
                 self.pending_displacement = np.zeros(2)
                 self.acc = np.zeros(2)
 
             case EstadoAquisicaoOdometro(), "stop_acquisition":
                 self.estado.stop()
-                self.estado = EstadoReadyOdometro(self.gs)
+                self.estado = EstadoReadyOdometro(self.ve)

@@ -1,14 +1,14 @@
 from virtual_encoder.estados import EstadoReady, EstadoErro, EstadoAquisicaoTempo
-from virtual_encoder.encoder_gs import EncoderGS
+from virtual_encoder.virtual_encoder import VirtualEncoder
 
 
 class ModoTempo:
-    def __init__(self, gs: EncoderGS):
-        self.gs = gs
+    def __init__(self, ve: VirtualEncoder):
+        self.ve = ve
 
-        self.gs.set("modo", "Tempo")
+        self.ve.set("modo", "Tempo")
 
-        self.estado = EstadoReady(self.gs)
+        self.estado = EstadoReady(self.ve)
 
     def stop(self):
         self.estado.stop()
@@ -19,16 +19,16 @@ class ModoTempo:
     def handle_event(self, ev):
         match self.estado, ev:
             case _, ("Erro", message):
-                self.estado = EstadoErro(self.gs, message)
+                self.estado = EstadoErro(self.ve, message)
 
             case EstadoErro(), "return_from_error":
-                self.estado = EstadoReady(self.gs)
+                self.estado = EstadoReady(self.ve)
 
             case EstadoReady(), ("start_acquisition", pulses_frequency, reason):
                 self.estado = EstadoAquisicaoTempo(
-                    self.gs, int(pulses_frequency), reason
+                    self.ve, int(pulses_frequency), reason
                 )
 
             case EstadoAquisicaoTempo(), "stop_acquisition":
                 self.estado.stop()
-                self.estado = EstadoReady(self.gs)
+                self.estado = EstadoReady(self.ve)

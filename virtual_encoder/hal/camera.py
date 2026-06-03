@@ -6,7 +6,7 @@ import time
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from virtual_encoder.encoder_gs import EncoderGS
+    from virtual_encoder.virtual_encoder import VirtualEncoder
 
 
 class CameraNull:
@@ -83,14 +83,14 @@ class CameraDrawing(CameraNull):
 
 
 class CameraUDP(CameraNull, threading.Thread):
-    def __init__(self, gs: "EncoderGS"):
+    def __init__(self, ve: "VirtualEncoder"):
         CameraNull.__init__(self)
         threading.Thread.__init__(self, daemon=True)
 
         self.PIZERO_HOST = "rpi0"
         self.STREAM_PORT = 7100
 
-        self.gs = gs
+        self.ve = ve
 
         self._new_frame_event = threading.Event()
         self._frame_lock = threading.Lock()
@@ -121,10 +121,10 @@ class CameraUDP(CameraNull, threading.Thread):
                 time.sleep(1)
 
     def start_stream(self):
-        self.gs.pi_zero_api.resume_stream()
+        self.ve.pi_zero_api.resume_stream()
 
     def stop_stream(self):
-        self.gs.pi_zero_api.pause_stream()
+        self.ve.pi_zero_api.pause_stream()
 
     def get_img(self):
         if not self._new_frame_event.wait(3):
@@ -156,11 +156,11 @@ try:
     from picamera2 import Picamera2
 
     class CameraPicamera2(CameraNull, threading.Thread):
-        def __init__(self, gs: "EncoderGS", exposure: int|None):
+        def __init__(self, ve: "VirtualEncoder", exposure: int|None):
             CameraNull.__init__(self)
             threading.Thread.__init__(self, daemon=True)
 
-            self.gs = gs
+            self.ve = ve
 
             self._new_frame_condition = threading.Condition()
 
@@ -182,7 +182,7 @@ try:
                 try:
                     self.start_stream()
                     frame = self._picam2.capture_array()
-                    self.gs.set("camera", True)
+                    self.ve.set("camera", True)
 
                     while True:
                         frame = self._picam2.capture_array()
@@ -199,11 +199,11 @@ try:
 
         def start_stream(self):
             self._picam2.start()
-            self.gs.set("camera", True)
+            self.ve.set("camera", True)
 
         def stop_stream(self):
             self._picam2.stop()
-            self.gs.set("camera", False)
+            self.ve.set("camera", False)
 
         def get_img(self):
             with self._new_frame_condition:
@@ -245,5 +245,5 @@ except Exception as e:
     traceback.print_exception(e)
 
     class CameraPicamera2:
-        def __init__(self, gs: "EncoderGS", exposure: int|None):
+        def __init__(self, ve: "VirtualEncoder", exposure: int|None):
             raise NotImplementedError

@@ -5,7 +5,7 @@ import time
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from virtual_encoder.encoder_gs import EncoderGS
+    from virtual_encoder.virtual_encoder import VirtualEncoder
 
 
 class ImuNull:
@@ -15,11 +15,11 @@ class ImuNull:
 
 
 class ImuUDP(ImuNull, threading.Thread):
-    def __init__(self, gs: "EncoderGS"):
+    def __init__(self, ve: "VirtualEncoder"):
         ImuNull.__init__(self)
         threading.Thread.__init__(self, daemon=True)
 
-        self.gs = gs
+        self.ve = ve
         self.orientation = [0, 0, 0, 1]
 
     def run(self):
@@ -38,10 +38,10 @@ class ImuUDP(ImuNull, threading.Thread):
 
                         if 0.999 < d < 1.001:
                             self.orientation = imu
-                            self.gs.set("imu", imu)
+                            self.ve.set("imu", imu)
                     else:
                         self.orientation = [0, 0, 0, 1]
-                        self.gs.set("imu", False)
+                        self.ve.set("imu", False)
                 except Exception:
                     pass
 
@@ -54,11 +54,11 @@ try:
     import board
 
     class ImuI2C(ImuNull, threading.Thread):
-        def __init__(self, gs: "EncoderGS"):
+        def __init__(self, ve: "VirtualEncoder"):
             ImuNull.__init__(self)
             threading.Thread.__init__(self, daemon=True)
 
-            self.gs = gs
+            self.ve = ve
             self.orientation = [0, 0, 0, 1]
             self.__condition = threading.Condition()
 
@@ -75,10 +75,10 @@ try:
                 elif 0x29 in connected_devices:                
                     self.__sensor = adafruit_bno055.BNO055_I2C(i2c, 0x29)
                 else:
-                    self.gs.set("imu", False)
+                    self.ve.set("imu", False)
 
             except Exception:
-                self.gs.set("imu", False)
+                self.ve.set("imu", False)
             
 
         def run(self):
@@ -89,11 +89,11 @@ try:
 
                     with self.__condition:
                         self.orientation = [*quat, *acc]
-                        self.gs.set("imu", self.orientation)
+                        self.ve.set("imu", self.orientation)
                         self.__condition.notify_all()
 
                 except Exception:
-                    self.gs.set("imu", False)
+                    self.ve.set("imu", False)
                     time.sleep(5)
                     self.__connect()
 

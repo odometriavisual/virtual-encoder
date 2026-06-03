@@ -4,7 +4,7 @@ import time
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from virtual_encoder.encoder_gs import EncoderGS
+    from virtual_encoder.virtual_encoder import VirtualEncoder
 
 
 class DisplayNull:
@@ -25,12 +25,12 @@ try:
 
     class DisplaySSD1306(DisplayNull, threading.Thread):
         def __init__(
-            self, gs: "EncoderGS", width=128, height=64, i2c_scl=3, i2c_sda=2, addr=0x3C
+            self, ve: "VirtualEncoder", width=128, height=64, i2c_scl=3, i2c_sda=2, addr=0x3C
         ):
             DisplayNull.__init__(self)
             threading.Thread.__init__(self, daemon=True)
 
-            self.gs = gs
+            self.ve = ve
 
             self.width = width
             self.height = height
@@ -69,16 +69,16 @@ try:
 
         def run(self):
             while True:
-                self.gs.set("display", self.is_connected)
+                self.ve.set("display", self.is_connected)
 
-                version = self.gs.get("version")
-                camera = "Ok" if self.gs.get("camera") else "Err."
-                imu = "Ok" if self.gs.get("imu") else "Err."
+                version = self.ve.get("version")
+                camera = "Ok" if self.ve.get("camera") else "Err."
+                imu = "Ok" if self.ve.get("imu") else "Err."
 
-                self.draw_line(0, f"MODO: {self.gs.get('modo')}", "center")
-                self.draw_line(1, f"ESTADO: {self.gs.get('estado')}", "center")
+                self.draw_line(0, f"MODO: {self.ve.get('modo')}", "center")
+                self.draw_line(1, f"ESTADO: {self.ve.get('estado')}", "center")
 
-                self.draw_line(2, f"IP: {self.gs.get('rpi5')['ip']}")
+                self.draw_line(2, f"IP: {self.ve.get('rpi5')['ip']}")
                 self.draw_line(3, f"CAM : {camera} | IMU: {imu}")
                 self.draw_line(4, f"Versao: {version}")
 
@@ -120,7 +120,7 @@ except Exception as e:
 
     class DisplaySSD1306(DisplayNull):
         def __init__(
-            self, gs: "EncoderGS", width=128, height=64, i2c_scl=3, i2c_sda=2, addr=0x3C
+            self, ve: "VirtualEncoder", width=128, height=64, i2c_scl=3, i2c_sda=2, addr=0x3C
         ):
             super().__init__()
             raise NotImplementedError

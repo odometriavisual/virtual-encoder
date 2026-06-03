@@ -1,14 +1,14 @@
 from virtual_encoder.estados import EstadoAquisicaoTempo
-from virtual_encoder.encoder_gs import EncoderGS
+from virtual_encoder.virtual_encoder import VirtualEncoder
 
 
 class ModoAutonomo:
-    def __init__(self, gs: EncoderGS):
-        self.gs = gs
+    def __init__(self, ve: VirtualEncoder):
+        self.ve = ve
 
-        self.gs.set("modo", "Autonomo")
+        self.ve.set("modo", "Autonomo")
 
-        self.estado = EstadoAquisicaoTempo(self.gs, 10, "")
+        self.estado = EstadoAquisicaoTempo(self.ve, 10, "")
 
     def stop(self):
         pass

@@ -1,4 +1,5 @@
 import threading
+import subprocess
 import time
 from pathlib import Path
 from queue import Queue
@@ -15,7 +16,7 @@ from .hal.thermal_sensors import ThermalSensorsNull, ThermalSensorsRaspberry
 from .acquisition_writer import AcquisitionWriter
 
 
-class EncoderGS:
+class VirtualEncoder:
     def __init__(self, config, *, default_modo_lambda):
         self.config = config
 
@@ -175,6 +176,63 @@ class EncoderGS:
         self.acquisition_writer = AcquisitionWriter(
             self.config["acquisition"]["directory"], self
         )
+
+    def handle_event(self):
+        match self.modo, ev:
+            case _, ("set_modo", "Autonomo"):
+                self.set_modo(ModoAutonomo(self))
+            case _, ("set_modo", "Odometro"):
+                self.set_modo(ModoOdometro(self))
+            case _, ("set_modo", "Tempo"):
+                self.set_modo(ModoTempo(self))
+
+            case _, ("shutdown", "all"):
+                try:
+                    self.led.turn_off()
+                    subprocess.run(["sudo", "poweroff"])
+                except subprocess.SubprocessError:
+                    pass
+            case _, ("shutdown", "led"):
+                self.led.turn_off()
+            case _, ("shutdown", "relay"):
+                self.relay.turn_off()
+
+            case _, ("reboot", "all"):
+                try:
+                    subprocess.run(["sudo", "reboot"])
+                except subprocess.SubprocessError:
+                    pass
+            case _, ("reboot", "led"):
+                self.led.turn_off()
+                time.sleep(0.5)
+                self.led.turn_on()
+            case _, ("reboot", "relay"):
+                self.relay.turn_off()
+                time.sleep(5)
+                self.relay.turn_on()
+
+            case _, ("set_exposure", value):
+                self.camera.set_exposure(value)
+
+            case ModoAutonomo(), ("calibrate", tipo):
+                self.set_modo(ModoCalibracao(self, config, tipo, "Autonomo"))
+            case ModoOdometro(), ("calibrate", tipo):
+                self.set_modo(ModoCalibracao(self, config, tipo, "Odometro"))
+            case ModoTempo(), ("calibrate", tipo):
+                self.set_modo(ModoCalibracao(self, config, tipo, "Tempo"))
+            case _, ("calibrate", tipo):
+                self.set_modo(ModoCalibracao(self, config, tipo, "Odometro"))
+
+            case _, "start_stream":
+                self.camera.start_stream()
+            case _, "stop_stream":
+                self.camera.stop_stream()
+
+            case _:
+                self.modo.handle_event(ev)
+
+    def run(self):
+        self.modo.run()
 
     def get(self, prop):
         return self.status[prop]

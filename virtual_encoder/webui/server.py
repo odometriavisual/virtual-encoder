@@ -10,12 +10,12 @@ from flask_cors import CORS
 from werkzeug.serving import BaseWSGIServer
 from werkzeug.utils import secure_filename
 
-from virtual_encoder.encoder_gs import EncoderGS
+from virtual_encoder.virtual_encoder import VirtualEncoder
 
 
 class WebuiApp:
-    def __init__(self, gs: EncoderGS, config, host="0.0.0.0", port=5000):
-        self.gs = gs
+    def __init__(self, ve: VirtualEncoder, config, host="0.0.0.0", port=5000):
+        self.ve = ve
         self.config = config
 
         self.app = Flask(
@@ -36,7 +36,7 @@ class WebuiApp:
 
             if time_now >= next_time:
                 next_time += period
-                frame = self.gs.camera.peek_img()
+                frame = self.ve.camera.peek_img()
                 buffer = cv2.imencode(".jpg", frame)
                 buffer_bytes = buffer[1].tobytes()
                 yield (
@@ -81,7 +81,7 @@ class WebuiApp:
             def generate_status():
                 while True:
                     time.sleep(0.05)
-                    yield "".join([json.dumps(self.gs.get_status()), "\n"])
+                    yield "".join([json.dumps(self.ve.get_status()), "\n"])
 
             return Response(generate_status(), content_type="application/json")
 
@@ -129,7 +129,7 @@ class WebuiApp:
             pulses_per_second must be an integer, reason must be an UTF-8 encoded string.
             ModoOdometro ignores the parameter pulses_per_second.
             """
-            self.gs.send_event(("start_acquisition", pulses_per_second, reason))
+            self.ve.send_event(("start_acquisition", pulses_per_second, reason))
             return ""
 
         @self.app.route("/stop_acquisition", methods=["POST"])
@@ -137,7 +137,7 @@ class WebuiApp:
             """
             If in the ModoOdometro or in the ModoTempo at the Aquisição state, stops and saves an aquisition.
             """
-            self.gs.send_event("stop_acquisition")
+            self.ve.send_event("stop_acquisition")
             return ""
 
         @self.app.route("/reset_position", methods=["POST"])
@@ -145,7 +145,7 @@ class WebuiApp:
             """
             If in the ModoOdometro, resets the accumulated displacement
             """
-            self.gs.send_event("reset_position")
+            self.ve.send_event("reset_position")
             time.sleep(0.2)
             return ""
 
@@ -154,7 +154,7 @@ class WebuiApp:
             """
             Starts the video stream.
             """
-            self.gs.send_event("start_stream")
+            self.ve.send_event("start_stream")
             return ""
 
         @self.app.route("/stop_stream", methods=["POST"])
@@ -162,7 +162,7 @@ class WebuiApp:
             """
             Stops the video stream.
             """
-            self.gs.send_event("stop_stream")
+            self.ve.send_event("stop_stream")
             return ""
 
         @self.app.route("/calibrate_exposure", methods=["POST"])
@@ -170,7 +170,7 @@ class WebuiApp:
             """
             Calibrates the camera exposure according to the configuration present in the config file.
             """
-            self.gs.send_event(("calibrate", "exposure"))
+            self.ve.send_event(("calibrate", "exposure"))
             return ""
 
         @self.app.route("/calibrate_resolution/<string:modo>/<string:param>", methods=["POST"])
@@ -180,7 +180,7 @@ class WebuiApp:
             by correlating the distance movement with the estimated displacement.
             Valid modos are "photo" and "displacement"
             """
-            self.gs.send_event(("calibrate", ("spatial_resolution", modo, float(param))))
+            self.ve.send_event(("calibrate", ("spatial_resolution", modo, float(param))))
             return ""
 
         @self.app.route("/set_exposure/<int:value>", methods=["POST"])
@@ -188,7 +188,7 @@ class WebuiApp:
             """
             Sets the camera exposure. Value must be an integer in microseconds.
             """
-            self.gs.send_event(("set_exposure", value))
+            self.ve.send_event(("set_exposure", value))
             return ""
 
         @self.app.route("/set_modo/<modo>", methods=["POST"])
@@ -202,7 +202,7 @@ class WebuiApp:
             Returns 404 if the modo string is invalid
             """
             if modo in ["Autonomo", "Tempo", "Odometro"]:
-                self.gs.send_event(("set_modo", modo))
+                self.ve.send_event(("set_modo", modo))
                 return ""
             else:
                 abort(404)
@@ -218,7 +218,7 @@ class WebuiApp:
             Returns 404 if the component string is invalid
             """
             if component in ["all", "led", "relay"]:
-                self.gs.send_event(("shutdown", component))
+                self.ve.send_event(("shutdown", component))
                 return ""
             else:
                 abort(404)
@@ -234,7 +234,7 @@ class WebuiApp:
             Returns 404 if the component string is invalid
             """
             if component in ["all", "led", "relay"]:
-                self.gs.send_event(("reboot", component))
+                self.ve.send_event(("reboot", component))
                 return ""
             else:
                 abort(404)

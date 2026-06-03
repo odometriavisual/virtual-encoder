@@ -3,7 +3,7 @@ import time
 
 import cv2
 import numpy as np
-from virtual_encoder.encoder_gs import EncoderGS
+from virtual_encoder.virtual_encoder import VirtualEncoder
 from virtual_encoder.hal.camera import CameraDrawing
 
 def find_circle_and_bbox(frame):
@@ -46,13 +46,13 @@ def find_circle_and_bbox(frame):
         return None, None, None, frame
 
 class ModoCalibracao:
-    def __init__(self, gs: EncoderGS, config, tipo, last_modo):
-        self.gs = gs
+    def __init__(self, ve: VirtualEncoder, config, tipo, last_modo):
+        self.ve = ve
         self.config = config
         self.tipo = tipo
         self.return_modo = last_modo
 
-        self.gs.set("estado", "Calibracao")
+        self.ve.set("estado", "Calibracao")
 
     def stop(self):
         pass
@@ -64,17 +64,17 @@ class ModoCalibracao:
             f.write(f"{spatial_resolution}")
 
     def __calibrate_exposure(self):
-        self.gs.camera.calibrate_exposure(
+        self.ve.camera.calibrate_exposure(
             min=self.config["camera"]["min_exposure"],
             max=self.config["camera"]["max_exposure"],
             target=self.config["camera"]["target_average"],
         )
 
-        self.gs.add_message("Realizando calibração, aguarde...")
+        self.ve.add_message("Realizando calibração, aguarde...")
 
-        exposure = self.gs.camera.get_exposure()
+        exposure = self.ve.camera.get_exposure()
 
-        self.gs.add_message(
+        self.ve.add_message(
             f"Exposição calibrada para {exposure} us"
         )
 
@@ -86,10 +86,10 @@ class ModoCalibracao:
     def __calibrate_spatial_resolution_photo(self, printed_diameter):
         radius_found = []
 
-        self.gs.add_message("Realizando calibração, aguarde...")
+        self.ve.add_message("Realizando calibração, aguarde...")
 
-        real_camera = self.gs.camera
-        self.gs.camera = CameraDrawing(real_camera)
+        real_camera = self.ve.camera
+        self.ve.camera = CameraDrawing(real_camera)
 
         try:
             t0 = time.time()
@@ -98,47 +98,47 @@ class ModoCalibracao:
                 width, height, radius, output_img = find_circle_and_bbox(input_img)
 
                 if width and height:
-                    self.gs.camera.set_img(output_img)
+                    self.ve.camera.set_img(output_img)
                     radius_found.append(radius)
                 else:
-                    self.gs.camera.set_img(input_img)
+                    self.ve.camera.set_img(input_img)
                     
 
                 time.sleep(1/60)
 
 
             if len(radius_found) > 0:
-                self.gs.spatial_resolution = printed_diameter / (2 * np.average(radius_found))
+                self.ve.spatial_resolution = printed_diameter / (2 * np.average(radius_found))
 
-                self.gs.add_message(
-                    f"Resolução espacial calibrada para {1/self.gs.spatial_resolution:.3f} px/mm"
+                self.ve.add_message(
+                    f"Resolução espacial calibrada para {1/self.ve.spatial_resolution:.3f} px/mm"
                 )
-                self.gs.send_event("reset_position")
+                self.ve.send_event("reset_position")
 
-                self.__save_to_cache(self.gs.spatial_resolution)
+                self.__save_to_cache(self.ve.spatial_resolution)
             else:
-                self.gs.add_message("Padrão de calibração não encontrado! Tente novamente")
+                self.ve.add_message("Padrão de calibração não encontrado! Tente novamente")
         finally:
-            self.gs.camera = real_camera
+            self.ve.camera = real_camera
 
 
     def __calibrate_spatial_resolution_displacement(self, inverse_spatial_resolution):
         try:
             if inverse_spatial_resolution < 0.000001:
-                self.gs.add_message("Valor de deslocamento inválido. O valor é muito pequeno")
+                self.ve.add_message("Valor de deslocamento inválido. O valor é muito pequeno")
                 return
 
-            self.gs.spatial_resolution = 1/inverse_spatial_resolution
+            self.ve.spatial_resolution = 1/inverse_spatial_resolution
 
-            self.gs.add_message(
+            self.ve.add_message(
                 f"Resolução espacial calibrada para {inverse_spatial_resolution:.2f} px/mm"
             )
 
-            self.__save_to_cache(self.gs.spatial_resolution)
+            self.__save_to_cache(self.ve.spatial_resolution)
 
         except Exception as e:
             print(e)
-            self.gs.add_message("Erro na calibração")
+            self.ve.add_message("Erro na calibração")
 
     def run(self):
         match self.tipo:
@@ -151,7 +151,7 @@ class ModoCalibracao:
             case ("spatial_resolution", "displacement", inverse_spatial_resolution):
                 self.__calibrate_spatial_resolution_displacement(inverse_spatial_resolution)
 
-        self.gs.send_event(("set_modo", self.return_modo))
+        self.ve.send_event(("set_modo", self.return_modo))
 
     def handle_event(self, ev):
         pass

@@ -6,7 +6,7 @@ from pathlib import Path
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from virtual_encoder.encoder_gs import EncoderGS
+    from virtual_encoder.virtual_encoder import VirtualEncoder
 
 
 class NetworkInterfaceNull:
@@ -15,10 +15,10 @@ class NetworkInterfaceNull:
 
 
 class NetworkInterfaceConfigFile(NetworkInterfaceNull):
-    def __init__(self, gs: "EncoderGS", interface: str, config_path: str):
+    def __init__(self, ve: "VirtualEncoder", interface: str, config_path: str):
         super().__init__()
 
-        self.gs = gs
+        self.ve = ve
         self.interface = interface
         self.config_path = Path(config_path)
 

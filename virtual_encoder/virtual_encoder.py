@@ -14,10 +14,11 @@ from .hal.led import LedNull, LedSerdes
 from .hal.serdes import SerdesNull, Serdes
 from .hal.thermal_sensors import ThermalSensorsNull, ThermalSensorsRaspberry
 from .acquisition_writer import AcquisitionWriter
+from .modos import ModoAutonomo, ModoCalibracao, ModoOdometro, ModoTempo
 
 
 class VirtualEncoder:
-    def __init__(self, config, *, default_modo_lambda):
+    def __init__(self, config):
         self.config = config
 
         spatial_resolution_cache_path = Path(self.config.get("camera", dict()).get("spatial_resolution_cache", "/home/pi/spatial_resolution.txt"))
@@ -66,7 +67,14 @@ class VirtualEncoder:
         self._event_queue = Queue(4)
 
         setup_camera_thread.join()
-        self.modo = default_modo_lambda(self)
+
+        match self.config.get("default_modo", "ModoOdometro"):
+            case "ModoOdometro":
+                self.modo = ModoOdometro(self)
+            case "ModoTempo":
+                self.modo = ModoTempo(self)
+            case _:
+                self.modo = ModoOdometro(self)
 
     def __setup_display(self):
         if self.config["debug"]:
@@ -177,7 +185,7 @@ class VirtualEncoder:
             self.config["acquisition"]["directory"], self
         )
 
-    def handle_event(self):
+    def handle_event(self, ev):
         match self.modo, ev:
             case _, ("set_modo", "Autonomo"):
                 self.set_modo(ModoAutonomo(self))
@@ -215,13 +223,13 @@ class VirtualEncoder:
                 self.camera.set_exposure(value)
 
             case ModoAutonomo(), ("calibrate", tipo):
-                self.set_modo(ModoCalibracao(self, config, tipo, "Autonomo"))
+                self.set_modo(ModoCalibracao(self, self.config, tipo, "Autonomo"))
             case ModoOdometro(), ("calibrate", tipo):
-                self.set_modo(ModoCalibracao(self, config, tipo, "Odometro"))
+                self.set_modo(ModoCalibracao(self, self.config, tipo, "Odometro"))
             case ModoTempo(), ("calibrate", tipo):
-                self.set_modo(ModoCalibracao(self, config, tipo, "Tempo"))
+                self.set_modo(ModoCalibracao(self, self.config, tipo, "Tempo"))
             case _, ("calibrate", tipo):
-                self.set_modo(ModoCalibracao(self, config, tipo, "Odometro"))
+                self.set_modo(ModoCalibracao(self, self.config, tipo, "Odometro"))
 
             case _, "start_stream":
                 self.camera.start_stream()

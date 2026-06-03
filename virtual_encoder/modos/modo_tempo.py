@@ -1,9 +1,12 @@
 from virtual_encoder.estados import EstadoReady, EstadoErro, EstadoAquisicaoTempo
-from virtual_encoder.virtual_encoder import VirtualEncoder
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from virtual_encoder.virtual_encoder import VirtualEncoder
 
 
 class ModoTempo:
-    def __init__(self, ve: VirtualEncoder):
+    def __init__(self, ve: "VirtualEncoder"):
         self.ve = ve
 
         self.ve.set("modo", "Tempo")

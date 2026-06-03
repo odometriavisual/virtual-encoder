@@ -3,8 +3,11 @@ import time
 
 import cv2
 import numpy as np
-from virtual_encoder.virtual_encoder import VirtualEncoder
 from virtual_encoder.hal.camera import CameraDrawing
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from virtual_encoder.virtual_encoder import VirtualEncoder
 
 def find_circle_and_bbox(frame):
     gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
@@ -46,7 +49,7 @@ def find_circle_and_bbox(frame):
         return None, None, None, frame
 
 class ModoCalibracao:
-    def __init__(self, ve: VirtualEncoder, config, tipo, last_modo):
+    def __init__(self, ve: "VirtualEncoder", config, tipo, last_modo):
         self.ve = ve
         self.config = config
         self.tipo = tipo

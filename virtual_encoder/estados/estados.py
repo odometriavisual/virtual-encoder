@@ -2,7 +2,10 @@ import time
 from abc import abstractmethod
 from threading import Thread
 
-from virtual_encoder.virtual_encoder import VirtualEncoder
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from virtual_encoder.virtual_encoder import VirtualEncoder
 
 
 class Estado:
@@ -15,7 +18,7 @@ class Estado:
 
 
 class EstadoSet(Estado):
-    def __init__(self, ve: VirtualEncoder):
+    def __init__(self, ve: "VirtualEncoder"):
         ve.set("estado", "Set")
 
     def run(self):
@@ -23,7 +26,7 @@ class EstadoSet(Estado):
 
 
 class EstadoReady(Estado):
-    def __init__(self, ve: VirtualEncoder):
+    def __init__(self, ve: "VirtualEncoder"):
         ve.set("estado", "Ready")
 
     def run(self):
@@ -31,7 +34,7 @@ class EstadoReady(Estado):
 
 
 class EstadoAquisicaoTempo(Estado):
-    def __init__(self, ve: VirtualEncoder, pulses_frequency: int, reason: str):
+    def __init__(self, ve: "VirtualEncoder", pulses_frequency: int, reason: str):
         self.ve = ve
         self.reason = reason
 
@@ -79,7 +82,7 @@ class EstadoAquisicaoTempo(Estado):
 
 
 class EstadoErro(Estado):
-    def __init__(self, ve: VirtualEncoder, message):
+    def __init__(self, ve: "VirtualEncoder", message):
         self.ve = ve
 
         self.ve.set("estado", message)

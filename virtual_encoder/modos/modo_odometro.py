@@ -9,12 +9,15 @@ from virtual_encoder.estados import (
     EstadoErro,
     EstadoReadyOdometro,
 )
-from virtual_encoder.virtual_encoder import VirtualEncoder
 from virtual_encoder.dsp import to_grayscale
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from virtual_encoder.virtual_encoder import VirtualEncoder
 
 
 class ModoOdometro:
-    def __init__(self, ve: VirtualEncoder):
+    def __init__(self, ve: "VirtualEncoder"):
         self.ve = ve
 
         self.ve.set("modo", "Odometro")

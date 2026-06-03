@@ -6,7 +6,6 @@ import os
 import subprocess
 from pathlib import Path
 
-from virtual_encoder.modos import ModoAutonomo, ModoOdometro, ModoTempo, ModoCalibracao
 from virtual_encoder.virtual_encoder import VirtualEncoder
 from virtual_encoder.webui.server import WebuiApp
 
@@ -49,7 +48,7 @@ def main():
     config = load_config(
         os.getenv("HOME", default="/home/pi") + "/virtual_encoder.toml"
     )
-    ve = VirtualEncoder(config, default_modo_lambda=lambda ve: ModoOdometro(ve))
+    ve = VirtualEncoder(config)
 
     webui = WebuiApp(ve, config)
     threading.Thread(target=webui.run, daemon=True).start()

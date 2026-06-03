@@ -1,13 +1,16 @@
 import threading
 import time
+from typing import TYPE_CHECKING
 
 import numpy as np
 
 from virtual_encoder.estados import Estado
-from virtual_encoder.virtual_encoder import VirtualEncoder
+
+if TYPE_CHECKING:
+    from virtual_encoder.virtual_encoder import VirtualEncoder
 
 class EstadoReadyOdometro(Estado):
-    def __init__(self, ve: VirtualEncoder):
+    def __init__(self, ve: "VirtualEncoder"):
         self.ve = ve
 
         self.center_position = np.array([0., 0.])
@@ -42,7 +45,7 @@ class EstadoReadyOdometro(Estado):
 
 
 class EstadoAquisicaoOdometro(EstadoReadyOdometro):
-    def __init__(self, ve: VirtualEncoder, reason: str):
+    def __init__(self, ve: "VirtualEncoder", reason: str):
         self.ve = ve
         self.reason = reason
 

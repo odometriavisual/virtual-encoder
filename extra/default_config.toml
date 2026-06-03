@@ -40,16 +40,10 @@ target_average = 50
 # I2c addresses for the serdes' chips
 serializer_address = 0x40
 deserializer_address = 0x2A
-verbose=false
-eye_monitor=false
-force_camera_on=false
-
 # enable verbose I2C info
 verbose = false
-
 # enable monitor for the eye diagram to test cable quality
 eye_monitor = false
-
 # non documented configuration from the serdes chip
 force_camera_on = false
 

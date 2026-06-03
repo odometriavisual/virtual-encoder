@@ -4,6 +4,7 @@ import time
 import tomllib
 import os
 import subprocess
+from pathlib import Path
 
 from virtual_encoder.modos import ModoAutonomo, ModoOdometro, ModoTempo, ModoCalibracao
 from virtual_encoder.virtual_encoder import VirtualEncoder
@@ -11,16 +12,12 @@ from virtual_encoder.webui.server import WebuiApp
 
 
 def load_config(config_path):
-    if not os.path.isfile(config_path):
-        with open("extra/default_config.toml", "r") as default_config_file:
-            default_config = default_config_file.read()
+    config_path = Path(config_path)
 
-        with open(config_path, "w") as config_file:
-            config_file.write(default_config)
+    if not config_path.is_file():
+        Path("extra/default_config.toml").copy(config_path)
 
-    with open(config_path, "rb") as config_file:
-        config = tomllib.load(config_file)
-
+    config = tomllib.loads(config_path.read_text())
     config["version"] = (
         "v"
         + subprocess.run(

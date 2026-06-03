@@ -9,12 +9,13 @@ from virtual_encoder.estados import Estado
 if TYPE_CHECKING:
     from virtual_encoder.virtual_encoder import VirtualEncoder
 
+
 class EstadoReadyOdometro(Estado):
     def __init__(self, ve: "VirtualEncoder"):
         self.ve = ve
 
-        self.center_position = np.array([0., 0.])
-        self.position_now = np.array([0., 0.])
+        self.center_position = np.array([0.0, 0.0])
+        self.position_now = np.array([0.0, 0.0])
 
         self.ve.set("estado", "Ready")
 
@@ -55,9 +56,7 @@ class EstadoAquisicaoOdometro(EstadoReadyOdometro):
         timestamp_ns = time.time_ns()
 
         def start_acquisition_helper():
-            self.ve.acquisition_writer.start_acquisition(
-                timestamp_ns, self.reason, 0
-            )
+            self.ve.acquisition_writer.start_acquisition(timestamp_ns, self.reason, 0)
 
         req_thread = threading.Thread(target=start_acquisition_helper, daemon=True)
 

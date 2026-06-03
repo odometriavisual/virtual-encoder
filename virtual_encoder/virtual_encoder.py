@@ -21,7 +21,11 @@ class VirtualEncoder:
     def __init__(self, config):
         self.config = config
 
-        spatial_resolution_cache_path = Path(self.config.get("camera", dict()).get("spatial_resolution_cache", "/home/pi/spatial_resolution.txt"))
+        spatial_resolution_cache_path = Path(
+            self.config.get("camera", dict()).get(
+                "spatial_resolution_cache", "/home/pi/spatial_resolution.txt"
+            )
+        )
         self.spatial_resolution = 1
 
         if spatial_resolution_cache_path.is_file():
@@ -30,7 +34,7 @@ class VirtualEncoder:
                     self.spatial_resolution = float(file.read())
             except Exception:
                 pass
-        
+
         self.status = {
             "version": config["version"],
             "rpi5": {
@@ -52,7 +56,9 @@ class VirtualEncoder:
             time.sleep(1)
             self.__setup_camera()
 
-        setup_camera_thread = threading.Thread(target=__parallel_setup_camera, daemon=True)
+        setup_camera_thread = threading.Thread(
+            target=__parallel_setup_camera, daemon=True
+        )
         setup_camera_thread.start()
 
         self.__setup_display()
@@ -157,7 +163,11 @@ class VirtualEncoder:
             )
 
     def __setup_camera(self):
-        exposure_cache_path = Path(self.config.get("camera", dict()).get("exposure_cache", "/home/pi/exposure.txt"))
+        exposure_cache_path = Path(
+            self.config.get("camera", dict()).get(
+                "exposure_cache", "/home/pi/exposure.txt"
+            )
+        )
         exposure = None
 
         if exposure_cache_path.is_file():
@@ -174,7 +184,6 @@ class VirtualEncoder:
             self.camera = CameraUDP(self)
         else:
             try:
-        
                 self.camera = CameraPicamera2(self, exposure)
                 self.camera.start()
             except IndexError:

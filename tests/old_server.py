@@ -24,7 +24,7 @@ import adafruit_bno055
 
 imu_data = "0,0,0,0"
 
-PAGE = f"""\
+PAGE = """\
 <html>
 <head>
 <title>picamera3 MJPEG streaming demo</title>
@@ -64,7 +64,7 @@ class StreamingHandler(server.BaseHTTPRequestHandler):
             self.end_headers()
             self.wfile.write(content)
         elif self.path == "/imu.html":
-            if bno_enabled == True:
+            if bno_enabled:
                 quat = sensor.quaternion
             else:
                 quat = (0, 0, 0, 0)
@@ -157,7 +157,7 @@ bno_enabled = False
 try:
     sensor = adafruit_bno055.BNO055_I2C(i2c, 0x29)
     bno_enabled = True
-except:
+except Exception:
     print("Erro ao inciar o BNO055")
     bno_enabled = False
 

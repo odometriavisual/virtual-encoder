@@ -1,7 +1,7 @@
 # Rui Santos & Sara Santos - Random Nerd Tutorials
 # Complete project details at https://RandomNerdTutorials.com/raspberry-pi-picamera2-python/
 
-from picamera2 import Picamera2, Preview
+from picamera2 import Picamera2
 from libcamera import controls
 import time
 
@@ -18,6 +18,3 @@ picam2.set_controls(
 time.sleep(2)
 
 picam2.capture_file("test_photo6.jpg")
-
-
-from picamera2 import Picamera2

@@ -32,7 +32,9 @@ def get_percent():
     return used / total
 
 
-to_delete = sorted(imgs_directory.glob("trash/*")) + sorted([p for p in imgs_directory.iterdir()])
+to_delete = sorted(imgs_directory.glob("trash/*")) + sorted(
+    [p for p in imgs_directory.iterdir()]
+)
 
 while get_percent() > LOWER_THRESHOLD and len(to_delete) > 0:
     p = to_delete.pop(0)

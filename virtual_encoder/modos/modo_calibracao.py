@@ -1,4 +1,3 @@
-from pathlib import Path
 import time
 
 import cv2
@@ -8,6 +7,7 @@ from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     from virtual_encoder.virtual_encoder import VirtualEncoder
+
 
 def find_circle_and_bbox(frame):
     gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
@@ -48,6 +48,7 @@ def find_circle_and_bbox(frame):
     else:
         return None, None, None, frame
 
+
 class ModoCalibracao:
     def __init__(self, ve: "VirtualEncoder", config, tipo, last_modo):
         self.ve = ve
@@ -61,7 +62,9 @@ class ModoCalibracao:
         pass
 
     def __save_to_cache(self, spatial_resolution):
-        spatial_resolution_cache_file = self.config.get("camera", dict()).get("spatial_resolution_cache", "/home/pi/spatial_resolution.txt")
+        spatial_resolution_cache_file = self.config.get("camera", dict()).get(
+            "spatial_resolution_cache", "/home/pi/spatial_resolution.txt"
+        )
 
         with open(spatial_resolution_cache_file, "w") as f:
             f.write(f"{spatial_resolution}")
@@ -77,12 +80,11 @@ class ModoCalibracao:
 
         exposure = self.ve.camera.get_exposure()
 
-        self.ve.add_message(
-            f"Exposição calibrada para {exposure} us"
-        )
+        self.ve.add_message(f"Exposição calibrada para {exposure} us")
 
-        
-        exposure_cache_file = self.config.get("camera", dict()).get("exposure_cache", "/home/pi/exposure.txt")
+        exposure_cache_file = self.config.get("camera", dict()).get(
+            "exposure_cache", "/home/pi/exposure.txt"
+        )
         with open(exposure_cache_file, "w") as f:
             f.write(f"{exposure}")
 
@@ -105,33 +107,36 @@ class ModoCalibracao:
                     radius_found.append(radius)
                 else:
                     self.ve.camera.set_img(input_img)
-                    
 
-                time.sleep(1/60)
-
+                time.sleep(1 / 60)
 
             if len(radius_found) > 0:
-                self.ve.spatial_resolution = printed_diameter / (2 * np.average(radius_found))
+                self.ve.spatial_resolution = printed_diameter / (
+                    2 * np.average(radius_found)
+                )
 
                 self.ve.add_message(
-                    f"Resolução espacial calibrada para {1/self.ve.spatial_resolution:.3f} px/mm"
+                    f"Resolução espacial calibrada para {1 / self.ve.spatial_resolution:.3f} px/mm"
                 )
                 self.ve.send_event("reset_position")
 
                 self.__save_to_cache(self.ve.spatial_resolution)
             else:
-                self.ve.add_message("Padrão de calibração não encontrado! Tente novamente")
+                self.ve.add_message(
+                    "Padrão de calibração não encontrado! Tente novamente"
+                )
         finally:
             self.ve.camera = real_camera
-
 
     def __calibrate_spatial_resolution_displacement(self, inverse_spatial_resolution):
         try:
             if inverse_spatial_resolution < 0.000001:
-                self.ve.add_message("Valor de deslocamento inválido. O valor é muito pequeno")
+                self.ve.add_message(
+                    "Valor de deslocamento inválido. O valor é muito pequeno"
+                )
                 return
 
-            self.ve.spatial_resolution = 1/inverse_spatial_resolution
+            self.ve.spatial_resolution = 1 / inverse_spatial_resolution
 
             self.ve.add_message(
                 f"Resolução espacial calibrada para {inverse_spatial_resolution:.2f} px/mm"
@@ -152,7 +157,9 @@ class ModoCalibracao:
                 self.__calibrate_spatial_resolution_photo(round(printed_diameter))
 
             case ("spatial_resolution", "displacement", inverse_spatial_resolution):
-                self.__calibrate_spatial_resolution_displacement(inverse_spatial_resolution)
+                self.__calibrate_spatial_resolution_displacement(
+                    inverse_spatial_resolution
+                )
 
         self.ve.send_event(("set_modo", self.return_modo))
 

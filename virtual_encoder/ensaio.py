@@ -3,7 +3,6 @@ from zipfile import ZipFile
 import csv
 import io
 
-import numpy as np
 import cv2
 from numpy.typing import NDArray
 

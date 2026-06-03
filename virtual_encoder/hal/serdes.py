@@ -26,7 +26,7 @@ try:
         ):
             SerdesNull.__init__(self)
             threading.Thread.__init__(self)
-            
+
             self.__verbose = kwargs.get("verbose", False)
             self.__monitor = kwargs.get("monitor", False)
             self.__fcon = kwargs.get("force_camera_on", False)
@@ -372,6 +372,7 @@ try:
 
 except Exception as e:
     import traceback
+
     traceback.print_exception(e)
 
     class Serdes(SerdesNull):

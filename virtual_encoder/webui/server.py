@@ -108,7 +108,7 @@ class WebuiApp:
         def restore_ensaio(filename):
             dir = pathlib.Path(self.config["acquisition"]["directory"])
             p = dir / "trash" / filename
-            target_dir = dir 
+            target_dir = dir
 
             if p.is_file():
                 p.rename(target_dir / filename)
@@ -173,14 +173,18 @@ class WebuiApp:
             self.ve.send_event(("calibrate", "exposure"))
             return ""
 
-        @self.app.route("/calibrate_resolution/<string:modo>/<string:param>", methods=["POST"])
+        @self.app.route(
+            "/calibrate_resolution/<string:modo>/<string:param>", methods=["POST"]
+        )
         def calibrate_resolution(modo, param):
             """
             Calibrates the spatial resolution by capturing an image of the calibration pattern of a given diameter or
             by correlating the distance movement with the estimated displacement.
             Valid modos are "photo" and "displacement"
             """
-            self.ve.send_event(("calibrate", ("spatial_resolution", modo, float(param))))
+            self.ve.send_event(
+                ("calibrate", ("spatial_resolution", modo, float(param)))
+            )
             return ""
 
         @self.app.route("/set_exposure/<int:value>", methods=["POST"])

@@ -59,7 +59,14 @@ class ModoOdometro:
 
                 if self.is_running:
                     # Checking again to avoid setting status after is_running was set to False
-                    self.ve.set("pos", {"x": self.acc[0], "y": self.acc[1], "sr": self.ve.spatial_resolution})
+                    self.ve.set(
+                        "pos",
+                        {
+                            "x": self.acc[0],
+                            "y": self.acc[1],
+                            "sr": self.ve.spatial_resolution,
+                        },
+                    )
 
                 self.pending_displacement += new_displacement
                 self.acc += new_displacement

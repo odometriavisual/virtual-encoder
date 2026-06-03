@@ -50,6 +50,7 @@ class CameraNull:
         cur = (bot + top) // 2
         return bot, cur, top
 
+
 class CameraNoise(CameraNull):
     def get_img(self):
         time.sleep(0.1)
@@ -61,10 +62,12 @@ class CameraNoise(CameraNull):
 
         return self.default_frame.copy()
 
+
 class CameraImage(CameraNull):
     def __init__(self, path):
         CameraNull.__init__(self)
         self.default_frame = cv2.imread(path)
+
 
 class CameraDrawing(CameraNull):
     def __init__(self, camera_src):
@@ -79,7 +82,6 @@ class CameraDrawing(CameraNull):
 
     def peek_img(self):
         return self.calib_img.copy()
-        
 
 
 class CameraUDP(CameraNull, threading.Thread):
@@ -156,7 +158,7 @@ try:
     from picamera2 import Picamera2
 
     class CameraPicamera2(CameraNull, threading.Thread):
-        def __init__(self, ve: "VirtualEncoder", exposure: int|None):
+        def __init__(self, ve: "VirtualEncoder", exposure: int | None):
             CameraNull.__init__(self)
             threading.Thread.__init__(self, daemon=True)
 
@@ -242,8 +244,9 @@ try:
 
 except Exception as e:
     import traceback
+
     traceback.print_exception(e)
 
     class CameraPicamera2:
-        def __init__(self, ve: "VirtualEncoder", exposure: int|None):
+        def __init__(self, ve: "VirtualEncoder", exposure: int | None):
             raise NotImplementedError

@@ -25,7 +25,13 @@ try:
 
     class DisplaySSD1306(DisplayNull, threading.Thread):
         def __init__(
-            self, ve: "VirtualEncoder", width=128, height=64, i2c_scl=3, i2c_sda=2, addr=0x3C
+            self,
+            ve: "VirtualEncoder",
+            width=128,
+            height=64,
+            i2c_scl=3,
+            i2c_sda=2,
+            addr=0x3C,
         ):
             DisplayNull.__init__(self)
             threading.Thread.__init__(self, daemon=True)
@@ -39,16 +45,17 @@ try:
             self.addr = addr
 
             self.retry_interval = 4
-            
+
             self.is_connected = False
             self.__connect()
-
 
         def __connect(self):
             try:
                 # Inicializa o display I2C
                 i2c = busio.I2C(self.scl, self.sda)
-                self.oled_i2c = adafruit_ssd1306.SSD1306_I2C(self.width, self.height, i2c, addr=self.addr)
+                self.oled_i2c = adafruit_ssd1306.SSD1306_I2C(
+                    self.width, self.height, i2c, addr=self.addr
+                )
 
                 # Limpa o display
                 self.clear()
@@ -64,8 +71,7 @@ try:
                 self.retry_interval = 4
             except Exception:
                 self.is_connected = False
-                self.retry_interval = min(self.retry_interval*2, 3600)
-            
+                self.retry_interval = min(self.retry_interval * 2, 3600)
 
         def run(self):
             while True:
@@ -99,10 +105,14 @@ try:
             try:
                 # Limpa a linha especificada
                 self.draw.rectangle(
-                    (0, y_position, self.width, y_position + line_height), outline=0, fill=0
+                    (0, y_position, self.width, y_position + line_height),
+                    outline=0,
+                    fill=0,
                 )
                 # Desenha o texto
-                self.draw.text((0, y_position), text, align=align, font=self.font, fill=255)
+                self.draw.text(
+                    (0, y_position), text, align=align, font=self.font, fill=255
+                )
             except Exception:
                 pass
 
@@ -116,11 +126,18 @@ try:
 
 except Exception as e:
     import traceback
+
     traceback.print_exception(e)
 
     class DisplaySSD1306(DisplayNull):
         def __init__(
-            self, ve: "VirtualEncoder", width=128, height=64, i2c_scl=3, i2c_sda=2, addr=0x3C
+            self,
+            ve: "VirtualEncoder",
+            width=128,
+            height=64,
+            i2c_scl=3,
+            i2c_sda=2,
+            addr=0x3C,
         ):
             super().__init__()
             raise NotImplementedError

@@ -72,14 +72,13 @@ try:
 
                 if 0x28 in connected_devices:
                     self.__sensor = adafruit_bno055.BNO055_I2C(i2c, 0x28)
-                elif 0x29 in connected_devices:                
+                elif 0x29 in connected_devices:
                     self.__sensor = adafruit_bno055.BNO055_I2C(i2c, 0x29)
                 else:
                     self.ve.set("imu", False)
 
             except Exception:
                 self.ve.set("imu", False)
-            
 
         def run(self):
             while True:

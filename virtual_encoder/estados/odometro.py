@@ -9,7 +9,9 @@ from virtual_encoder.encoder_gs import EncoderGS
 class EstadoReadyOdometro(Estado):
     def __init__(self, gs: EncoderGS):
         self.gs = gs
-        self.last_displacement_position = np.array([0., 0.])
+
+        self.center_position = np.array([0., 0.])
+        self.position_now = np.array([0., 0.])
 
         self.gs.set("estado", "Ready")
 
@@ -19,19 +21,20 @@ class EstadoReadyOdometro(Estado):
         for i in range(2):
             if pending_displacement[i] > step:
                 self.gs.encoders[i].send_pulse("+")
+                self.position_now[i] += 1
                 pending_displacement[i] -= step
 
             elif pending_displacement[i] < step:
                 self.gs.encoders[i].send_pulse("-")
+                self.position_now[i] += 1
                 pending_displacement[i] += step
 
-        if np.linalg.norm(self.last_displacement_position - pending_displacement) > step:
+        travel_vec = self.position_now - self.center_position
+        travel_dist = np.linalg.norm(travel_vec)
+        if travel_dist > 3:
+            step_dir = travel_vec / travel_dist
+            self.center_position += step_dir
             self.gs.encoders[2].send_pulse("+")
-
-            displacement_step = step * (pending_displacement / np.linalg.norm(pending_displacement))
-
-            self.last_displacement_position += displacement_step
-            pending_displacement -= displacement_step
 
         time.sleep(0.001)
 

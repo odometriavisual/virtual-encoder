@@ -1,5 +1,7 @@
 import { render } from 'preact';
-import { useEffect } from 'preact/hooks'
+import { useEffect } from 'preact/hooks';
+
+import { Log } from './log.jsx';
 
 function Visualization() {
   useEffect(() => {
@@ -33,20 +35,6 @@ function Monitoramento() {
   )
 }
 
-function Log() {
-  useEffect(() => {
-    init_trajectory_graph();
-    init_log();
-  }, []);
-
-  return (
-    <div class="log">
-      <div class="trajectory-container"></div>
-      <div class="log-window"></div>
-      <button>Apagar log</button>
-    </div>
-  )
-}
 
 function Controles() {
   useEffect(() => {
@@ -227,13 +215,12 @@ import { init_imu_canvas, update_imu_canvas } from "./canvas/imu.js";
 import { init_modal_modos } from "./modal/modos.js";
 import { init_modal_desligar } from "./modal/desligar.js";
 import { init_modal_reiniciar } from "./modal/reiniciar.js";
-import { init_log, update_log } from "./log.js";
+import { init_log, update_log } from "./log.jsx";
 import { init_video_feed } from "./video_feed.js";
 import { init_modal_download } from "./modal/download.js";
 import { init_modal_upgrade } from "./modal/upgrade.js";
 import { init_trajectory_graph, update_trajectory_graph } from './trajectory_graph.js';
 import { init_modal_calibracao, update_modal_calibracao } from './modal/calibracao.js';
-import { useEffect } from 'preact/hooks';
 
 
 window.onload = () => {

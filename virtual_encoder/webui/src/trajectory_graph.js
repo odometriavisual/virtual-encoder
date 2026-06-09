@@ -1,72 +1,63 @@
 import * as d3 from "d3";
+import { useEffect, useRef } from "preact/hooks";
 
-let points = [
-];
-let k = 0.05;
+export function TrajectoryGraph({ status, points, set_points, k, set_k }) {
+  const svg_ref = useRef();
 
-const svg = d3.create("svg")
-  .attr("width", "100%")
-  .attr("height", "100%");
+  useEffect(() => {
+    const x = d3.scaleLinear();
+    const y = d3.scaleLinear();
 
-const x = d3.scaleLinear();
-const y = d3.scaleLinear();
+    const build_svg_line = d3.line()
+      .x(ps => x(ps.x))
+      .y(ps => y(ps.y));
 
-const build_svg_line = d3.line()
-  .x(ps => x(ps.x))
-  .y(ps => y(ps.y));
+    const center_g = svg.append("g");
 
-const center_g = svg.append("g");
+    const path = center_g.append("path")
+      .attr("fill", "none")
+      .attr("stroke", "steelblue")
+      .attr("stroke-width", 2)
+      .attr("d", build_svg_line(points));
 
-const path = center_g.append("path")
-  .attr("fill", "none")
-  .attr("stroke", "steelblue")
-  .attr("stroke-width", 2)
-  .attr("d", build_svg_line(points));
+    const zoom = d3.zoom()
+      .on("zoom", ({ transform }) => {
+        set_k(transform.k);
 
-export function init_trajectory_graph() {
-  window.trajectory_container = document.querySelector(".trajectory-container");
+        path
+          .attr("d", build_svg_line(points))
+          .attr("stroke-width", 2 / k);
 
-  const zoom = d3.zoom()
-    .on("zoom", ({ transform }) => {
-      k = transform.k;
+        const cx = window.trajectory_container.clientWidth / 2;
+        const cy = window.trajectory_container.clientHeight / 2;
+        center_g.attr("transform", transform.translate(cx, cy));
+      });
 
-      path
-        .attr("d", build_svg_line(points))
-        .attr("stroke-width", 2 / k);
-
-      const cx = window.trajectory_container.clientWidth / 2;
-      const cy = window.trajectory_container.clientHeight / 2;
-      center_g.attr("transform", transform.translate(cx, cy));
-    });
-
-  const cx = window.trajectory_container.clientWidth / 2;
-  const cy = window.trajectory_container.clientHeight / 2;
-
-  // center_g.attr("transform", `translate(${cx} ${cy})`);
-  svg
-    .call(zoom)
-    .call(zoom.transform, d3.zoomIdentity.translate(cx, cy).scale(k));
-
-  window.trajectory_container.append(svg.node());
-
-  window.addEventListener("resize", () => {
     const cx = window.trajectory_container.clientWidth / 2;
     const cy = window.trajectory_container.clientHeight / 2;
-    center_g.attr("transform", d3.zoomIdentity.translate(cx, cy).scale(k));
-  });
-}
 
-export function update_trajectory_graph(status) {
-  window.trajectory_container.style.display = status.modo === 'Odometro' ? 'block' : 'none';
-  let { x, y, sr } = status.pos;
-  x *= sr;
-  y *= sr;
-  points.push({ x, y, sr })
-  path.attr("d", build_svg_line(points))
+    d3.select(svg_ref.current)
+      .call(zoom)
+      .call(zoom.transform, d3.zoomIdentity.translate(cx, cy).scale(k));
 
-}
+    const on_resize = () => {
+      const cx = window.trajectory_container.clientWidth / 2;
+      const cy = window.trajectory_container.clientHeight / 2;
+      center_g.attr("transform", d3.zoomIdentity.translate(cx, cy).scale(k));
+    };
 
-export function clear_trajectory_graph() {
-  points = [];
-  path.attr("d", build_svg_line(points))
+    window.addEventListener("resize", on_resize);
+
+    return () => {
+      window.removeEventListener("resize", on_resize);
+    };
+  }, []);
+
+  useEffect(() => {
+    path.attr("d", build_svg_line(points));
+  }, [points])
+
+  return (
+    <svg width="100%" height="100%" display={status.modo === 'Odometro' ? 'block' : 'none'} ref={svg_ref} />
+  );
 }

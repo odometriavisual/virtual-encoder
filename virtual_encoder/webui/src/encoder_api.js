@@ -103,13 +103,6 @@ export async function reboot(event, component) {
 }
 
 export async function fetch_status_stream(update_status) {
-  const headers = {
-    'Accept': 'application/json',
-  };
-  const method = 'GET';
-  const keepalive = true;
-
-
   const offline_status = {
     version: "",
     rpi5: false, // { temp: 33., ip: '0.0.0.0', },
@@ -122,35 +115,10 @@ export async function fetch_status_stream(update_status) {
     msg: '',
   };
 
-  while (true) {
-    try {
-      const res = await fetch(`${URL}/status`, { headers, keepalive, method });
-
-      if (res.status !== 200) {
-        update_status(offline_status);
-        await new Promise(resolve => setTimeout(resolve, 5000));
-        continue;
-      }
-
-      const decoder = new TextDecoder();
-      let result = '';
-
-      for await (const chunk of res.body) {
-        result += decoder.decode(chunk, { stream: true });
-        const lines = result.split('\n');
-        result = lines.pop() || '';
-
-        for (const line of lines) {
-          update_status(JSON.parse(line));
-        }
-      }
-    } catch (err) {
-      update_status(offline_status);
-      await new Promise(resolve => setTimeout(resolve, 5000));
-    }
-  }
+  let eventSource = new EventSource(`${URL}/status`);
+  eventSource.onmessage = event => update_status(JSON.parse(event.data));
+  eventSource.onerror = () => update_status(offline_status);
 }
-
 
 export async function get_ensaios(event) {
   event.target.disabled = true;

@@ -81,9 +81,13 @@ class WebuiApp:
             def generate_status():
                 while True:
                     time.sleep(0.05)
-                    yield "".join([json.dumps(self.ve.get_status()), "\n"])
+                    yield f"data: {json.dumps(self.ve.get_status())}\n\n"
 
-            return Response(generate_status(), content_type="application/json")
+            return Response(generate_status(), headers={
+                "X-Accel-Buffering": "no",
+                "Content-Type": "text/event-stream",
+                "Cache-Control": "no-cache",
+            })
 
         @self.app.route("/ensaios", methods=["GET"])
         def get_ensaio():

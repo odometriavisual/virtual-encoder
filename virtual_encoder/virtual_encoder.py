@@ -30,8 +30,7 @@ class VirtualEncoder:
 
         if spatial_resolution_cache_path.is_file():
             try:
-                with open(spatial_resolution_cache_path) as file:
-                    self.spatial_resolution = float(file.read())
+                self.spatial_resolution = float(spatial_resolution_cache_path.read_text())
             except Exception:
                 pass
 
@@ -172,8 +171,7 @@ class VirtualEncoder:
 
         if exposure_cache_path.is_file():
             try:
-                with open(exposure_cache_path) as file:
-                    exposure = int(file.read())
+                exposure = int(exposure_cache_path.read_text())
             except Exception:
                 pass
 

@@ -1,5 +1,7 @@
 import { render } from 'preact';
-import { useEffect } from 'preact/hooks';
+import { useEffect, useState } from 'preact/hooks';
+
+import { fetch_status_stream } from './encoder_api.js'
 
 import { Log } from './log.jsx';
 
@@ -188,11 +190,26 @@ function ModalCalibracao() {
 }
 
 function App() {
+  const error_status = {
+    version: "",
+    rpi5: false, // { temp: 33., ip: '0.0.0.0', },
+    display: false,
+    camera: false,
+    imu: false,
+    pos: { x: 0., y: 0., sr: 1. },
+    modo: 'Desligado',
+    estado: '',
+    msg: '',
+  };
+  const [status, set_status] = useState(error_status);
+
+  useEffect(() => fetch_status_stream(set_status, error_status), []);
+
   return (
     <div class="wrapper">
       <Visualization />
       <Monitoramento />
-      <Log />
+      <Log status={status} />
       <Controles />
 
       <ModalDesligar />
@@ -208,7 +225,6 @@ function App() {
 render(<App />, document.getElementById("app"))
 
 import './style.css'
-import { fetch_status_stream } from './encoder_api.js'
 import { init_controls, update_controls } from "./controls.js"
 import { init_status_watcher, update_status_watcher } from "./status_watcher.js"
 import { init_imu_canvas, update_imu_canvas } from "./canvas/imu.js";
@@ -240,5 +256,4 @@ window.onload = () => {
     update_modal_calibracao(status);
   }
 
-  fetch_status_stream(update_status);
 }

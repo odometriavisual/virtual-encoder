@@ -102,22 +102,10 @@ export async function reboot(event, component) {
   await fetch(`${URL}/reboot/${component}`, { method });
 }
 
-export async function fetch_status_stream(update_status) {
-  const offline_status = {
-    version: "",
-    rpi5: false, // { temp: 33., ip: '0.0.0.0', },
-    display: false,
-    camera: false,
-    imu: false,
-    pos: { x: 0., y: 0., sr: 1. },
-    modo: 'Desligado',
-    estado: '',
-    msg: '',
-  };
-
+export async function fetch_status_stream(set_status, error_status) {
   let eventSource = new EventSource(`${URL}/status`);
-  eventSource.onmessage = event => update_status(JSON.parse(event.data));
-  eventSource.onerror = () => update_status(offline_status);
+  eventSource.onmessage = event => set_status(JSON.parse(event.data));
+  eventSource.onerror = () => set_status(error_status);
 }
 
 export async function get_ensaios(event) {

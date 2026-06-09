@@ -1,0 +1,257 @@
+import { render } from 'preact';
+import { useEffect } from 'preact/hooks'
+
+function Visualization() {
+  useEffect(() => {
+    init_imu_canvas();
+    init_video_feed();
+  }, []);
+
+  return (
+    <div class="visualization">
+      <img src="" alt="" class="video-frame" />
+      <div class="crosshair hidden vertical"></div>
+      <div class="crosshair hidden horizontal"></div>
+    </div>
+  )
+}
+
+function Monitoramento() {
+  useEffect(() => {
+    init_status_watcher();
+  }, []);
+
+  return (
+    <div class="monitoramento">
+      <div>Monitoramento</div>
+      <div class="status rpi5 err">
+        RPi 5
+      </div>
+      <div class="status camera err">Picam</div>
+      <div class="status imu err">IMU</div>
+    </div>
+  )
+}
+
+function Log() {
+  useEffect(() => {
+    init_trajectory_graph();
+    init_log();
+  }, []);
+
+  return (
+    <div class="log">
+      <div class="trajectory-container"></div>
+      <div class="log-window"></div>
+      <button>Apagar log</button>
+    </div>
+  )
+}
+
+function Controles() {
+  useEffect(() => {
+    init_controls();
+  }, []);
+
+  return (
+    <div class="controles">
+      <label class="brilho">
+        <div>Brilho:</div>
+        <input type="button" value="Reset" />
+        <input type="range" min="0" max="10" step="0.05" value="1" />
+      </label>
+
+      <button class="exposicao">Calibrar Exposição</button>
+      <button class="resolucao-espacial">Calibrar Resolução</button>
+      <button class="zerar-deslocamento" style="display: none;" disabled>Zerar deslocamento</button>
+
+      <label class="pulsos-por-segundo">
+        <div>Pulsos/s:</div>
+        <input type="number" value="10" />
+      </label>
+
+      <label class="motivo">
+        <div>Nome da aquisição:</div>
+        <input type="text" value="" placeholder="Opcional" />
+      </label>
+
+      <button class="iniciar-aquisicao" disabled>Iniciar Aquisição</button>
+      <button class="parar-aquisicao" disabled>Parar Aquisição</button>
+      <button class="listar-ensaios" disabled>Baixar Ensaios Gravados</button>
+
+      <button class="toggle-streaming">Toggle Streaming</button>
+      <button class="toggle-calibracao">Toggle Alinhamento</button>
+      <button class="mudar-modo" disabled>Mudar modo</button>
+      <button class="upgrade" disabled>Atualizar Software</button>
+      <button class="reiniciar" disabled>Reiniciar</button>
+      <button class="desligar" disabled>Desligar</button>
+    </div>
+  )
+}
+
+function ModalDesligar() {
+  return (
+    <div class="modal modal-desligar">
+      <div class="modal-content">
+        <span class="modal-titulo">Confirme qual componente você deseja desligar:</span>
+        <span class="modal-close">&times;</span>
+        <button class="encoder">Desligar encoder e câmera subsea</button>
+        <button class="led">Desligar LED</button>
+      </div>
+    </div>
+  )
+}
+
+function ModalReiniciar() {
+  return (
+    <div class="modal modal-reiniciar">
+      <div class="modal-content">
+        <span class="modal-titulo">Confirme qual componente você deseja reiniciar:</span>
+        <span class="modal-close">&times;</span>
+        <button class="encoder">Reiniciar encoder e câmera subsea</button>
+        <button class="led">Reiniciar LED</button>
+      </div>
+    </div>
+  )
+}
+
+function ModalModos() {
+  return (
+    <div class="modal modal-modos">
+      <div class="modal-content">
+        <span class="modal-titulo">Selecione o modo:</span>
+        <span class="modal-close">&times;</span>
+        <button class="modo-tempo">Modo Tempo</button>
+        <button class="modo-odometro">Modo Estimativa em Tempo Real</button>
+      </div>
+    </div>
+  )
+}
+
+function ModalDownload() {
+  return (
+    <div class="modal modal-download">
+      <div class="modal-content">
+        <span class="modal-titulo">Download de ensaios:</span>
+        <span class="modal-close">&times;</span>
+
+        <div class="modal-list">
+        </div>
+
+        <button class="modal-update">Atualizar lista</button>
+      </div>
+    </div>
+  )
+}
+
+function ModalUpgrade() {
+  return (
+    <div class="modal modal-upgrade">
+      <div class="modal-content">
+        <span class="modal-titulo">Atualização de software:</span>
+        <span class="modal-close">&times;</span>
+
+        <span class="modal-info">Envie o arquivo para iniciar atualização:</span>
+        <input type="file" accept=".zip"> </input>
+      </div>
+    </div>
+  )
+}
+
+function ModalCalibracao() {
+  return (
+    <div class="modal modal-calibracao">
+      <div class="modal-content">
+        <span class="modal-titulo">Calibrar resolução espacial</span>
+        <span class="modal-close">&times;</span>
+
+        <section class="calib-foto">
+          <header>
+            <span>Método 1:</span>
+            <span>Aponte a câmera para o padrão de calibração e aperte o botão abaixo:</span>
+          </header>
+          <button class="btn-foto">Calibrar por foto</button>
+        </section>
+
+        <section class="calib-movimento">
+          <header>
+            <span>Método 2:</span>
+            <span>Mova a câmera uma distância conhecida, preencha a tabela e aperte o botão abaixo:</span>
+          </header>
+
+          <label>
+            <span> Distância percorrida (mm): </span>
+            <input class="dist-mm" type="number" min="0" value="1" rer />
+          </label>
+          <div>
+            <span> Distância percorrida (px): </span>
+            <span class="dist-px"></span>
+          </div>
+          <div>
+            <span> Resolução espacial: </span>
+
+            <span class="spatial-res"></span>
+          </div>
+          <button class="btn-movimento">Calibrar por movimento</button>
+        </section>
+      </div>
+    </div>
+  )
+}
+
+function App() {
+  return (
+    <div class="wrapper">
+      <Visualization />
+      <Monitoramento />
+      <Log />
+      <Controles />
+
+      <ModalDesligar />
+      <ModalReiniciar />
+      <ModalModos />
+      <ModalDownload />
+      <ModalUpgrade />
+      <ModalCalibracao />
+    </div>
+  )
+}
+
+render(<App />, document.getElementById("app"))
+
+import './style.css'
+import { fetch_status_stream } from './encoder_api.js'
+import { init_controls, update_controls } from "./controls.js"
+import { init_status_watcher, update_status_watcher } from "./status_watcher.js"
+import { init_imu_canvas, update_imu_canvas } from "./canvas/imu.js";
+import { init_modal_modos } from "./modal/modos.js";
+import { init_modal_desligar } from "./modal/desligar.js";
+import { init_modal_reiniciar } from "./modal/reiniciar.js";
+import { init_log, update_log } from "./log.js";
+import { init_video_feed } from "./video_feed.js";
+import { init_modal_download } from "./modal/download.js";
+import { init_modal_upgrade } from "./modal/upgrade.js";
+import { init_trajectory_graph, update_trajectory_graph } from './trajectory_graph.js';
+import { init_modal_calibracao, update_modal_calibracao } from './modal/calibracao.js';
+import { useEffect } from 'preact/hooks';
+
+
+window.onload = () => {
+  init_modal_modos();
+  init_modal_desligar();
+  init_modal_reiniciar();
+  init_modal_download();
+  init_modal_upgrade();
+  init_modal_calibracao();
+
+  function update_status(status) {
+    update_status_watcher(status);
+    update_controls(status);
+    update_imu_canvas(status);
+    update_log(status);
+    update_trajectory_graph(status);
+    update_modal_calibracao(status);
+  }
+
+  fetch_status_stream(update_status);
+}

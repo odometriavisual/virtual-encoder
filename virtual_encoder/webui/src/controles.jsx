@@ -4,6 +4,50 @@ import { open_modal_download } from "./modal/download.js";
 import { open_modal_upgrade } from "./modal/upgrade.js";
 import { open_modal_calibracao } from "./modal/calibracao.js";
 
+export function Controles({status}) {
+  const [brightness, set_brightness] = useState(1.);
+  
+  useEffect(() => {
+    init_controls();
+  }, []);
+
+  return (
+    <div class="controles">
+      <label class="brilho">
+        <div>Brilho:</div>
+        <input type="button" value="Reset" onClick={() => set_brightness(1.)} />
+        <input type="range" min="0" max="10" step="0.05" value={brightness} onChange={e => set_brightness(e.target.value)} />
+      </label>
+
+      <button class="exposicao" onClick={e => encoder_api.calibrate_exposure(e)}>Calibrar Exposição</button>
+      <button class="resolucao-espacial">Calibrar Resolução</button>
+      <button class="zerar-deslocamento" style="display: none;" disabled>Zerar deslocamento</button>
+
+      <label class="pulsos-por-segundo">
+        <div>Pulsos/s:</div>
+        <input type="number" value="10" />
+      </label>
+
+      <label class="motivo">
+        <div>Nome da aquisição:</div>
+        <input type="text" value="" placeholder="Opcional" />
+      </label>
+
+      <button class="iniciar-aquisicao" disabled>Iniciar Aquisição</button>
+      <button class="parar-aquisicao" disabled>Parar Aquisição</button>
+      <button class="listar-ensaios" disabled>Baixar Ensaios Gravados</button>
+
+      <button class="toggle-streaming">Toggle Streaming</button>
+      <button class="toggle-calibracao">Toggle Alinhamento</button>
+      <button class="mudar-modo" disabled>Mudar modo</button>
+      <button class="upgrade" disabled>Atualizar Software</button>
+      <button class="reiniciar" disabled>Reiniciar</button>
+      <button class="desligar" disabled>Desligar</button>
+    </div>
+  )
+}
+
+
 export function init_controls() {
   window.btns = {
     iniciar_aquisicao: document.querySelector('button.iniciar-aquisicao'),
@@ -29,18 +73,11 @@ export function init_controls() {
   window.pulsos_por_segundo = document.querySelector('.pulsos-por-segundo > input');
   window.motivo = document.querySelector('.motivo > input');
 
-  window.brightness_slider = document.querySelector('.brilho > input[type="range"]');
-  window.brightness_slider.value = 1;
   window.brightness_slider.oninput = () => {
     window.video_frame.style.filter = window.video_frame.style.filter.replace(
       /brightness(.*)/,
       `brightness(${window.brightness_slider.value})`
     );
-  }
-  window.brightness_reset = document.querySelector('.brilho > input[type="button"]');
-  window.brightness_reset.onclick = () => {
-    window.video_frame.style = 'filter: brightness(1.0)';
-    window.brightness_slider.value = 1;
   }
 
   window.btns.zerar_deslocamento.addEventListener('click', async event => {
@@ -80,10 +117,6 @@ export function init_controls() {
   window.toggle_calibracao.addEventListener('click', event =>
     document.querySelectorAll('.crosshair').forEach(e => e.classList.toggle('hidden'))
   );
-
-  window.btns.calibrar_exposicao.addEventListener('click', async event => {
-    encoder_api.calibrate_exposure(event)
-  });
 
   window.btns.calibrar_resolucao.addEventListener('click', event => {
     open_modal_calibracao(event);

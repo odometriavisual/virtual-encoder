@@ -37,48 +37,6 @@ function Monitoramento() {
   )
 }
 
-
-function Controles() {
-  useEffect(() => {
-    init_controls();
-  }, []);
-
-  return (
-    <div class="controles">
-      <label class="brilho">
-        <div>Brilho:</div>
-        <input type="button" value="Reset" />
-        <input type="range" min="0" max="10" step="0.05" value="1" />
-      </label>
-
-      <button class="exposicao">Calibrar Exposição</button>
-      <button class="resolucao-espacial">Calibrar Resolução</button>
-      <button class="zerar-deslocamento" style="display: none;" disabled>Zerar deslocamento</button>
-
-      <label class="pulsos-por-segundo">
-        <div>Pulsos/s:</div>
-        <input type="number" value="10" />
-      </label>
-
-      <label class="motivo">
-        <div>Nome da aquisição:</div>
-        <input type="text" value="" placeholder="Opcional" />
-      </label>
-
-      <button class="iniciar-aquisicao" disabled>Iniciar Aquisição</button>
-      <button class="parar-aquisicao" disabled>Parar Aquisição</button>
-      <button class="listar-ensaios" disabled>Baixar Ensaios Gravados</button>
-
-      <button class="toggle-streaming">Toggle Streaming</button>
-      <button class="toggle-calibracao">Toggle Alinhamento</button>
-      <button class="mudar-modo" disabled>Mudar modo</button>
-      <button class="upgrade" disabled>Atualizar Software</button>
-      <button class="reiniciar" disabled>Reiniciar</button>
-      <button class="desligar" disabled>Desligar</button>
-    </div>
-  )
-}
-
 function ModalDesligar() {
   return (
     <div class="modal modal-desligar">
@@ -210,7 +168,7 @@ function App() {
       <Visualization />
       <Monitoramento />
       <Log status={status} />
-      <Controles />
+      <Controles status={status} />
 
       <ModalDesligar />
       <ModalReiniciar />
@@ -225,7 +183,7 @@ function App() {
 render(<App />, document.getElementById("app"))
 
 import './style.css'
-import { init_controls, update_controls } from "./controls.js"
+import { Controles, init_controls, update_controls } from "./controles.jsx"
 import { init_status_watcher, update_status_watcher } from "./status_watcher.js"
 import { init_imu_canvas, update_imu_canvas } from "./canvas/imu.js";
 import { init_modal_modos } from "./modal/modos.js";
@@ -251,7 +209,6 @@ window.onload = () => {
     update_status_watcher(status);
     update_controls(status);
     update_imu_canvas(status);
-    update_log(status);
     update_trajectory_graph(status);
     update_modal_calibracao(status);
   }

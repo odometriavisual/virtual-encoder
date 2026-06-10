@@ -1,10 +1,47 @@
-import * as THREE from 'three';
+import * as THREE from "three";
 
-export function init_imu_canvas() {
+import { useEffect, useRef } from "preact/hooks";
+
+const VIDEO_URL = process.env.NODE_ENV === "production" ? "/video_feed" : "http://localhost:5000/video_feed";
+
+export function Video({status, brightness}) {
+  const video_ref = useRef();
+  const visualization_ref = useRef();
+
+  useEffect(() => {
+    if (status.imu) {
+      const [w, x, y, z] = status.imu;
+
+      box_parent.quaternion.set(x, y, z, w);
+      box_parent.rotateOnWorldAxis(new THREE.Vector3(0, 0, 1), Math.PI / 2);
+    }
+  }, [status.imu]);
+
+  useEffect(() => {
+    init_imu_canvas(visualization_ref);
+
+    const retry_video = () => video_ref.current.src = VIDEO_URL;
+    const retry_video_interval = setInterval(retry_video, 3*1000);
+
+    () => {
+      clearInterval(retry_video_interval);
+    };
+  }, []);
+
+  return (
+    <div ref={visualization_ref} class="visualization">
+      <img ref={video_ref} style={`filter: brightness(${brightness})`} src="" alt="" class="video-frame" />
+      <div class="crosshair hidden vertical"></div>
+      <div class="crosshair hidden horizontal"></div>
+    </div>
+  )
+}
+
+function init_imu_canvas(wrapper_ref) {
   const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
   renderer.setSize(150, 150);
 
-  document.querySelector('.visualization').appendChild(renderer.domElement);
+  wrapper_ref.current.appendChild(renderer.domElement);
 
   const scene = new THREE.Scene();
   const camera = new THREE.PerspectiveCamera(75, renderer.domElement.width / renderer.domElement.height, 0.1, 1000);
@@ -52,23 +89,10 @@ export function init_imu_canvas() {
   const ambientLight = new THREE.AmbientLight(0xCCCCCC);
   scene.add(ambientLight);
 
-  window.rotation_offset = Math.PI / 2;
-
-  window.set_cube_quat = (x, y, z, w) => {
-    box_parent.quaternion.set(x, y, z, w);
-    box_parent.rotateOnWorldAxis(new THREE.Vector3(0, 0, 1), window.rotation_offset);
-  }
-
   function animate() {
     requestAnimationFrame(animate);
     renderer.render(scene, camera);
   }
-  animate();
-}
 
-export function update_imu_canvas(status) {
-  if (status.imu) {
-    const [w, x, y, z] = status.imu;
-    window.set_cube_quat(x, y, z, w);
-  }
+  animate();
 }

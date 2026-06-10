@@ -1,24 +1,11 @@
+import './style.css'
+
 import { render } from 'preact';
 import { useEffect, useState } from 'preact/hooks';
 
 import { fetch_status_stream } from './encoder_api.js'
 
 import { Log } from './log.jsx';
-
-function Visualization() {
-  useEffect(() => {
-    init_imu_canvas();
-    init_video_feed();
-  }, []);
-
-  return (
-    <div class="visualization">
-      <img src="" alt="" class="video-frame" />
-      <div class="crosshair hidden vertical"></div>
-      <div class="crosshair hidden horizontal"></div>
-    </div>
-  )
-}
 
 function Monitoramento() {
   useEffect(() => {
@@ -165,7 +152,7 @@ function App() {
 
   return (
     <div class="wrapper">
-      <Visualization />
+      <Video status={status} brigthness={brigthness} />
       <Monitoramento />
       <Log status={status} />
       <Controles status={status} />
@@ -181,20 +168,6 @@ function App() {
 }
 
 render(<App />, document.getElementById("app"))
-
-import './style.css'
-import { Controles, init_controls, update_controls } from "./controles.jsx"
-import { init_status_watcher, update_status_watcher } from "./status_watcher.js"
-import { init_imu_canvas, update_imu_canvas } from "./canvas/imu.js";
-import { init_modal_modos } from "./modal/modos.js";
-import { init_modal_desligar } from "./modal/desligar.js";
-import { init_modal_reiniciar } from "./modal/reiniciar.js";
-import { init_log, update_log } from "./log.jsx";
-import { init_video_feed } from "./video_feed.js";
-import { init_modal_download } from "./modal/download.js";
-import { init_modal_upgrade } from "./modal/upgrade.js";
-import { init_trajectory_graph, update_trajectory_graph } from './trajectory_graph.js';
-import { init_modal_calibracao, update_modal_calibracao } from './modal/calibracao.js';
 
 
 window.onload = () => {

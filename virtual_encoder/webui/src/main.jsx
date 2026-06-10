@@ -7,23 +7,6 @@ import { fetch_status_stream } from './encoder_api.js'
 
 import { Log } from './log.jsx';
 
-function Monitoramento() {
-  useEffect(() => {
-    init_status_watcher();
-  }, []);
-
-  return (
-    <div class="monitoramento">
-      <div>Monitoramento</div>
-      <div class="status rpi5 err">
-        RPi 5
-      </div>
-      <div class="status camera err">Picam</div>
-      <div class="status imu err">IMU</div>
-    </div>
-  )
-}
-
 function ModalDesligar() {
   return (
     <div class="modal modal-desligar">
@@ -153,7 +136,7 @@ function App() {
   return (
     <div class="wrapper">
       <Video status={status} brigthness={brigthness} />
-      <Monitoramento />
+      <Monitoramento status={status} />
       <Log status={status} />
       <Controles status={status} />
 

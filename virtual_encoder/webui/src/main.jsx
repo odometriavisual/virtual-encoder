@@ -6,6 +6,7 @@ import { useEffect, useState } from 'preact/hooks';
 import { fetch_status_stream } from './encoder_api.js'
 
 import { Log } from './log.jsx';
+import { EncoderContext } from './encoder_context.jsx';
 
 function ModalDesligar() {
   return (
@@ -129,23 +130,37 @@ function App() {
     estado: '',
     msg: '',
   };
-  const [status, set_status] = useState(error_status);
 
-  useEffect(() => fetch_status_stream(set_status, error_status), []);
+  const [status, set_status] = useState(error_status);
+  const [brightness, set_brightness] = useState(1.0);
+  const [log, set_log] = useState([]);
+
+  const [points, set_points] = useState([]);
+  const [k, set_k] = useState(0.05);
+
+  const encoder_context_value = {
+    status, set_status,
+    brightness, set_brightness,
+    log, set_log,
+    points, set_points,
+    k, set_k,
+  };
 
   return (
     <div class="wrapper">
-      <Video status={status} brigthness={brigthness} />
-      <Monitoramento status={status} />
-      <Log status={status} />
-      <Controles status={status} />
+      <EncoderContext.Provider value={encoder_context_value}>
+        <Video />
+        <Monitoramento />
+        <Log />
+        <Controles />
 
-      <ModalDesligar />
-      <ModalReiniciar />
-      <ModalModos />
-      <ModalDownload />
-      <ModalUpgrade />
-      <ModalCalibracao />
+        <ModalDesligar />
+        <ModalReiniciar />
+        <ModalModos />
+        <ModalDownload />
+        <ModalUpgrade />
+        <ModalCalibracao />
+      </EncoderContext.Provider>
     </div>
   )
 }

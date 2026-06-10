@@ -1,11 +1,14 @@
 import { useEffect, useState } from 'preact/hooks'
 import { TrajectoryGraph } from './trajectory_graph';
+import { useEncoder } from './encoder_context';
 
-export function Log({ status }) {
-  const [log, set_log] = useState([]);
-
-  const [points, set_points] = useState([]);
-  const [k, set_k] = useState(0.05);
+export function Log() {
+  const {
+    log, set_log,
+    points, set_points,
+    k, set_k,
+    status,
+  } = useEncoder();
 
   useEffect(() => {
     set_points(p => {
@@ -22,10 +25,10 @@ export function Log({ status }) {
         let new_val = [...val];
 
         for (const line of status.msg.split("\n")) {
-          new_val.append(line);          
-        } 
+          new_val.append(line);
+        }
 
-        return new_val;        
+        return new_val;
       })
     }
   }, [status.msg])

@@ -3,10 +3,16 @@ import * as trajectory_graph from "./trajectory_graph.js";
 import { open_modal_download } from "./modal/download.js";
 import { open_modal_upgrade } from "./modal/upgrade.js";
 import { open_modal_calibracao } from "./modal/calibracao.js";
+import { useEncoder } from "./encoder_context.jsx";
 
-export function Controles({status}) {
-  const [brightness, set_brightness] = useState(1.);
-  
+export function Controles() {
+  const {
+    brightness, set_brightness,
+    pulsos_por_segundo, set_pulsos_por_segundo,
+    nome_ensaio, set_nome_ensaio,
+    status,
+  } = useEncoder();
+
   useEffect(() => {
     init_controls();
   }, []);
@@ -49,36 +55,11 @@ export function Controles({status}) {
 
 
 export function init_controls() {
-  window.btns = {
-    iniciar_aquisicao: document.querySelector('button.iniciar-aquisicao'),
-    parar_aquisicao: document.querySelector('button.parar-aquisicao'),
-    mudar_modo: document.querySelector('button.mudar-modo'),
-    reiniciar: document.querySelector('button.reiniciar'),
-    desligar: document.querySelector('button.desligar'),
-    upgrade: document.querySelector('button.upgrade'),
-    calibrar_exposicao: document.querySelector('.exposicao'),
-    calibrar_resolucao: document.querySelector('.resolucao-espacial'),
-    listar_ensaios: document.querySelector('button.listar-ensaios'),
-    zerar_deslocamento: document.querySelector('button.zerar-deslocamento'),
-  };
-
   for (let [_, btn] of Object.entries(window.btns)) {
     btn.disabled = true;
     btn.debounce_id = null;
   }
 
-  window.toggle_streaming = document.querySelector('button.toggle-streaming');
-  window.toggle_calibracao = document.querySelector('button.toggle-calibracao');
-
-  window.pulsos_por_segundo = document.querySelector('.pulsos-por-segundo > input');
-  window.motivo = document.querySelector('.motivo > input');
-
-  window.brightness_slider.oninput = () => {
-    window.video_frame.style.filter = window.video_frame.style.filter.replace(
-      /brightness(.*)/,
-      `brightness(${window.brightness_slider.value})`
-    );
-  }
 
   window.btns.zerar_deslocamento.addEventListener('click', async event => {
     await encoder_api.reset_position(event);
@@ -93,6 +74,7 @@ export function init_controls() {
     const reason = window.motivo.value;
     encoder_api.start_acquisition(event, pps, reason);
   })
+
   window.btns.parar_aquisicao.addEventListener('click', event => {
     encoder_api.stop_acquisition(event);
   })

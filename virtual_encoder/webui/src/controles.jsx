@@ -10,12 +10,32 @@ export function Controles() {
     brightness, set_brightness,
     pulsos_por_segundo, set_pulsos_por_segundo,
     nome_ensaio, set_nome_ensaio,
+    set_points,
     status,
+    set_modal,
   } = useEncoder();
 
   useEffect(() => {
     init_controls();
   }, []);
+
+  const zerar_deslocamentos = async ev => {
+    await encoder_api.reset_position(ev);
+    set_points([]);
+  };
+
+  const iniciar_aquisicao = async event => {
+    await encoder_api.reset_position(event);
+    set_points([]);
+
+    const pps = parseInt(window.pulsos_por_segundo.value);
+    const reason = window.motivo.value;
+    encoder_api.start_acquisition(event, pps, reason);
+  };
+
+  const parar_aquisicao = event => {
+    encoder_api.stop_acquisition(event);
+  };
 
   return (
     <div class="controles">
@@ -26,8 +46,8 @@ export function Controles() {
       </label>
 
       <button class="exposicao" onClick={e => encoder_api.calibrate_exposure(e)}>Calibrar Exposição</button>
-      <button class="resolucao-espacial">Calibrar Resolução</button>
-      <button class="zerar-deslocamento" style="display: none;" disabled>Zerar deslocamento</button>
+      <button class="resolucao-espacial" onClick={() => set_modal("calibracao")}>Calibrar Resolução</button>
+      <button class="zerar-deslocamento" style="display: none;" onClick={zerar_deslocamentos} disabled>Zerar deslocamento</button>
 
       <label class="pulsos-por-segundo">
         <div>Pulsos/s:</div>
@@ -39,20 +59,19 @@ export function Controles() {
         <input type="text" value="" placeholder="Opcional" />
       </label>
 
-      <button class="iniciar-aquisicao" disabled>Iniciar Aquisição</button>
-      <button class="parar-aquisicao" disabled>Parar Aquisição</button>
-      <button class="listar-ensaios" disabled>Baixar Ensaios Gravados</button>
+      <button class="iniciar-aquisicao" onClick={iniciar_aquisicao} disabled>Iniciar Aquisição</button>
+      <button class="parar-aquisicao" onClick={parar_aquisicao} disabled>Parar Aquisição</button>
+      <button class="listar-ensaios" onClick={() => set_modal("download")} disabled>Baixar Ensaios Gravados</button>
 
       <button class="toggle-streaming">Toggle Streaming</button>
       <button class="toggle-calibracao">Toggle Alinhamento</button>
-      <button class="mudar-modo" disabled>Mudar modo</button>
-      <button class="upgrade" disabled>Atualizar Software</button>
-      <button class="reiniciar" disabled>Reiniciar</button>
-      <button class="desligar" disabled>Desligar</button>
+      <button class="mudar-modo" onClick={() => set_modal("modo")} disabled>Mudar modo</button>
+      <button class="upgrade" onClick={() => set_modal("upgrade")} disabled>Atualizar Software</button>
+      <button class="reiniciar" onClick={() => set_modal("reiniciar")} disabled>Reiniciar</button>
+      <button class="desligar" onClick={() => set_modal("desligar")} disabled>Desligar</button>
     </div>
   )
 }
-
 
 export function init_controls() {
   for (let [_, btn] of Object.entries(window.btns)) {
@@ -60,30 +79,6 @@ export function init_controls() {
     btn.debounce_id = null;
   }
 
-
-  window.btns.zerar_deslocamento.addEventListener('click', async event => {
-    await encoder_api.reset_position(event);
-    trajectory_graph.clear_trajectory_graph();
-  });
-
-  window.btns.iniciar_aquisicao.addEventListener('click', async event => {
-    await encoder_api.reset_position(event);
-    trajectory_graph.clear_trajectory_graph();
-
-    const pps = parseInt(window.pulsos_por_segundo.value);
-    const reason = window.motivo.value;
-    encoder_api.start_acquisition(event, pps, reason);
-  })
-
-  window.btns.parar_aquisicao.addEventListener('click', event => {
-    encoder_api.stop_acquisition(event);
-  })
-
-  window.btns.mudar_modo.addEventListener('click', event => window.modal_modos.modal.style.display = 'block');
-  window.btns.desligar.addEventListener('click', event => window.modal_desligar.modal.style.display = 'block');
-  window.btns.reiniciar.addEventListener('click', event => window.modal_reiniciar.modal.style.display = 'block');
-  window.btns.listar_ensaios.addEventListener('click', event => open_modal_download(event));
-  window.btns.upgrade.addEventListener('click', event => open_modal_upgrade());
 
   window.streaming_enabled = true;
   window.toggle_streaming.addEventListener('click', async event => {
@@ -99,15 +94,6 @@ export function init_controls() {
   window.toggle_calibracao.addEventListener('click', event =>
     document.querySelectorAll('.crosshair').forEach(e => e.classList.toggle('hidden'))
   );
-
-  window.btns.calibrar_resolucao.addEventListener('click', event => {
-    open_modal_calibracao(event);
-  });
-
-  window.log_clear.addEventListener('click', () => {
-    window.log_text.innerText = '';
-    trajectory_graph.clear_trajectory_graph();
-  });
 }
 
 export function update_controls(status) {

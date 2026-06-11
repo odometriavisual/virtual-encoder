@@ -37,7 +37,7 @@ export function Controles() {
       <label class="brilho">
         <div>Brilho:</div>
         <input type="button" value="Reset" onClick={() => set_brightness(1.)} />
-        <input type="range" min="0" max="10" step="0.05" value={brightness} onChange={e => set_brightness(e.target.value)} />
+        <input type="range" min="0" max="10" step="0.05" value={brightness} onInput={e => set_brightness(e.target.value)} />
       </label>
 
       <button class="exposicao" onClick={e => encoder_api.calibrate_exposure(e)}>Calibrar Exposição</button>

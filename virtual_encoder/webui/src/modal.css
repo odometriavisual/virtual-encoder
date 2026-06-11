@@ -1,0 +1,167 @@
+ .modal {
+   position: fixed;
+   z-index: 1;
+   padding-top: 100px;
+   left: 0;
+   top: 0;
+   width: 100%;
+   height: 100%;
+   overflow: auto;
+   background-color: rgba(0, 0, 0, 0.4);
+
+   .modal-content {
+     background-color: #fefefe;
+     margin: auto;
+     padding: 20px;
+     border: 1px solid #888;
+     width: 80%;
+
+     display: grid;
+     grid-template-rows: min(64px, auto) auto;
+     grid-template-columns: repeat(2, 1fr);
+     grid-gap: 16px;
+
+     .modal-close {
+       justify-self: end;
+       grid-area: 1 / -2;
+
+       user-select: none;
+       font-size: 42px;
+       font-weight: bold;
+       color: #aaaaaa;
+
+       &:hover {
+         cursor: pointer;
+       }
+     }
+
+     .modal-titulo {
+       grid-area: 1 / 1 / 1 / -1;
+       max-width: calc(100% - 1em);
+       user-select: none;
+       font-size: 36px;
+       font-weight: bold;
+     }
+
+     button {
+       grid-area: 2;
+       height: 150px;
+     }
+   }
+
+   .modal-modos {
+     width: 40%;
+   }
+
+   .modal-download {
+     width: 40%;
+     grid-template-rows: auto 50vh 3em;
+
+     .modal-list {
+       grid-column: span 3;
+       overflow: scroll;
+       scrollbar-gutter: stable;
+     }
+
+     .modal-row {
+       display: flex;
+       justify-content: space-between;
+
+       padding: 12px;
+       background-color: 1px solid #aaaaaa;
+       user-select: none;
+       border: 1px solid transparent;
+
+       &:nth-child(odd) {
+         background-color: #c6c6c6;
+       }
+
+       a {
+         cursor: pointer;
+         text-decoration: none;
+         align-self: center;
+         font-size: 1em;
+
+         &:hover {
+           text-decoration: underline;
+
+         }
+       }
+
+       button {
+         height: auto;
+       }
+     }
+
+     .modal-update {
+       grid-area: 3 / 1 / span 1 / span 3;
+       height: auto;
+     }
+   }
+
+   .modal-upgrade {
+     width: 40%;
+
+     input {
+       grid-area: 3 / 1 / auto / span 3;
+     }
+
+     .modal-info {
+       grid-area: 2 / 1 / auto / span 3;
+     }
+   }
+
+   .modal-calibracao {
+     width: 45%;
+
+     grid-template-columns: repeat(2, 1fr);
+     grid-template-rows: repeat(2, auto);
+
+     section {
+       border: 2px solid hsl(0deg, 0%, 60%);
+       border-radius: 8px;
+       padding: 16px;
+
+       display: flex;
+       flex-direction: column;
+       justify-content: space-between;
+
+       header {
+         display: flex;
+         flex-direction: column;
+         align-items: start;
+
+         margin-bottom: 2em;
+
+         >span:first-child {
+           font-size: 1em;
+           font-weight: bold;
+         }
+       }
+
+       .btn-foto,
+       .btn-movimento {
+         height: 4em;
+         margin-top: 1em;
+       }
+
+       label,
+       div {
+         padding: 8px 16px;
+
+         display: flex;
+         flex-direction: row;
+         justify-content: space-between;
+         align-items: center;
+
+         input {
+           width: 5em;
+         }
+
+         span {
+           font-size: 0.9em;
+         }
+       }
+     }
+   }
+ }

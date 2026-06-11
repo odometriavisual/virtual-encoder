@@ -1,11 +1,14 @@
 import { createContext } from "preact";
-import { useContext } from "preact/hooks";
+import { useContext, useEffect } from "preact/hooks";
 import { fetch_status_stream } from "./encoder_api";
 
 export const EncoderContext = createContext();
 
 export function useEncoder() {
-  useEffect(() => fetch_status_stream(set_status, error_status), []);
+  const context = useContext(EncoderContext);
 
-  return useContext(EncoderContext);
+  useEffect(() => fetch_status_stream(context.set_status, context.error_status), []);
+
+  return context;
+
 }

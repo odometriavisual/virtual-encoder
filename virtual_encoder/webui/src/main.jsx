@@ -1,13 +1,16 @@
-import './style.css'
+import "./style.css"
 
-import { render } from 'preact';
-import { useEffect, useState } from 'preact/hooks';
+import { render } from "preact";
+import { useEffect, useState } from "preact/hooks";
 
-import { fetch_status_stream } from './encoder_api.js'
+import { fetch_status_stream } from "./encoder_api.js"
 
-import { EncoderContext, useEncoder } from './encoder_context.jsx';
-import { Log } from './log.jsx';
-import { Modal } from './modal.jsx';
+import { EncoderContext, useEncoder } from "./encoder_context.jsx";
+import { Log } from "./log.jsx";
+import { Modal } from "./modal.jsx";
+import { Video } from "./video.jsx";
+import { Monitoramento } from "./monitoramento.jsx";
+import{ Controles } from "./controles.jsx";
 
 function App() {
   const error_status = {
@@ -27,16 +30,14 @@ function App() {
   const [log, set_log] = useState([]);
 
   const [points, set_points] = useState([]);
-  const [k, set_k] = useState(0.05);
 
   const [modal, set_modal] = useState(null);
 
   const encoder_context_value = {
-    status, set_status,
+    status, set_status, error_status,
     brightness, set_brightness,
     log, set_log,
     points, set_points,
-    k, set_k,
     modal, set_modal,
   };
 

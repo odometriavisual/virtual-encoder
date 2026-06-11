@@ -1,3 +1,5 @@
+import { useEncoder } from "./encoder_context";
+
 function ok(predicate) {
   return predicate ? "ok" : "err";
 }
@@ -6,7 +8,9 @@ function warn(predicate) {
   return predicate ? "warn" : "";
 }
 
-export function Monitoramento({ status }) {
+export function Monitoramento() {
+  const { status } = useEncoder();
+
   const sr = status?.pos?.sr || 0;
   const x = status?.pos?.x * sr || 0;
   const y = status?.pos?.y * sr || 0;

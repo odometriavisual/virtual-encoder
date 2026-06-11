@@ -1,23 +1,12 @@
-import { useEffect, useState } from 'preact/hooks'
+import { useEffect, useRef, useState } from 'preact/hooks'
 import { TrajectoryGraph } from './trajectory_graph';
 import { useEncoder } from './encoder_context';
 
 export function Log() {
   const {
     log, set_log,
-    points, set_points,
-    k, set_k,
     status,
   } = useEncoder();
-
-  useEffect(() => {
-    set_points(p => {
-      x = status.pos.x * status.pos.sr;
-      y = status.pos.y * status.pos.sr;
-
-      return [...p, { x, y, sr }];
-    });
-  }, [status.x, status.y, status.sr])
 
   useEffect(() => {
     if (status.msg.length > 0) {
@@ -33,10 +22,12 @@ export function Log() {
     }
   }, [status.msg])
 
+  const trajectory_container_ref = useRef();
+
   return (
     <div class="log">
-      <div class="trajectory-container">
-        <TrajectoryGraph status={status} points={points} set_points={set_points} k={k} set_k={k} />
+      <div class="trajectory-container" ref={trajectory_container_ref}>
+        <TrajectoryGraph parent_ref={trajectory_container_ref} />
       </div>
       <div class="log-window">
         {log.map(line => <div class="log-line">{line}</div>)}

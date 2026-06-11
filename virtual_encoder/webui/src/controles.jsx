@@ -1,9 +1,8 @@
 import * as encoder_api from "./encoder_api.js";
-import * as trajectory_graph from "./trajectory_graph.js";
-import { open_modal_download } from "./modal/download.js";
-import { open_modal_upgrade } from "./modal/upgrade.js";
-import { open_modal_calibracao } from "./modal/calibracao.js";
+import * as trajectory_graph from "./trajectory_graph.jsx";
+
 import { useEncoder } from "./encoder_context.jsx";
+import { useEffect } from "preact/hooks";
 
 export function Controles() {
   const {
@@ -14,10 +13,6 @@ export function Controles() {
     status,
     set_modal,
   } = useEncoder();
-
-  useEffect(() => {
-    init_controls();
-  }, []);
 
   const zerar_deslocamentos = async ev => {
     await encoder_api.reset_position(ev);

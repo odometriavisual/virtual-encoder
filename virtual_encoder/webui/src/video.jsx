@@ -1,10 +1,13 @@
 import * as THREE from "three";
 
 import { useEffect, useRef } from "preact/hooks";
+import { useEncoder } from "./encoder_context";
 
 const VIDEO_URL = process.env.NODE_ENV === "production" ? "/video_feed" : "http://localhost:5000/video_feed";
 
-export function Video({status, brightness}) {
+export function Video() {
+  const { status, brightness } = useEncoder();
+  
   const video_ref = useRef();
   const visualization_ref = useRef();
 

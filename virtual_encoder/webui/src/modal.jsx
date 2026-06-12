@@ -33,13 +33,20 @@ function ModalReiniciar() {
 
 function ModalModos() {
   const { set_modal } = useEncoder();
+
+  const change_modo = modo => {
+    return ev => {
+      encoder_api.set_modo(ev, modo);
+      set_modal(null);
+    }
+  }
   
   return (
     <div class="modal-content modal-modos">
       <span class="modal-titulo">Selecione o modo:</span>
       <span class="modal-close" onClick={() => set_modal(null)}>&times;</span>
-      <button class="modo-tempo">Modo Tempo</button>
-      <button class="modo-odometro">Modo Estimativa em Tempo Real</button>
+      <button class="modo-tempo" onClick={change_modo("Tempo")} >Modo Tempo</button>
+      <button class="modo-odometro" onClick={change_modo("Odometro")}>Modo Estimativa em Tempo Real</button>
     </div>
   )
 }
@@ -136,7 +143,7 @@ function SwitchModal({ modal }) {
     case "reiniciar":
       return <ModalReiniciar />;
 
-    case "modos":
+    case "modo":
       return <ModalModos />;
 
     case "download":
@@ -162,7 +169,9 @@ export function Modal() {
     }
   }
 
-  if (modal === null) return null;
+  if (modal === null) {
+    return null;
+  }
 
   return (
     <div onClick={close_on_click_outside} class="modal">

@@ -15,7 +15,7 @@ export function TrajectoryGraph({ parent_ref }) {
 
       return [...p, { x, y, sr }];
     });
-  }, [status.x, status.y, status.sr])
+  }, [status.pos.x, status.pos.y, status.pos.sr])
 
   useEffect(() => {
     const svg = d3.select(svg_ref.current);
@@ -37,9 +37,7 @@ export function TrajectoryGraph({ parent_ref }) {
 
     const zoom = d3.zoom()
       .on("zoom", ({ transform }) => {
-        path
-          .attr("d", build_svg_line(points))
-          .attr("stroke-width", 2 / transform.k);
+        path.attr("stroke-width", 2 / transform.k);
 
         const cx = parent_ref.current.clientWidth / 2;
         const cy = parent_ref.current.clientHeight / 2;
@@ -55,7 +53,7 @@ export function TrajectoryGraph({ parent_ref }) {
     const on_resize = () => {
       const cx = parent_ref.current.clientWidth / 2;
       const cy = parent_ref.current.clientHeight / 2;
-      center_g.attr("transform", d3.zoomIdentity.translate(cx, cy).scale(k));
+      center_g.attr("transform", d3.zoomIdentity.translate(cx, cy).scale(0.05));
     };
 
     window.addEventListener("resize", on_resize);
@@ -66,6 +64,7 @@ export function TrajectoryGraph({ parent_ref }) {
 
     return () => {
       window.removeEventListener("resize", on_resize);
+      svg_ref.current.innerHTML = "";
     };
   }, []);
 

@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'preact/hooks'
+import { useEffect, useRef } from 'preact/hooks'
 import { TrajectoryGraph } from './trajectory_graph';
 import { useEncoder } from './encoder_context';
 
@@ -13,8 +13,8 @@ export function Log() {
       set_log(val => {
         let new_val = [...val];
 
-        for (const line of status.msg.split("\n")) {
-          new_val.append(line);
+        for (const line of status.msg.trim().split("\n")) {
+          new_val.push(line);
         }
 
         return new_val;

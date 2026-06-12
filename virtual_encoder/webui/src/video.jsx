@@ -22,8 +22,10 @@ export function Video() {
 
   useEffect(() => {
     init_imu_canvas(visualization_ref);
+  }, []);
 
-    const retry_video = () => video_ref.current.src = VIDEO_URL;
+  useEffect(() => {
+    const retry_video = () =>  video_ref.current.src = VIDEO_URL + "?t=" + Date.now();
     const retry_video_interval = setInterval(retry_video, 3*1000);
 
     () => {

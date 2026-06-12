@@ -33,7 +33,6 @@ export function Log() {
         {log.map(line => <div class="log-line">{line}</div>)}
       </div>
       <button onClick={() => set_log([])}> Apagar log </button>
-      <button onClick={() => set_points([])}> Apagar Trajetória </button>
     </div>
   )
 }

@@ -93,6 +93,13 @@
        }
      }
 
+     .modal-row.deleted>a {
+       text-decoration: line-through;
+       color: red;
+       cursor: auto;
+       pointer-events: none;
+     }
+
      .modal-update {
        grid-area: 3 / 1 / span 1 / span 3;
        height: auto;

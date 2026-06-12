@@ -7,26 +7,40 @@ import * as encoder_api from "./encoder_api.js";
 
 function ModalDesligar() {
   const { set_modal } = useEncoder();
-  
+
+  const shutdown = component => {
+    return ev => {
+      encoder_api.shutdown(ev, component);
+      set_modal(null);
+    };
+  };
+
   return (
     <div class="modal-content">
       <span class="modal-titulo">Confirme qual componente você deseja desligar:</span>
       <span class="modal-close" onClick={() => set_modal(null)}>&times;</span>
-      <button class="encoder">Desligar encoder e câmera subsea</button>
-      <button class="led">Desligar LED</button>
+      <button class="encoder" onClick={shutdown("all")}>Desligar encoder e câmera subsea</button>
+      <button class="led" onClick={shutdown("led")}>Desligar LED</button>
     </div>
   )
 }
 
 function ModalReiniciar() {
   const { set_modal } = useEncoder();
-  
+
+  const reboot = component => {
+    return ev => {
+      encoder_api.shutdown(ev, component);
+      set_modal(null);
+    };
+  };
+
   return (
     <div class="modal-content">
       <span class="modal-titulo">Confirme qual componente você deseja reiniciar:</span>
       <span class="modal-close" onClick={() => set_modal(null)}>&times;</span>
-      <button class="encoder">Reiniciar encoder e câmera subsea</button>
-      <button class="led">Reiniciar LED</button>
+      <button class="encoder" onClick={reboot("all")}> Reiniciar encoder e câmera subsea </button>
+      <button class="led" onClick={reboot("led")}> Reiniciar LED </button>
     </div>
   )
 }
@@ -40,7 +54,7 @@ function ModalModos() {
       set_modal(null);
     }
   }
-  
+
   return (
     <div class="modal-content modal-modos">
       <span class="modal-titulo">Selecione o modo:</span>
@@ -53,23 +67,81 @@ function ModalModos() {
 
 function ModalDownload() {
   const { set_modal } = useEncoder();
-  
+
+  const [ensaios, set_ensaios] = useState([]);
+
+  const update = ev => {
+    encoder_api.get_ensaios(ev).then(res => set_ensaios(
+      res.map(name => { return {name: name, deleted: false}; })
+    ));
+  };
+
+  const delete_ensaio = e => {
+    return async ev => {
+      if (confirm(`Deseja realmente deletar ${e.name}?`)) {
+        await encoder_api.remove_ensaio(ev, e.name);
+
+        set_ensaios(ensaios => {
+          let new_ensaios = [...ensaios];
+
+          for (const i in new_ensaios) {
+            if (new_ensaios[i].name == e.name) {
+              new_ensaios[i].deleted = true;
+            }
+          }
+
+          return new_ensaios;
+        });
+      }
+    };
+  };
+
+  const restore_ensaio = e => {
+    return async ev => {
+      await encoder_api.restore_ensaio(ev, e.name);
+
+      set_ensaios(ensaios => {
+        let new_ensaios = [...ensaios];
+        
+        for (const i in new_ensaios) {
+          if (new_ensaios[i].name == e.name) {
+            new_ensaios[i].deleted = false;
+          }
+        }
+
+        return new_ensaios;
+      });
+    }
+  };
+
   return (
     <div class="modal-content modal-download">
       <span class="modal-titulo">Download de ensaios:</span>
-      <span class="modal-close" onClick={() => set_modal(null)}>&times;</span>
+      <span class="modal-close" onClick={() => set_modal(null)}> &times; </span>
 
       <div class="modal-list">
+        {
+          ensaios.map(e => 
+            <div key={e.name} className={`modal-row ${e.deleted ? "deleted" : ""}`}>
+              <a href={`ensaios/${e.name}`}> {e.name} </a>
+              {e.deleted ?
+                <button onClick={restore_ensaio(e)}> Restaurar </button>
+                :
+                <button onClick={delete_ensaio(e)}> Deletar </button>
+              }
+            </div>
+          )
+        }
       </div>
 
-      <button class="modal-update">Atualizar lista</button>
+      <button class="modal-update" onClick={update}> Atualizar lista </button>
     </div>
   )
 }
 
 function ModalUpgrade() {
   const { set_modal } = useEncoder();
-  
+
   return (
     <div class="modal-content modal-upgrade">
       <span class="modal-titulo">Atualização de software:</span>
@@ -85,8 +157,8 @@ function ModalCalibracao() {
   const { set_modal, status } = useEncoder();
   const [dist_mm, set_dist_mm] = useState(1);
 
-  const r = Math.sqrt(status.pos.x*status.pos.x + status.pos.y*status.pos.y).toFixed(2);
-  const spatial_res = r/dist_mm;
+  const r = Math.sqrt(status.pos.x * status.pos.x + status.pos.y * status.pos.y).toFixed(2);
+  const spatial_res = r / dist_mm;
 
   const calibrate_photo = ev => {
     encoder_api.calibrate_resolution(ev, "photo", 8);
@@ -97,7 +169,7 @@ function ModalCalibracao() {
     encoder_api.calibrate_resolution(ev, "displacement", spatial_res);
     set_modal(null);
   };
-  
+
   return (
     <div class="modal-content modal-calibracao">
       <span class="modal-titulo">Calibrar resolução espacial</span>
@@ -129,7 +201,7 @@ function ModalCalibracao() {
           <span> Resolução espacial:</span>
           <span class="spatial-res">{spatial_res.toFixed(2)} px/mm</span>
         </div>
-        <button class="btn-movimento" disabled={!isFinite(r/dist_mm)} onClick={calibrate_displacement}>Calibrar por movimento</button>
+        <button class="btn-movimento" disabled={!isFinite(r / dist_mm)} onClick={calibrate_displacement}>Calibrar por movimento</button>
       </section>
     </div>
   )

@@ -125,9 +125,22 @@ export async function reboot(event, component) {
 }
 
 export async function fetch_status_stream(set_status, error_status) {
-  let eventSource = new EventSource(`${URL}/status`);
-  eventSource.onmessage = event => set_status(JSON.parse(event.data));
-  eventSource.onerror = () => set_status(error_status);
+  let eventSource;
+
+  const open_event_source = () => {
+    if (eventSource) {
+      eventSource.close();
+    }
+    eventSource = new EventSource(`${URL}/status`);
+    eventSource.onmessage = event => set_status(JSON.parse(event.data));
+    eventSource.onerror = async () => {
+      set_status(error_status);
+      await new Promise(res => setTimeout(res, 3 * 1000));
+      open_event_source();
+    };
+  };
+
+  open_event_source();
 }
 
 export async function get_ensaios(event) {

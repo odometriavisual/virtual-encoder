@@ -28,6 +28,8 @@ export function Video() {
     const retry_video = () =>  video_ref.current.src = VIDEO_URL + "?t=" + Date.now();
     const retry_video_interval = setInterval(retry_video, 3*1000);
 
+    retry_video();
+
     () => {
       clearInterval(retry_video_interval);
     };

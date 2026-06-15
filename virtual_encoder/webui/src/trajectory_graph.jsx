@@ -50,20 +50,11 @@ export function TrajectoryGraph({ parent_ref }) {
     svg.call(zoom)
       .call(zoom.transform, d3.zoomIdentity.translate(cx, cy).scale(0.05));
 
-    const on_resize = () => {
-      const cx = parent_ref.current.clientWidth / 2;
-      const cy = parent_ref.current.clientHeight / 2;
-      center_g.attr("transform", d3.zoomIdentity.translate(cx, cy).scale(0.05));
-    };
-
-    window.addEventListener("resize", on_resize);
-
     update_path_ref.current = points => {
       path.attr("d", build_svg_line(points));
     };
 
     return () => {
-      window.removeEventListener("resize", on_resize);
       svg_ref.current.innerHTML = "";
     };
   }, []);

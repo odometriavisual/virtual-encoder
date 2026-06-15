@@ -1,3 +1,5 @@
+import './monitoramento.css';
+
 import { useEncoder } from "./encoder_context";
 
 function ok(predicate) {

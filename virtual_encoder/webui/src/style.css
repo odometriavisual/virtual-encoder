@@ -224,48 +224,6 @@ label>div {
   flex-grow: 1;
 }
 
-.monitoramento {
-  grid-area: monitoramento;
-
-  display: grid;
-  grid-template-rows: 0.3fr 2fr 1fr 1fr;
-  grid-auto-flow: column;
-  grid-gap: 4px;
-
-  user-select: none;
-
-  div {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    text-align: center;
-  }
-
-  .ok {
-    background-color: #009933;
-    color: white;
-
-    border: 1px solid #114221;
-    border-radius: 4px;
-  }
-
-  .ok.warn {
-    background-color: #d3cc2a;
-    color: #353150;
-
-    border: 1px solid #39391c;
-    border-radius: 4px;
-  }
-
-  .err {
-    background-color: #cc0000;
-    color: white;
-
-    border: 1px solid #aa1010;
-    border-radius: 4px;
-  }
-}
-
 /* Chrome, Safari, Edge, Opera */
 input::-webkit-outer-spin-button,
 input::-webkit-inner-spin-button {

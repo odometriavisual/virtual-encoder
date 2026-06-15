@@ -1,7 +1,7 @@
 import "./modal.css"
 
 import { useEncoder } from "./encoder_context"
-import { useState } from "preact/hooks"
+import { useEffect, useState } from "preact/hooks"
 
 import * as encoder_api from "./encoder_api.js";
 
@@ -75,6 +75,8 @@ function ModalDownload() {
       res.map(name => { return {name: name, deleted: false}; })
     ));
   };
+
+  useEffect(() => update(null), []);
 
   const delete_ensaio = e => {
     return async ev => {

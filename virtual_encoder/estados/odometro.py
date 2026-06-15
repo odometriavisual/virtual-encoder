@@ -10,16 +10,13 @@ if TYPE_CHECKING:
     from virtual_encoder.virtual_encoder import VirtualEncoder
 
 
-class EstadoReadyOdometro(Estado):
-    def __init__(self, ve: "VirtualEncoder"):
+class Pulser():
+    def __init__(self, ve):
         self.ve = ve
-
         self.center_position = np.array([0.0, 0.0])
         self.position_now = np.array([0.0, 0.0])
 
-        self.ve.set("estado", "Ready")
-
-    def run(self, pending_displacement):
+    def pulse(self, pending_displacement):
         step = 1 / self.ve.spatial_resolution
 
         for i in range(2):
@@ -40,12 +37,21 @@ class EstadoReadyOdometro(Estado):
             self.center_position += step_dir
             self.ve.encoders[2].send_pulse("+")
 
+class EstadoReadyOdometro(Estado):
+    def __init__(self, ve: "VirtualEncoder"):
+        self.ve = ve
+        self.ve.set("estado", "Ready")
+
+        self.pulser = Pulser(ve)
+
+    def run(self, pending_displacement):
+        self.pulser.pulse(pending_displacement)
         time.sleep(0.001)
 
         return pending_displacement
 
 
-class EstadoAquisicaoOdometro(EstadoReadyOdometro):
+class EstadoAquisicaoOdometro(Estado):
     def __init__(self, ve: "VirtualEncoder", reason: str):
         self.ve = ve
         self.reason = reason
@@ -61,10 +67,17 @@ class EstadoAquisicaoOdometro(EstadoReadyOdometro):
         req_thread = threading.Thread(target=start_acquisition_helper, daemon=True)
 
         time.sleep(1)
+        self.pulser = Pulser(ve)
         for encoder in self.ve.encoders:
             encoder.send_pulse()
 
         req_thread.start()
+
+    def run(self, pending_displacement):
+        self.pulser.pulse(pending_displacement)
+        time.sleep(0.001)
+
+        return pending_displacement
 
     def stop(self):
         self.ve.set("estado", "Gravando...")

@@ -26,9 +26,14 @@ export function Log() {
 
   return (
     <div class="log">
-      <div class="trajectory-container" ref={trajectory_container_ref}>
-        <TrajectoryGraph parent_ref={trajectory_container_ref} />
-      </div>
+      {
+        status.modo == "Odometro" ?
+          <div class="trajectory-container" ref={trajectory_container_ref}>
+            <TrajectoryGraph parent_ref={trajectory_container_ref} />
+          </div>
+          :
+          null
+      }
       <div class="log-window">
         {log.map(line => <div class="log-line">{line}</div>)}
       </div>

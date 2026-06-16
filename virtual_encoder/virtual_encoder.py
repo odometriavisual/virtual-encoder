@@ -196,10 +196,13 @@ class VirtualEncoder:
         match self.modo, ev:
             case _, ("set_modo", "Autonomo"):
                 self.set_modo(ModoAutonomo(self))
+
             case _, ("set_modo", "Odometro"):
                 self.set_modo(ModoOdometro(self))
+
             case _, ("set_modo", "Tempo"):
                 self.set_modo(ModoTempo(self))
+
 
             case _, ("shutdown", "all"):
                 try:
@@ -207,39 +210,50 @@ class VirtualEncoder:
                     subprocess.run(["sudo", "poweroff"])
                 except subprocess.SubprocessError:
                     pass
+
             case _, ("shutdown", "led"):
                 self.led.turn_off()
+
             case _, ("shutdown", "relay"):
                 self.relay.turn_off()
+
 
             case _, ("reboot", "all"):
                 try:
                     subprocess.run(["sudo", "reboot"])
                 except subprocess.SubprocessError:
                     pass
+
             case _, ("reboot", "led"):
                 self.led.turn_off()
-                time.sleep(0.5)
                 self.led.turn_on()
+
             case _, ("reboot", "relay"):
                 self.relay.turn_off()
                 time.sleep(5)
                 self.relay.turn_on()
 
+
             case _, ("set_exposure", value):
                 self.camera.set_exposure(value)
 
+
             case ModoAutonomo(), ("calibrate", tipo):
                 self.set_modo(ModoCalibracao(self, self.config, tipo, "Autonomo"))
+
             case ModoOdometro(), ("calibrate", tipo):
                 self.set_modo(ModoCalibracao(self, self.config, tipo, "Odometro"))
+
             case ModoTempo(), ("calibrate", tipo):
                 self.set_modo(ModoCalibracao(self, self.config, tipo, "Tempo"))
+
             case _, ("calibrate", tipo):
                 self.set_modo(ModoCalibracao(self, self.config, tipo, "Odometro"))
 
+
             case _, "start_stream":
                 self.camera.start_stream()
+
             case _, "stop_stream":
                 self.camera.stop_stream()
 

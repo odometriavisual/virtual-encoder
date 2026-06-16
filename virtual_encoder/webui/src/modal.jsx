@@ -9,8 +9,8 @@ function ModalDesligar() {
   const { set_modal } = useEncoder();
 
   const shutdown = component => {
-    return ev => {
-      encoder_api.shutdown(ev, component);
+    return () => {
+      encoder_api.shutdown(component);
       set_modal(null);
     };
   };
@@ -29,8 +29,8 @@ function ModalReiniciar() {
   const { set_modal } = useEncoder();
 
   const reboot = component => {
-    return ev => {
-      encoder_api.shutdown(ev, component);
+    return () => {
+      encoder_api.shutdown(component);
       set_modal(null);
     };
   };
@@ -49,8 +49,8 @@ function ModalModos() {
   const { set_modal } = useEncoder();
 
   const change_modo = modo => {
-    return ev => {
-      encoder_api.set_modo(ev, modo);
+    return () => {
+      encoder_api.set_modo(modo);
       set_modal(null);
     }
   }
@@ -70,8 +70,8 @@ function ModalDownload() {
 
   const [ensaios, set_ensaios] = useState([]);
 
-  const update = ev => {
-    encoder_api.get_ensaios(ev).then(res => set_ensaios(
+  const update = () => {
+    encoder_api.get_ensaios().then(res => set_ensaios(
       res.map(name => { return {name: name, deleted: false}; })
     ));
   };
@@ -79,9 +79,9 @@ function ModalDownload() {
   useEffect(() => update(null), []);
 
   const delete_ensaio = e => {
-    return async ev => {
+    return async () => {
       if (confirm(`Deseja realmente deletar ${e.name}?`)) {
-        await encoder_api.remove_ensaio(ev, e.name);
+        await encoder_api.remove_ensaio(e.name);
 
         set_ensaios(ensaios => {
           let new_ensaios = [...ensaios];
@@ -99,8 +99,8 @@ function ModalDownload() {
   };
 
   const restore_ensaio = e => {
-    return async ev => {
-      await encoder_api.restore_ensaio(ev, e.name);
+    return async () => {
+      await encoder_api.restore_ensaio(e.name);
 
       set_ensaios(ensaios => {
         let new_ensaios = [...ensaios];
@@ -162,13 +162,13 @@ function ModalCalibracao() {
   const r = Math.sqrt(status.pos.x * status.pos.x + status.pos.y * status.pos.y).toFixed(2);
   const spatial_res = r / dist_mm;
 
-  const calibrate_photo = ev => {
-    encoder_api.calibrate_resolution(ev, "photo", 8);
+  const calibrate_photo = () => {
+    encoder_api.calibrate_resolution("photo", 8);
     set_modal(null);
   };
 
-  const calibrate_displacement = ev => {
-    encoder_api.calibrate_resolution(ev, "displacement", spatial_res);
+  const calibrate_displacement = () => {
+    encoder_api.calibrate_resolution("displacement", spatial_res);
     set_modal(null);
   };
 

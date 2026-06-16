@@ -32,17 +32,15 @@ export function Controls() {
     }
   };
 
-  const iniciar_aquisicao = async event => {
-    await encoder_api.reset_position(event);
+  const iniciar_aquisicao = async () => {
+    await encoder_api.reset_position();
     set_points([]);
 
     const pps = parseInt(pulsos_por_segundo);
-    encoder_api.start_acquisition(event, pps, ensaio_name);
+    encoder_api.start_acquisition(pps, ensaio_name);
   };
 
-  const parar_aquisicao = event => {
-    encoder_api.stop_acquisition(event);
-  };
+  const parar_aquisicao = () => { encoder_api.stop_acquisition(); };
 
   const enable_iniciar = status.estado === "Ready";
   const enable_parar = status.estado?.startsWith("Aquisicao");

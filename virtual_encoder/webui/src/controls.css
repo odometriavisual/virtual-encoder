@@ -1,0 +1,74 @@
+.controles {
+  grid-area: controles;
+
+  display: grid;
+  grid-gap: 4px;
+
+  grid-template-columns: repeat(14, 1fr);
+  grid-template-rows: 24px 24px 1fr 1fr 1fr;
+
+  .brilho {
+    grid-area: 1 / 1 / span 1 / span 14;
+    user-select: none;
+    display: flex;
+    gap: 8px;
+
+    input {
+      flex-grow: 1;
+      width: 100%;
+
+      &[type="button"] {
+        flex-shrink: 10;
+      }
+    }
+  }
+
+  .span-2 {
+    grid-column-end: span 2;
+  }
+
+  .span-5 {
+    grid-column-end: span 5;
+  }
+
+  .row-3 {
+    grid-row-start: 3;
+  }
+
+  .row-4 {
+    grid-row-start: 4;
+  }
+
+  .row-5 {
+    grid-row-start: 5;
+  }
+
+  .col-1 {
+    grid-column-start: 1;
+  }
+
+  .col-8 {
+    grid-column-start: 8;
+  }
+
+  .col-11 {
+    grid-column-start: 11;
+  }
+
+  .col-13 {
+    grid-column-start: 13;
+  }
+
+  .text-label {
+    display: flex;
+    flex-direction: column;
+
+    div {
+      align-self: center;
+    }
+
+    input {
+      flex-grow: 1;
+    }
+  }
+}

@@ -1,3 +1,5 @@
+import "./controls.css";
+
 import * as encoder_api from "./encoder_api.js";
 
 import { useEncoder } from "./encoder_context.jsx";
@@ -19,7 +21,7 @@ export function Controls() {
     set_points([]);
   };
 
-  const toggle_alinamento = () => { 
+  const toggle_alinamento = () => {
     document.querySelectorAll('.crosshair').forEach(e => e.classList.toggle('hidden'))
   };
 
@@ -53,35 +55,37 @@ export function Controls() {
         <input type="range" min="0" max="10" step="0.05" value={brightness} onInput={e => set_brightness(e.target.value)} />
       </label>
 
-      <button class="exposicao" onClick={e => encoder_api.calibrate_exposure(e)} disabled={!enable_iniciar}>Calibrar Exposição</button>
-      <button class="resolucao-espacial" onClick={() => set_modal("calibracao")} disabled={!enable_iniciar}>Calibrar Resolução</button>
+      <button class="row-3 col-1 span-2" onClick={e => encoder_api.calibrate_exposure(e)} disabled={!enable_iniciar}>Calibrar Exposição</button>
+      <button class="row-4 col-1 span-2" onClick={() => set_modal("calibracao")} disabled={!enable_iniciar}>Calibrar Resolução</button>
 
       {
         status.modo === "Tempo" ?
-          <label class="pulsos-por-segundo">
+          <label class="row-3 col-3 span-2 text-label">
             <div>Pulsos/s:</div>
             <input type="number" value={pulsos_por_segundo} onInput={ev => set_pulsos_por_segundo(ev.target.value)} disabled={!enable_iniciar} />
           </label>
           :
-          <button class="zerar-deslocamento" onClick={zerar_deslocamentos}> Zerar deslocamento </button>
+          <button class="row-3 col-3 span-2" onClick={zerar_deslocamentos}> Zerar deslocamento </button>
       }
 
-      <label class="motivo">
+      <label class="row-3 col-5 span-5 text-label">
         <div>Nome da aquisição:</div>
         <input type="text" value={ensaio_name} onInput={ev => set_ensaio_name(ev.target.value)} placeholder="Opcional" disabled={!enable_iniciar} />
       </label>
 
-      <button class="iniciar-aquisicao" onClick={iniciar_aquisicao} disabled={!enable_iniciar}> Iniciar Aquisição </button>
-      <button class="parar-aquisicao" onClick={parar_aquisicao} disabled={!enable_parar}> Parar Aquisição </button>
+      <button class="row-5 col-1 span-2" onClick={iniciar_aquisicao} disabled={!enable_iniciar}> Iniciar Aquisição </button>
+      <button class="row-5 span-2" onClick={parar_aquisicao} disabled={!enable_parar}> Parar Aquisição </button>
 
-      <button class="listar-ensaios" onClick={() => set_modal("download")} disabled={!enable_iniciar}> Baixar Ensaios Gravados </button>
+      <button class="row-3 col-11 span-2" onClick={() => set_modal("download")} disabled={!enable_iniciar}> Baixar Ensaios Gravados </button>
 
-      <button class="toggle-streaming" onClick={toggle_streaming} disabled={!enable_iniciar}> Toggle Streaming </button>
-      <button class="toggle-calibracao" onClick={toggle_alinamento}> Toggle Alinhamento </button>
-      <button class="mudar-modo" onClick={() => set_modal("modo")} disabled={!enable_iniciar}> Mudar modo </button>
-      <button class="upgrade" onClick={() => set_modal("upgrade")} disabled={!enable_iniciar}> Atualizar Software </button>
-      <button class="reiniciar" onClick={() => set_modal("reiniciar")} disabled={!enable_iniciar}> Reiniciar </button>
-      <button class="desligar" onClick={() => set_modal("desligar")} disabled={!enable_iniciar}> Desligar </button>
+      <button class="row-4 col-11 span-2" onClick={toggle_streaming} disabled={!enable_iniciar}> Toggle Streaming </button>
+      <button class="row-5 col-11 span-2" onClick={toggle_alinamento}> Toggle Alinhamento </button>
+
+      <button class="row-5 col-8 span-2" onClick={() => set_modal("modo")} disabled={!enable_iniciar}> Mudar modo </button>
+      <button class="row-3 col-13 span-2" onClick={() => set_modal("upgrade")} disabled={!enable_iniciar}> Atualizar Software </button>
+
+      <button class="row-5 col-13 span-2" onClick={() => set_modal("reiniciar")} disabled={!enable_iniciar}> Reiniciar </button>
+      <button class="row-4 col-13 span-2" onClick={() => set_modal("desligar")} disabled={!enable_iniciar}> Desligar </button>
     </div>
   )
 }

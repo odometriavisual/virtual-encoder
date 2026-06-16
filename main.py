@@ -34,8 +34,16 @@ def load_config(config_path):
 
 def _get_ip(ve: VirtualEncoder):
     while True:
-        ve.get("rpi5")["ip"] = ve.network_interface.get_ip_address()
-        time.sleep(30)
+        ips = ve.network_interface.get_ip_addresses()
+
+        if len(ips) > 0:
+            for ip in ips:
+                ve.get("rpi5")["ip"] = ip
+                time.sleep(30 / len(ips))
+
+        else:
+            ve.get("rpi5")["ip"] = "OFFLINE"
+            time.sleep(30)
 
 
 def _get_temp(ve: VirtualEncoder):

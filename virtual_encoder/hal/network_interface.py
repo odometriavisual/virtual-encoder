@@ -21,15 +21,11 @@ class NetworkInterfaceConfigFile(NetworkInterfaceNull):
         self.interface = interface
         self.config_path = Path(config_path)
 
-    def get_ip_address(self):
+    def get_ip_addresses(self):
         try:
             cmdline = f"ip a show {self.interface}"
             output = subprocess.check_output(cmdline, shell=True).decode()
-            matches = re.search(r"inet\s+(\d+\.\d+\.\d+\.\d+)", output)
+            return re.findall(r"inet\s+(\d+\.\d+\.\d+\.\d+)", output)
 
-            if matches:
-                return matches.group(1)
-            else:
-                return "None"
         except subprocess.SubprocessError:
             return "IFACE not found"

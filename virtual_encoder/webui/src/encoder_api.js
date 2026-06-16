@@ -90,9 +90,9 @@ export async function restore_ensaio(name) {
   await fetch(`${URL}/restore_ensaio/${name}`, { method });
 }
 
-export async function send_upgrade_zip(files) {
+export async function send_upgrade_zip(file) {
   let body = new FormData()
-  body.append("file", files[0])
+  body.append("file", file)
 
   const method = 'POST';
   let res = await fetch(`${URL}/upgrade`, { method, body })

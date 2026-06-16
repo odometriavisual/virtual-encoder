@@ -30,7 +30,7 @@ function ModalReiniciar() {
 
   const reboot = component => {
     return () => {
-      encoder_api.shutdown(component);
+      encoder_api.reboot(component);
       set_modal(null);
     };
   };
@@ -143,14 +143,31 @@ function ModalDownload() {
 
 function ModalUpgrade() {
   const { set_modal } = useEncoder();
+  const [ info, set_info ] = useState({submit_enable: true, text: "Envie o arquivo para iniciar atualização:"});
+
+  const submit_zip = async ev => {
+    set_info({ submit_enable: false, text: "<h2>Instalando atualização...</h2>" });
+
+    const response = await encoder_api.send_upgrade_zip(ev.target.files[0]);
+
+    set_info({ submit_enable: false, text: response });
+
+    if (text.indexOf("sucesso") > 0) {
+      await encoder_api.reboot("all");
+
+      setTimeout(() => {
+        window.location.reload();
+      }, 40 * 1000);
+    }
+  };
 
   return (
     <div class="modal-content modal-upgrade">
-      <span class="modal-titulo">Atualização de software:</span>
-      <span class="modal-close" onClick={() => set_modal(null)}>&times;</span>
+      <span class="modal-titulo"> Atualização de software: </span>
+      <span class="modal-close" onClick={() => set_modal(null)}> &times; </span>
 
-      <span class="modal-info">Envie o arquivo para iniciar atualização:</span>
-      <input type="file" accept=".zip"> </input>
+      <span class="modal-info" dangerouslySetInnerHTML={{__html: info.text}} />
+      <input type="file" accept=".zip" onChange={submit_zip} disabled={!info.submit_enable} />
     </div>
   )
 }

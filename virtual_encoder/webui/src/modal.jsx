@@ -160,7 +160,7 @@ function ModalCalibracao() {
   const [dist_mm, set_dist_mm] = useState(1);
 
   const r = Math.sqrt(status.pos.x * status.pos.x + status.pos.y * status.pos.y).toFixed(2);
-  const spatial_res = r / dist_mm;
+  const spatial_res = abs(r / dist_mm);
 
   const calibrate_photo = () => {
     encoder_api.calibrate_resolution("photo", 8);
@@ -203,7 +203,7 @@ function ModalCalibracao() {
           <span> Resolução espacial:</span>
           <span class="spatial-res">{spatial_res.toFixed(2)} px/mm</span>
         </div>
-        <button class="btn-movimento" disabled={!isFinite(r / dist_mm)} onClick={calibrate_displacement}>Calibrar por movimento</button>
+        <button class="btn-movimento" disabled={!isFinite(spatial_res)} onClick={calibrate_displacement}>Calibrar por movimento</button>
       </section>
     </div>
   )

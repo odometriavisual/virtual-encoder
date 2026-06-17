@@ -21,7 +21,6 @@ function App() {
     pos: { x: 0., y: 0., sr: 1. },
     modo: 'Desligado',
     estado: '',
-    msg: '',
   };
 
   const [status, set_status] = useState(error_status);
@@ -40,7 +39,7 @@ function App() {
     modal, set_modal,
   };
 
-  useEffect(() => encoder_api.fetch_status_stream(set_status, error_status), []);
+  useEffect(() => encoder_api.fetch_status_stream(set_status, error_status, set_log), []);
 
   return (
     <div class="wrapper">

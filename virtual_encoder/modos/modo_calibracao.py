@@ -76,11 +76,11 @@ class ModoCalibracao:
             target=self.config["camera"]["target_average"],
         )
 
-        self.ve.add_message("Realizando calibração, aguarde...")
+        self.ve.log_stream.publish("Realizando calibração, aguarde...")
 
         exposure = self.ve.camera.get_exposure()
 
-        self.ve.add_message(f"Exposição calibrada para {exposure} us")
+        self.ve.log_stream.publish(f"Exposição calibrada para {exposure} us")
 
         exposure_cache_file = self.config.get("camera", dict()).get(
             "exposure_cache", "/home/pi/exposure.txt"
@@ -91,7 +91,7 @@ class ModoCalibracao:
     def __calibrate_spatial_resolution_photo(self, printed_diameter):
         radius_found = []
 
-        self.ve.add_message("Realizando calibração, aguarde...")
+        self.ve.log_stream.publish("Realizando calibração, aguarde...")
 
         real_camera = self.ve.camera
         self.ve.camera = CameraDrawing(real_camera)
@@ -115,14 +115,14 @@ class ModoCalibracao:
                     2 * np.average(radius_found)
                 )
 
-                self.ve.add_message(
+                self.ve.log_stream.publish(
                     f"Resolução espacial calibrada para {1 / self.ve.spatial_resolution:.3f} px/mm"
                 )
                 self.ve.send_event("reset_position")
 
                 self.__save_to_cache(self.ve.spatial_resolution)
             else:
-                self.ve.add_message(
+                self.ve.log_stream.publish(
                     "Padrão de calibração não encontrado! Tente novamente"
                 )
         finally:
@@ -131,14 +131,14 @@ class ModoCalibracao:
     def __calibrate_spatial_resolution_displacement(self, inverse_spatial_resolution):
         try:
             if inverse_spatial_resolution < 0.000001:
-                self.ve.add_message(
+                self.ve.log_stream.publish(
                     "Valor de deslocamento inválido. O valor é muito pequeno"
                 )
                 return
 
             self.ve.spatial_resolution = 1 / inverse_spatial_resolution
 
-            self.ve.add_message(
+            self.ve.log_stream.publish(
                 f"Resolução espacial calibrada para {inverse_spatial_resolution:.2f} px/mm"
             )
 
@@ -146,7 +146,7 @@ class ModoCalibracao:
 
         except Exception as e:
             print(e)
-            self.ve.add_message("Erro na calibração")
+            self.ve.log_stream.publish("Erro na calibração")
 
     def run(self):
         match self.tipo:

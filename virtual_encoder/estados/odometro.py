@@ -57,7 +57,7 @@ class EstadoAquisicaoOdometro(Estado):
         self.reason = reason
 
         self.ve.set("estado", "Aquisicao")
-        self.ve.add_message(f"Aquisição: {self.reason} estimativa tempo real")
+        self.ve.log_stream.publish(f"Aquisição: {self.reason} estimativa tempo real")
 
         timestamp_ns = time.time_ns()
 

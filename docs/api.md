@@ -23,7 +23,6 @@ The stream contains a series of json objects, separated by \n, according to the 
     "pos": { "x": 0, "y": 0 },
     "modo": "Iniciando",
     "estado": "",
-    "msg": ""
 }
 ```
 

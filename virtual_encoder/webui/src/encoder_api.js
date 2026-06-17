@@ -55,7 +55,7 @@ export async function reboot(component) {
   await fetch(`${URL}/reboot/${component}`, { method });
 }
 
-export async function fetch_status_stream(set_status, error_status) {
+export async function fetch_status_stream(set_status, error_status, set_log) {
   let eventSource;
 
   const open_event_source = () => {
@@ -69,6 +69,8 @@ export async function fetch_status_stream(set_status, error_status) {
       await new Promise(res => setTimeout(res, 3 * 1000));
       open_event_source();
     };
+
+    eventSource.addEventListener("log", e => set_log(log => [...log, e.data]));
   };
 
   open_event_source();

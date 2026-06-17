@@ -15,6 +15,7 @@ from .hal.serdes import SerdesNull, Serdes
 from .hal.thermal_sensors import ThermalSensorsNull, ThermalSensorsRaspberry
 from .acquisition_writer import AcquisitionWriter
 from .modos import ModoAutonomo, ModoCalibracao, ModoOdometro, ModoTempo
+from .events_stream import EventsStream
 
 
 class VirtualEncoder:
@@ -30,7 +31,9 @@ class VirtualEncoder:
 
         if spatial_resolution_cache_path.is_file():
             try:
-                self.spatial_resolution = float(spatial_resolution_cache_path.read_text())
+                self.spatial_resolution = float(
+                    spatial_resolution_cache_path.read_text()
+                )
             except Exception:
                 pass
 
@@ -46,9 +49,9 @@ class VirtualEncoder:
             "pos": {"x": 0, "y": 0, "sr": 1},
             "modo": "Iniciando",
             "estado": "",
-            "msg": "",
         }
-        self.status_lock = threading.Lock()
+
+        self.log_stream = EventsStream()
 
         def __parallel_setup_camera():
             self.__setup_serdes()
@@ -203,7 +206,6 @@ class VirtualEncoder:
             case _, ("set_modo", "Tempo"):
                 self.set_modo(ModoTempo(self))
 
-
             case _, ("shutdown", "all"):
                 try:
                     self.led.turn_off()
@@ -216,7 +218,6 @@ class VirtualEncoder:
 
             case _, ("shutdown", "relay"):
                 self.relay.turn_off()
-
 
             case _, ("reboot", "all"):
                 try:
@@ -233,10 +234,8 @@ class VirtualEncoder:
                 time.sleep(5)
                 self.relay.turn_on()
 
-
             case _, ("set_exposure", value):
                 self.camera.set_exposure(value)
-
 
             case ModoAutonomo(), ("calibrate", tipo):
                 self.set_modo(ModoCalibracao(self, self.config, tipo, "Autonomo"))
@@ -249,7 +248,6 @@ class VirtualEncoder:
 
             case _, ("calibrate", tipo):
                 self.set_modo(ModoCalibracao(self, self.config, tipo, "Odometro"))
-
 
             case _, "start_stream":
                 self.camera.start_stream()
@@ -270,17 +268,10 @@ class VirtualEncoder:
         self.status[prop] = value
 
     def get_status(self) -> dict:
-        with self.status_lock:
-            s = self.status.copy()
-            self.status["msg"] = ""
-        return s
-
-    def add_message(self, msg):
-        with self.status_lock:
-            self.status["msg"] += msg + "\n"
+        return self.status.copy()
 
     def send_event(self, ev):
-        self._event_queue.put(ev)
+        self._event_queue.put(ev, block=False)
 
     def poll_event(self):
         if self._event_queue.empty():

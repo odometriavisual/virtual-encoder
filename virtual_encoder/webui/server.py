@@ -5,7 +5,7 @@ import pathlib
 import subprocess
 import zipfile
 
-from flask import Flask, Response, abort, request
+from flask import Flask, Response, abort, request, stream_with_context
 from flask_cors import CORS
 from werkzeug.serving import BaseWSGIServer
 from werkzeug.utils import secure_filename
@@ -75,15 +75,23 @@ class WebuiApp:
             Returns a json stream of the system's status.
             The stream contains a series of json objects, separated by \n, according to the following format:
 
-            { "rpi5": { "temp": 0.0, "ip": "0.0.0.0", }, "camera": False|True, "imu": False|[0., 0., 0., 0., 0.], "pos": {"x": 0, "y": 0}, "modo": "Iniciando", "estado": "", "msg": "" }
+            { "rpi5": { "temp": 0.0, "ip": "0.0.0.0", }, "camera": False|True, "imu": False|[0., 0., 0., 0., 0.], "pos": {"x": 0, "y": 0}, "modo": "Iniciando", "estado": "" }
             """
-
             def generate_status():
-                while True:
-                    time.sleep(0.05)
-                    yield f"data: {json.dumps(self.ve.get_status())}\n\n"
+                log = self.ve.log_stream.subscribe()
 
-            return Response(generate_status(), headers={
+                try: 
+                    while True:
+                        time.sleep(0.05)
+                        yield f"data: {json.dumps(self.ve.get_status())}\n\n"
+
+                        if not log.empty():
+                            yield f"event: log\ndata: {log.get()}\n\n"
+
+                finally:
+                    self.ve.log_stream.unsubscribe(log)
+                    
+            return Response(stream_with_context(generate_status()), headers={
                 "X-Accel-Buffering": "no",
                 "Content-Type": "text/event-stream",
                 "Cache-Control": "no-cache",

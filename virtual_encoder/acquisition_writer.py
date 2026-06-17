@@ -81,7 +81,7 @@ class AcquisitionWriter:
         for t in self.__threads:
             t.start()
 
-        self.ve.add_message(f"Gravando aquisição: {self.__acquisition.get_name()}")
+        self.ve.log_stream.publish(f"Gravando aquisição: {self.__acquisition.get_name()}")
 
     def stop_acquisition(self):
         self.__recording = False
@@ -89,7 +89,7 @@ class AcquisitionWriter:
             t.join()
 
         self.__acquisition.close()
-        self.ve.add_message(
+        self.ve.log_stream.publish(
             f'Aquisição completa: <a href="/ensaios/{self.__acquisition.get_name()}.zip">{self.__acquisition.get_name()}</a>'
         )
         self.__acquisition = None

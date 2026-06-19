@@ -7,6 +7,9 @@ use_legacy_camera = false
 # defines starting modo for the encoder. Valid values are: "ModoOdometro", "ModoTempo"
 default_modo = "ModoOdometro"
 
+[frontend]
+dist_directory = "/home/pi/virtual-encoder/frontend/dist/"
+
 [acquisition]
 # Directory where the acquisitions will be saved to
 directory = "/home/pi/picam_imgs"

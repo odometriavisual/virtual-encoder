@@ -18,8 +18,12 @@ class WebuiApp:
         self.ve = ve
         self.config = config
 
+        self.dist_dir = config.get("frontend", dict()).get("dist_directory", "/home/pi/virtual-encoder/frontend/dist/")
+
         self.app = Flask(
-            __name__, static_url_path="/assets", static_folder="dist/assets"
+            __name__,
+            static_url_path="/assets",
+            static_folder=self.dist_dir + "/assets",
         )
         CORS(self.app)
         self.setup_routes()
@@ -66,7 +70,7 @@ class WebuiApp:
             """
             The web page.
             """
-            with open("virtual_encoder/webui/dist/index.html", "r") as file:
+            with open(self.dist_dir + "/index.html", "r") as file:
                 return file.read()
 
         @self.app.route("/status", methods=["GET"])
@@ -77,10 +81,11 @@ class WebuiApp:
 
             { "rpi5": { "temp": 0.0, "ip": "0.0.0.0", }, "camera": False|True, "imu": False|[0., 0., 0., 0., 0.], "pos": {"x": 0, "y": 0}, "modo": "Iniciando", "estado": "" }
             """
+
             def generate_status():
                 log = self.ve.log_stream.subscribe()
 
-                try: 
+                try:
                     while True:
                         time.sleep(0.05)
                         yield f"data: {json.dumps(self.ve.get_status())}\n\n"
@@ -90,14 +95,17 @@ class WebuiApp:
 
                 finally:
                     self.ve.log_stream.unsubscribe(log)
-                    
-            return Response(stream_with_context(generate_status()), headers={
-                "X-Accel-Buffering": "no",
-                "Content-Type": "text/event-stream",
-                "Cache-Control": "no-cache",
-                "Access-Control-Allow-Origin": "*",
-                "Access-Control-Allow-Methods": "GET",
-            })
+
+            return Response(
+                stream_with_context(generate_status()),
+                headers={
+                    "X-Accel-Buffering": "no",
+                    "Content-Type": "text/event-stream",
+                    "Cache-Control": "no-cache",
+                    "Access-Control-Allow-Origin": "*",
+                    "Access-Control-Allow-Methods": "GET",
+                },
+            )
 
         @self.app.route("/ensaios", methods=["GET"])
         def get_ensaio():

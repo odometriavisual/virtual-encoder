@@ -7,7 +7,7 @@ import subprocess
 from pathlib import Path
 
 from virtual_encoder.virtual_encoder import VirtualEncoder
-from virtual_encoder.webui.server import WebuiApp
+from virtual_encoder.server import WebuiApp
 
 
 def load_config(config_path):

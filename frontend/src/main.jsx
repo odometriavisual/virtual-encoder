@@ -1,9 +1,7 @@
-import "./style.css"
-
 import { render } from "preact";
 import { useEffect, useState } from "preact/hooks";
 
- import { EncoderContext } from "./encoder_context.jsx";
+import { EncoderContext } from "./encoder_context.jsx";
 import { Log } from "./log.jsx";
 import { Modal } from "./modal.jsx";
 import { Video } from "./video.jsx";
@@ -24,7 +22,7 @@ function App() {
   };
 
   const [status, set_status] = useState(error_status);
-  const [brightness, set_brightness] = useState(1.0);
+  const [brightness, set_brightness] = useState(.0);
   const [log, set_log] = useState([]);
 
   const [points, set_points] = useState([]);
@@ -41,17 +39,15 @@ function App() {
 
   useEffect(() => encoder_api.fetch_status_stream(set_status, error_status, set_log), []);
 
-  return (
-    <div class="wrapper">
-      <EncoderContext.Provider value={encoder_context_value}>
-        <Video />
-        <Monitoramento />
-        <Log />
-        <Controls />
-        <Modal />
-      </EncoderContext.Provider>
-    </div>
-  )
+  return <>
+    <EncoderContext.Provider value={encoder_context_value}>
+      <Video />
+      <Monitoramento />
+      <Log />
+      <Controls />
+      <Modal />
+    </EncoderContext.Provider>
+  </>;
 }
 
 render(<App />, document.getElementById("app"))

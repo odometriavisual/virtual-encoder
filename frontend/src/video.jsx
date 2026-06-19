@@ -1,3 +1,5 @@
+import "./video.css"
+
 import * as THREE from "three";
 
 import { useEffect, useRef } from "preact/hooks";

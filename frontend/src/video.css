@@ -1,0 +1,43 @@
+.visualization {
+  position: relative;
+  z-index: -1;
+
+  .video-frame {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    aspect-ratio: 4/3;
+  }
+
+  .crosshair {
+    &.hidden {
+      display: none;
+    }
+
+    &.horizontal {
+      position: absolute;
+      top: 50%;
+      left: 0;
+      z-index: 1;
+      height: 1px;
+      width: 100%;
+      background: red;
+    }
+
+    &.vertical {
+      position: absolute;
+      top: 0;
+      left: 50%;
+      z-index: 1;
+      height: 100%;
+      width: 1px;
+      background: red;
+    }
+  }
+
+  >canvas {
+    position: absolute;
+    top: 0;
+    left: 0;
+  }
+}

@@ -17,6 +17,13 @@ const build_svg_line = d3.line()
 
 const center_g = svg.append("g");
 
+const circle_1mm = svg.append("circle")
+  .attr("r", 30)
+  .attr("cx", 0)
+  .attr("cy", 0)
+  .attr("stroke", "red")
+  .attr("fill", "none");
+
 const path = center_g.append("path")
   .attr("fill", "none")
   .attr("stroke", "steelblue")
@@ -37,6 +44,10 @@ export function init_trajectory_graph() {
       const cx = window.trajectory_container.clientWidth / 2;
       const cy = window.trajectory_container.clientHeight / 2;
       center_g.attr("transform", transform.translate(cx, cy));
+
+      circle_1mm
+        .attr("transform", transform.translate(cx, cy))
+        .attr("stroke-width", 2 / k);
     });
 
   const cx = window.trajectory_container.clientWidth / 2;
@@ -52,7 +63,9 @@ export function init_trajectory_graph() {
   window.addEventListener("resize", () => {
     const cx = window.trajectory_container.clientWidth / 2;
     const cy = window.trajectory_container.clientHeight / 2;
+
     center_g.attr("transform", d3.zoomIdentity.translate(cx, cy).scale(k));
+    circle_1mm.attr("transform", d3.zoomIdentity.translate(cx, cy).scale(k));
   });
 }
 

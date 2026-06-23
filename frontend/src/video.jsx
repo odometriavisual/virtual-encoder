@@ -12,18 +12,19 @@ export function Video() {
   
   const video_ref = useRef();
   const visualization_ref = useRef();
+  const box_parent_ref = useRef();
 
   useEffect(() => {
     if (status.imu) {
       const [w, x, y, z] = status.imu;
 
-      box_parent.quaternion.set(x, y, z, w);
-      box_parent.rotateOnWorldAxis(new THREE.Vector3(0, 0, 1), Math.PI / 2);
+      box_parent_ref.current?.quaternion?.set(x, y, z, w);
+      box_parent_ref.current?.rotateOnWorldAxis(new THREE.Vector3(0, 0, 1), Math.PI / 2);
     }
   }, [status.imu]);
 
   useEffect(() => {
-    init_imu_canvas(visualization_ref);
+    init_imu_canvas(visualization_ref, box_parent_ref);
   }, []);
 
   useEffect(() => {
@@ -46,7 +47,7 @@ export function Video() {
   )
 }
 
-function init_imu_canvas(wrapper_ref) {
+function init_imu_canvas(wrapper_ref, box_parent_ref) {
   const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
   renderer.setSize(150, 150);
 
@@ -57,7 +58,7 @@ function init_imu_canvas(wrapper_ref) {
   camera.position.set(0, -2, 0);
   camera.lookAt(0, 0, 0);
 
-  let box_parent = new THREE.Group();
+  box_parent_ref.current = new THREE.Group();
 
   let geometry = new THREE.PlaneGeometry();
   const green = new THREE.MeshLambertMaterial({ color: 0x00FF00 });
@@ -67,33 +68,33 @@ function init_imu_canvas(wrapper_ref) {
   const top_plane = new THREE.Mesh(geometry, green);
   top_plane.rotateX(-Math.PI / 2);
   top_plane.position.y = 0.5;
-  box_parent.add(top_plane);
+  box_parent_ref.current.add(top_plane);
 
   const bot_plane = new THREE.Mesh(geometry, green);
   bot_plane.rotateX(Math.PI / 2);
   bot_plane.position.y = -0.5;
-  box_parent.add(bot_plane);
+  box_parent_ref.current.add(bot_plane);
 
   const front_plane = new THREE.Mesh(geometry, blue);
   front_plane.rotateY(Math.PI);
   front_plane.position.z = -0.5;
-  box_parent.add(front_plane);
+  box_parent_ref.current.add(front_plane);
 
   const back_plane = new THREE.Mesh(geometry, blue);
   back_plane.position.z = 0.5;
-  box_parent.add(back_plane);
+  box_parent_ref.current.add(back_plane);
 
   const left_plane = new THREE.Mesh(geometry, red);
   left_plane.rotateY(Math.PI / 2);
   left_plane.position.x = 0.5;
-  box_parent.add(left_plane);
+  box_parent_ref.current.add(left_plane);
 
   const right_plane = new THREE.Mesh(geometry, red);
   right_plane.rotateY(-Math.PI / 2);
   right_plane.position.x = -0.5;
-  box_parent.add(right_plane);
+  box_parent_ref.current.add(right_plane);
 
-  scene.add(box_parent);
+  scene.add(box_parent_ref.current);
 
   const ambientLight = new THREE.AmbientLight(0xCCCCCC);
   scene.add(ambientLight);

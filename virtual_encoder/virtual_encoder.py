@@ -1,6 +1,7 @@
 import threading
 import subprocess
 import time
+import json
 from pathlib import Path
 from queue import Queue
 
@@ -18,24 +19,12 @@ from .modos import ModoAutonomo, ModoCalibracao, ModoOdometro, ModoTempo
 from .events_stream import EventsStream
 
 
+
 class VirtualEncoder:
     def __init__(self, config):
         self.config = config
 
-        spatial_resolution_cache_path = Path(
-            self.config.get("camera", dict()).get(
-                "spatial_resolution_cache", "/home/pi/spatial_resolution.txt"
-            )
-        )
-        self.spatial_resolution = 1
-
-        if spatial_resolution_cache_path.is_file():
-            try:
-                self.spatial_resolution = float(
-                    spatial_resolution_cache_path.read_text()
-                )
-            except Exception:
-                pass
+        self.spatial_resolution = self.load_cache("spatial_resolution", 1)
 
         self.status = {
             "version": config["version"],
@@ -83,6 +72,32 @@ class VirtualEncoder:
                 self.modo = ModoTempo(self)
             case _:
                 self.modo = ModoOdometro(self)
+
+    def load_cache(self, key, default_value):
+        cache_file = Path(self.config.get("cache", "/home/pi/cache.json"))
+
+        if cache_file.is_file():
+            with open(cache_file, "r") as f:
+                data = json.load(f)
+
+            return data.get(key, default_value)
+
+        else:
+            return default_value
+
+    def save_cache(self, key, value):
+        cache_file = Path(self.config.get("cache", "/home/pi/cache.json"))
+
+        if cache_file.is_file():
+            with open(cache_file, "r") as f:
+                data = json.load(f)
+        else:
+            data = dict()
+
+        data[key] = value
+
+        with open(cache_file, "w") as f:
+            json.dump(data, f)
 
     def __setup_display(self):
         if self.config["debug"]:
@@ -165,18 +180,7 @@ class VirtualEncoder:
             )
 
     def __setup_camera(self):
-        exposure_cache_path = Path(
-            self.config.get("camera", dict()).get(
-                "exposure_cache", "/home/pi/exposure.txt"
-            )
-        )
-        exposure = None
-
-        if exposure_cache_path.is_file():
-            try:
-                exposure = int(exposure_cache_path.read_text())
-            except Exception:
-                pass
+        exposure = self.load_cache("exposure", None)
 
         if self.config["debug"]:
             self.camera = CameraNoise()

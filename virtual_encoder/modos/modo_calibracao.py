@@ -1,4 +1,6 @@
 import time
+import json
+from pathlib import Path
 
 import cv2
 import numpy as np
@@ -61,14 +63,6 @@ class ModoCalibracao:
     def stop(self):
         pass
 
-    def __save_to_cache(self, spatial_resolution):
-        spatial_resolution_cache_file = self.config.get("camera", dict()).get(
-            "spatial_resolution_cache", "/home/pi/spatial_resolution.txt"
-        )
-
-        with open(spatial_resolution_cache_file, "w") as f:
-            f.write(f"{spatial_resolution}")
-
     def __calibrate_exposure(self):
         self.ve.camera.calibrate_exposure(
             min=self.config["camera"]["min_exposure"],
@@ -82,11 +76,7 @@ class ModoCalibracao:
 
         self.ve.log_stream.publish(f"Exposição calibrada para {exposure} us")
 
-        exposure_cache_file = self.config.get("camera", dict()).get(
-            "exposure_cache", "/home/pi/exposure.txt"
-        )
-        with open(exposure_cache_file, "w") as f:
-            f.write(f"{exposure}")
+        self.ve.save_cache("exposure", exposure)
 
     def __calibrate_spatial_resolution_photo(self, printed_diameter):
         radius_found = []
@@ -120,7 +110,7 @@ class ModoCalibracao:
                 )
                 self.ve.send_event("reset_position")
 
-                self.__save_to_cache(self.ve.spatial_resolution)
+                self.ve.save_cache("spatial_resolution", self.ve.spatial_resolution)
             else:
                 self.ve.log_stream.publish(
                     "Padrão de calibração não encontrado! Tente novamente"
@@ -142,7 +132,7 @@ class ModoCalibracao:
                 f"Resolução espacial calibrada para {inverse_spatial_resolution:.2f} px/mm"
             )
 
-            self.__save_to_cache(self.ve.spatial_resolution)
+            self.ve.save_cache("spatial_resolution", self.ve.spatial_resolution)
 
         except Exception as e:
             print(e)

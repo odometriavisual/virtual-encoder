@@ -72,7 +72,7 @@ function ModalDownload() {
 
   const update = () => {
     encoder_api.get_ensaios().then(res => set_ensaios(
-      res.map(name => { return {name: name, deleted: false}; })
+      res.map(name => { return { name: name, deleted: false }; })
     ));
   };
 
@@ -104,7 +104,7 @@ function ModalDownload() {
 
       set_ensaios(ensaios => {
         let new_ensaios = [...ensaios];
-        
+
         for (const i in new_ensaios) {
           if (new_ensaios[i].name == e.name) {
             new_ensaios[i].deleted = false;
@@ -123,7 +123,7 @@ function ModalDownload() {
 
       <div class="modal-list">
         {
-          ensaios.map(e => 
+          ensaios.map(e =>
             <div key={e.name} className={`modal-row ${e.deleted ? "deleted" : ""}`}>
               <a href={`ensaios/${e.name}`}> {e.name} </a>
               {e.deleted ?
@@ -143,16 +143,60 @@ function ModalDownload() {
 
 function ModalUpgrade() {
   const { set_modal } = useEncoder();
-  const [ info, set_info ] = useState({submit_enable: true, text: "Envie o arquivo para iniciar atualização:"});
+  const [info, set_info] = useState({ submit_enable: true, text: "Envie o arquivo para iniciar atualização:" });
+  const [drag_over, set_drag_over] = useState(false);
 
-  const submit_zip = async ev => {
+  useEffect(() => {
+    const prevent = ev => {
+      if ([...ev.dataTransfer.items].some((item) => item.kind === "file")) {
+        ev.preventDefault();
+      }
+    };
+
+    document.addEventListener("drop", prevent);
+    document.addEventListener("dragover", prevent);
+
+    return () => {
+      document.removeEventListener("drop", prevent);
+      document.removeEventListener("dragover", prevent);
+    };
+  }, []);
+
+
+  const on_dragover = ev => {
+    const fileItems = [...ev.dataTransfer.items].filter(
+      (item) => item.kind === "file",
+    );
+
+    if (fileItems.length > 0) {
+      ev.preventDefault();
+      if (fileItems.some((item) => item.type === "application/zip")) {
+        ev.dataTransfer.dropEffect = "copy";
+      } else {
+        ev.dataTransfer.dropEffect = "none";
+      }
+    }
+  };
+
+  const on_drop = async ev => {
+    ev.preventDefault();
+
+    const files = [...ev.dataTransfer.items]
+      .map(item => item.getAsFile())
+      .filter(file => file);
+
+    await submit_zip(files[0]);
+  };
+
+  const submit_zip = async file => {
     set_info({ submit_enable: false, text: "<h2>Instalando atualização...</h2>" });
+    set_drag_over(false);
 
-    const response = await encoder_api.send_upgrade_zip(ev.target.files[0]);
+    const response = await encoder_api.send_upgrade_zip(file);
 
-    set_info({ submit_enable: false, text: response });
+    set_info({ submit_enable: true, text: response });
 
-    if (text.indexOf("sucesso") > 0) {
+    if (response.indexOf("sucesso") > 0) {
       await encoder_api.reboot("all");
 
       setTimeout(() => {
@@ -166,8 +210,16 @@ function ModalUpgrade() {
       <span class="modal-titulo"> Atualização de software: </span>
       <span class="modal-close" onClick={() => set_modal(null)}> &times; </span>
 
-      <span class="modal-info" dangerouslySetInnerHTML={{__html: info.text}} />
-      <input type="file" accept=".zip" onChange={submit_zip} disabled={!info.submit_enable} />
+      <span class="modal-info" dangerouslySetInnerHTML={{ __html: info.text }} />
+
+      {
+        info.submit_enable ?
+          <label className={drag_over ? "drag-over" : ""} onDragover={on_dragover} onDrop={on_drop} onDragenter={() => set_drag_over(true)} onDragleave={() => set_drag_over(false)}>
+            {drag_over ? "Solte o aquivo para enviar" : "Arraste um arquivo aqui, ou aperte aqui para enviar"}
+            <input type="file" accept=".zip" onChange={ev => submit_zip(ev.target.files[0])} disabled={!info.submit_enable} />
+          </label>
+          : null
+      }
     </div>
   )
 }

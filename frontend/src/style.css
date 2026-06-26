@@ -6,24 +6,30 @@ body {
   }
 }
 
+:root {
+  --controls-size: 254px;
+  --monitor-size: 168px;
+}
+
 #app {
   display: grid;
   grid-gap: 4px;
   font-family: sans-serif;
 
-  width: 98vw;
-  height: 98vh;
+  box-sizing: border-box;
+  width: 100vw;
+  height: 100vh;
   padding: 1vh 1vw;
 
-  grid-template-columns: 1fr 168px auto;
-  grid-template-rows: calc(98vh - 240px) 240px;
+  grid-template-columns: 1fr var(--monitor-size) 1fr;
+  grid-template-rows: max(calc(100% - var(--controls-size))) var(--controls-size);
   grid-template-areas:
     "img       monitoramento log"
     "controles controles     log";
 
-  @media (orientation: portrait) {
-    grid-template-columns: 1fr auto;
-    grid-template-rows: 1fr 3fr 240px;
+  @media (width < 1000px) {
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: 1px max(calc(100% - 1fr - var(--controls-size))) var(--controls-size);
 
     grid-template-areas:
       "monitoramento log"

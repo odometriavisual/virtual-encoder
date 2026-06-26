@@ -6,14 +6,10 @@
   grid-auto-flow: column;
   grid-gap: 4px;
 
-  @media (orientation: portrait) {
-    grid-template-rows: 1em 1fr;
-    grid-template-columns: 5fr 1fr 1fr;
+  @media (width < 1000px) {
+    grid-template-rows: 1em min-content 1fr 1fr;
+    grid-template-columns: 100%;
     grid-auto-flow: column;
-
-    div:first-child {
-      grid-column: 1 / span 3;
-    }
   }
 
   user-select: none;
@@ -24,6 +20,10 @@
     align-items: center;
     text-align: center;
     background-color: white;
+  }
+
+  .rpi5 {
+    padding: 0.4em 0;
   }
 
   .status {

@@ -4,12 +4,6 @@
    grid-area: log;
    grid-gap: 4px;
 
-   width: 35em;
-
-   @media (orientation: portrait) {
-     width: 20em;
-   }
-
    .trajectory-container {
      box-sizing: border-box;
      border: solid 1px black;

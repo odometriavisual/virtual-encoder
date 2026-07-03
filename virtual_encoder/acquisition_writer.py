@@ -67,6 +67,7 @@ class AcquisitionWriter:
             first_pulse_timestamp=timestamp_ns,
             exposure=self.ve.camera.get_exposure(),
             pulses_period=pulses_period_ns,
+            px_p_mm=(1/self.ve.spatial_resolution),
             dir=self.ENSAIOS_DIR,
         )
         self.__recording = True

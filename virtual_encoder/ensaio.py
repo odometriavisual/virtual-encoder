@@ -151,10 +151,10 @@ class EnsaioWriter:
         self.__imu_data.append(
             {
                 "timestamp": data[0],
-                "qx": data[1],
-                "qy": data[2],
-                "qz": data[3],
-                "qw": data[4],
+                "qw": data[1],
+                "qx": data[2],
+                "qy": data[3],
+                "qz": data[4],
                 "acc_x": data[5],
                 "acc_y": data[6],
                 "acc_z": data[7],

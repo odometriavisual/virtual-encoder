@@ -66,7 +66,6 @@ class EstadoAquisicaoOdometro(Estado):
 
         req_thread = threading.Thread(target=start_acquisition_helper, daemon=True)
 
-        time.sleep(1)
         self.pulser = Pulser(ve)
         for encoder in self.ve.encoders:
             encoder.send_pulse()

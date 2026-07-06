@@ -6,6 +6,11 @@
   height: 100%;
   aspect-ratio: 4/3;
 
+  @media (width < 1000px) {
+    height: auto;
+    width: 100%;
+  }
+
   .video-frame {
     height: 100%;
   }

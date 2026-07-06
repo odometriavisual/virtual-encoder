@@ -23,7 +23,7 @@ export function Log() {
           null
       }
       <div class="log-window" >
-        {log.map(line => <div class="log-line" dangerouslySetInnerHTML={{__html: line}}></div>)}
+        {log.map((_, i) => <div class="log-line" dangerouslySetInnerHTML={{__html: log[log.length - 1 - i]}}></div>)}
       </div>
       <button onClick={() => set_log([])}> Apagar log </button>
     </div>

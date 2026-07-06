@@ -4,6 +4,8 @@ body {
   button:not([disabled]) {
     cursor: pointer;
   }
+
+  font-family: sans-serif;
 }
 
 :root {
@@ -14,7 +16,6 @@ body {
 #app {
   display: grid;
   grid-gap: 4px;
-  font-family: sans-serif;
 
   box-sizing: border-box;
   width: 100vw;
@@ -28,8 +29,9 @@ body {
     "controles controles     log";
 
   @media (width < 1000px) {
-    grid-template-columns: 1fr 1fr;
-    grid-template-rows: 1px max(calc(100% - 1fr - var(--controls-size))) var(--controls-size);
+    grid-template-columns: 3fr 2fr;
+    grid-template-rows: 1fr 1fr var(--controls-size);
+    /* grid-template-rows: 30% calc(100% - 31% - var(--controls-size)) var(--controls-size); */
 
     grid-template-areas:
       "monitoramento log"

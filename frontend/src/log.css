@@ -20,13 +20,13 @@
    .log-window {
      overflow: scroll;
      display: flex;
-     flex-direction: column;
+     flex-direction: column-reverse;
      flex-grow: 1;
      border: 1px solid #aaaaaa;
      box-sizing: border-box;
    }
 
-   .log-line:nth-child(even) {
+   .log-line:nth-last-child(odd) {
      background-color: #c6c6c6;
    }
 

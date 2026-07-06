@@ -44,6 +44,7 @@ try:
                 },
                 "Serdes",
             )
+
             self.__pdn: LineRequest = gpiod.request_lines(
                 gpio_chip,
                 {
@@ -368,6 +369,10 @@ try:
                         sleep(1)
                     else:
                         sleep(60)
+
+        def shutdown(self):
+            self.write_ser(0x0010, 1, "7:7", v="Reset all")
+            self.write_des(0x0010, 1, "7:7", v="Reset all")
 
 
 except Exception as e:

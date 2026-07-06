@@ -91,7 +91,7 @@ class AcquisitionWriter:
 
         self.__acquisition.close()
         self.ve.log_stream.publish(
-            f'Aquisição completa: <a href="/ensaios/{self.__acquisition.get_name()}.zip">{self.__acquisition.get_name()}</a>'
+            f'Aquisição completa: <a download href="/ensaios/{self.__acquisition.get_name()}.zip">{self.__acquisition.get_name()}</a>'
         )
         self.__acquisition = None
         self.__threads = []

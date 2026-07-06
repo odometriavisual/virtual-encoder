@@ -125,7 +125,7 @@ function ModalDownload() {
         {
           ensaios.map(e =>
             <div key={e.name} className={`modal-row ${e.deleted ? "deleted" : ""}`}>
-              <a href={`ensaios/${e.name}`}> {e.name} </a>
+              <a download href={`ensaios/${e.name}`}> {e.name} </a>
               {e.deleted ?
                 <button onClick={restore_ensaio(e)}> Restaurar </button>
                 :

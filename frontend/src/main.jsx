@@ -22,7 +22,7 @@ function App() {
   };
 
   const [status, set_status] = useState(error_status);
-  const [brightness, set_brightness] = useState(.0);
+  const [brightness, set_brightness] = useState(1.0);
   const [log, set_log] = useState([]);
 
   const [points, set_points] = useState([]);

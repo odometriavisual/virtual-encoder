@@ -57,19 +57,19 @@ class ModoOdometro:
                 except ValueError:
                     new_displacement = (0, 0)
 
-                if self.is_running:
-                    # Checking again to avoid setting status after is_running was set to False
-                    self.ve.set(
-                        "pos",
-                        {
-                            "x": self.acc[0],
-                            "y": self.acc[1],
-                            "sr": self.ve.spatial_resolution,
-                        },
-                    )
-
                 self.pending_displacement += new_displacement
                 self.acc += new_displacement
+
+                self.ve.set(
+                    "pos",
+                    {
+                        "x": self.acc[0],
+                        "y": self.acc[1],
+                        "sr": self.ve.spatial_resolution,
+                        "dx": new_displacement[0],
+                        "dy": new_displacement[1],
+                    },
+                )
 
         self.preprocess_thread = threading.Thread(
             target=_preprocess_last_img, daemon=True

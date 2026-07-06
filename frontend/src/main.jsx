@@ -16,7 +16,7 @@ function App() {
     display: false,
     camera: false,
     imu: false,
-    pos: { x: 0., y: 0., sr: 1. },
+    pos: { x: 0., y: 0., sr: 1., dx: 0., dy: 0. },
     modo: 'Desligado',
     estado: '',
   };

@@ -35,7 +35,7 @@ class VirtualEncoder:
             "display": False,
             "camera": False,
             "imu": False,
-            "pos": {"x": 0, "y": 0, "sr": 1},
+            "pos": {"x": 0, "y": 0, "sr": 1, "dx": 0, "dy": 0},
             "modo": "Iniciando",
             "estado": "",
         }

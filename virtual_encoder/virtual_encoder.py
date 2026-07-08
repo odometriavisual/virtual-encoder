@@ -212,8 +212,11 @@ class VirtualEncoder:
 
             case _, ("shutdown", "all"):
                 try:
-                    self.serdes.shutdown()
-                    self.led.turn_off()
+                    try:
+                        self.serdes.shutdown()
+                        self.led.turn_off()
+                    except Exception:
+                        pass
                     subprocess.run(["sudo", "poweroff"])
                 except subprocess.SubprocessError:
                     pass

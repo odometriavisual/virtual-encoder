@@ -9,19 +9,18 @@ If filesystem usage is > UPPER_THRESHOLD:
 """
 
 import os
-import tomllib
-import pathlib
+from pathlib import Path
 from shutil import disk_usage, rmtree
+
+from virtual_encoder.config import Config
 
 UPPER_THRESHOLD = 0.8
 LOWER_THRESHOLD = 0.5
 
 config_path = os.getenv("HOME", default="/home/pi") + "/virtual_encoder.toml"
 
-with open(config_path, "rb") as config_file:
-    config = tomllib.load(config_file)
-    imgs_directory = pathlib.Path(config["acquisition"]["directory"])
-
+config = Config.load()
+imgs_directory = Path(config.acquisition_directory)
 
 if not imgs_directory.is_dir():
     imgs_directory.mkdir(parents=True)

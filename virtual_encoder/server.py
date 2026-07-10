@@ -1,7 +1,7 @@
 import cv2
 import time
 import json
-import pathlib
+from pathlib import Path
 import subprocess
 import zipfile
 
@@ -11,21 +11,18 @@ from werkzeug.serving import BaseWSGIServer
 from werkzeug.utils import secure_filename
 
 from virtual_encoder.virtual_encoder import VirtualEncoder
+from virtual_encoder.config import Config
 
 
 class WebuiApp:
-    def __init__(self, ve: VirtualEncoder, config, host="0.0.0.0", port=5000):
+    def __init__(self, ve: VirtualEncoder, config: Config, host="0.0.0.0", port=5000):
         self.ve = ve
-        self.config = config
-
-        self.dist_dir = config.get("frontend", dict()).get(
-            "dist_directory", "/home/pi/virtual-encoder/frontend/dist/"
-        )
+        self.config: Config = config
 
         self.app = Flask(
             __name__,
             static_url_path="/assets",
-            static_folder=self.dist_dir + "/assets",
+            static_folder=self.config.frontend_directory / "assets",
         )
         CORS(self.app)
         self.setup_routes()
@@ -72,7 +69,7 @@ class WebuiApp:
             """
             The web page.
             """
-            with open(self.dist_dir + "/index.html", "r") as file:
+            with open(self.config.frontend_directory / "index.html", "r") as file:
                 return file.read()
 
         @self.app.route("/status", methods=["GET"])
@@ -111,12 +108,12 @@ class WebuiApp:
 
         @self.app.route("/ensaios", methods=["GET"])
         def get_ensaio():
-            p = pathlib.Path(self.config["acquisition"]["directory"])
+            p = self.config.acquisition_directory
             return sorted([x.name for x in p.iterdir() if x.is_file()])
 
         @self.app.route("/remove_ensaio/<filename>", methods=["POST"])
         def remove_ensaio(filename):
-            dir = pathlib.Path(self.config["acquisition"]["directory"])
+            dir = self.config.acquisition_directory
             p = dir / filename
             target_dir = dir / "trash"
 
@@ -130,7 +127,7 @@ class WebuiApp:
 
         @self.app.route("/restore_ensaio/<filename>", methods=["POST"])
         def restore_ensaio(filename):
-            dir = pathlib.Path(self.config["acquisition"]["directory"])
+            dir = self.config.acquisition_directory
             p = dir / "trash" / filename
             target_dir = dir
 
@@ -271,17 +268,17 @@ class WebuiApp:
         def upgrade():
             try:
                 file = request.files["file"]
-                filename = pathlib.Path("/tmp") / secure_filename(file.filename)
+                filename = Path("/tmp") / secure_filename(file.filename)
                 file.save(filename)
 
                 with zipfile.ZipFile(filename, "r") as zip:
                     zip.extractall(path="/tmp/virtual_encoder/")
 
-                if pathlib.Path("/tmp/virtual_encoder/.git").is_dir():
+                if Path("/tmp/virtual_encoder/.git").is_dir():
                     repo_path = "/tmp/virtual_encoder"
-                elif pathlib.Path("/tmp/virtual_encoder/virtual_encoder/.git").is_dir():
+                elif Path("/tmp/virtual_encoder/virtual_encoder/.git").is_dir():
                     repo_path = "/tmp/virtual_encoder/virtual_encoder"
-                elif pathlib.Path("/tmp/virtual_encoder/virtual-encoder/.git").is_dir():
+                elif Path("/tmp/virtual_encoder/virtual-encoder/.git").is_dir():
                     repo_path = "/tmp/virtual_encoder/virtual-encoder"
                 else:
                     raise zipfile.BadZipFile

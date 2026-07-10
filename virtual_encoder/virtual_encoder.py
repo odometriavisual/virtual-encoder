@@ -26,7 +26,7 @@ class VirtualEncoder:
         self.spatial_resolution = self.load_cache("spatial_resolution", 1)
 
         self.status = {
-            "version": config["version"],
+            "version": config.version,
             "rpi5": {
                 "temp": 0.0,
                 "ip": "0.0.0.0",
@@ -64,7 +64,7 @@ class VirtualEncoder:
 
         setup_camera_thread.join()
 
-        match self.config.get("default_modo", "ModoOdometro"):
+        match self.config.default_modo:
             case "ModoOdometro":
                 self.modo = ModoOdometro(self)
             case "ModoTempo":
@@ -73,7 +73,7 @@ class VirtualEncoder:
                 self.modo = ModoOdometro(self)
 
     def load_cache(self, key, default_value):
-        cache_file = Path(self.config.get("cache", "/home/pi/cache.json"))
+        cache_file = self.config.cache
 
         if cache_file.is_file():
             with open(cache_file, "r") as f:
@@ -85,7 +85,7 @@ class VirtualEncoder:
             return default_value
 
     def save_cache(self, key, value):
-        cache_file = Path(self.config.get("cache", "/home/pi/cache.json"))
+        cache_file = self.config.cache
 
         if cache_file.is_file():
             with open(cache_file, "r") as f:
@@ -99,86 +99,86 @@ class VirtualEncoder:
             json.dump(data, f)
 
     def __setup_display(self):
-        if self.config["debug"]:
+        if self.config.debug:
             self.display = DisplayNull()
         else:
             try:
                 self.display = DisplaySSD1306(
                     self,
-                    width=self.config["display"]["width"],
-                    height=self.config["display"]["height"],
-                    i2c_scl=self.config["gpio"]["scl"],
-                    i2c_sda=self.config["gpio"]["sda"],
-                    addr=self.config["display"]["address"],
+                    width=self.config.display_width,
+                    height=self.config.display_height,
+                    i2c_scl=self.config.gpio_scl,
+                    i2c_sda=self.config.gpio_sda,
+                    addr=self.config.display_address,
                 )
                 self.display.start()
             except Exception:
                 self.display = DisplayNull()
 
     def __setup_encoders(self):
-        if self.config["debug"]:
+        if self.config.debug:
             self.encoders = (EncoderNull(), EncoderNull(), EncoderNull())
         else:
             self.encoders = [
                 EncoderGPIO(PIN_A=pins["A"], PIN_B=pins["B"])
-                for pins in self.config["gpio"]["encoders_panther"]
+                for pins in self.config.gpio_encoders_panther
             ]
 
     def __setup_relay(self):
-        if self.config["debug"]:
+        if self.config.debug:
             self.relay = RelayNull()
         else:
-            self.relay = RelayGPIO(self.config["gpio"]["relay"])
+            self.relay = RelayGPIO(self.config.gpio_relay)
 
     def __setup_imu(self):
-        if self.config["debug"]:
+        if self.config.debug:
             self.imu = ImuNull()
         else:
             self.imu = ImuI2C(self)
             self.imu.start()
 
     def __setup_led(self):
-        if self.config["debug"]:
+        if self.config.debug:
             self.led = LedNull()
         else:
-            self.led = LedSerdes(self.config["gpio"]["led"])
+            self.led = LedSerdes(self.config.gpio_led)
             self.led.turn_on()
 
     def __setup_serdes(self):
-        if self.config["debug"]:
+        if self.config.debug:
             self.serdes = SerdesNull()
         else:
             self.serdes = Serdes(
-                bnoreset_pin=self.config["gpio"]["bno_reset"],
-                powerdown_pin=self.config["gpio"]["serdes_powerdown"],
-                seraddr=self.config["serdes"]["serializer_address"],
-                desaddr=self.config["serdes"]["deserializer_address"],
-                verbose=self.config["serdes"]["verbose"],
-                monitor=self.config["serdes"]["eye_monitor"],
-                force_camera_on=self.config["serdes"]["force_camera_on"],
+                bnoreset_pin=self.config.gpio_bno_reset,
+                powerdown_pin=self.config.gpio_serdes_powerdown,
+                seraddr=self.config.serdes_serializer_address,
+                desaddr=self.config.serdes_deserializer_address,
+                verbose=self.config.serdes_verbose,
+                monitor=self.config.serdes_eye_monitor,
+                force_camera_on=self.config.serdes_force_camera_on,
                 enable_driver=True,
             )
 
             self.serdes.start()
 
     def __setup_thermal_sensors(self):
-        if self.config["debug"]:
+        if self.config.debug:
             self.thermal_sensors = ThermalSensorsNull()
         else:
             self.thermal_sensors = ThermalSensorsRaspberry(self)
 
     def __setup_network_interface(self):
-        if self.config["debug"]:
+        if self.config.debug:
             self.network_interface = NetworkInterfaceConfigFile(self, "eno1", "/tmp")
         else:
             self.network_interface = NetworkInterfaceConfigFile(
-                self, self.config["network"]["interface"], "/home/pi/"
+                self, self.config.network_interface
             )
 
     def __setup_camera(self):
         exposure = self.load_cache("exposure", None)
 
-        if self.config["debug"]:
+        if self.config.debug:
             self.camera = CameraNoise()
             # self.camera = CameraImage("/tmp/picam_imgs/data/1776189949719039126.jpg")
         else:
@@ -190,7 +190,7 @@ class VirtualEncoder:
 
     def __setup_acquisition_writer(self):
         self.acquisition_writer = AcquisitionWriter(
-            self.config["acquisition"]["directory"], self
+            self.config.acquisition_directory, self
         )
 
     def handle_event(self, ev):

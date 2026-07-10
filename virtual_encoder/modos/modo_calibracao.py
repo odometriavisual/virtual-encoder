@@ -63,9 +63,9 @@ class ModoCalibracao:
 
     def __calibrate_exposure(self):
         self.ve.camera.calibrate_exposure(
-            min=self.config["camera"]["min_exposure"],
-            max=self.config["camera"]["max_exposure"],
-            target=self.config["camera"]["target_average"],
+            min=self.config.camera_min_exposure,
+            max=self.config.camera_max_exposure,
+            target=self.config.camera_target_average,
         )
 
         self.ve.log_stream.publish("Realizando calibração, aguarde...")

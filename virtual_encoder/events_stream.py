@@ -1,5 +1,6 @@
 from queue import Queue, Full
 
+
 class EventsStream:
     def __init__(self):
         self._subscribers = []

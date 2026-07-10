@@ -18,7 +18,9 @@ class WebuiApp:
         self.ve = ve
         self.config = config
 
-        self.dist_dir = config.get("frontend", dict()).get("dist_directory", "/home/pi/virtual-encoder/frontend/dist/")
+        self.dist_dir = config.get("frontend", dict()).get(
+            "dist_directory", "/home/pi/virtual-encoder/frontend/dist/"
+        )
 
         self.app = Flask(
             __name__,

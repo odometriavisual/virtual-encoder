@@ -10,7 +10,7 @@ if TYPE_CHECKING:
     from virtual_encoder.virtual_encoder import VirtualEncoder
 
 
-class Pulser():
+class Pulser:
     def __init__(self, ve):
         self.ve = ve
         self.center_position = np.array([0.0, 0.0])
@@ -36,6 +36,7 @@ class Pulser():
             step_dir = travel_vec / travel_dist
             self.center_position += step_dir
             self.ve.encoders[2].send_pulse("+")
+
 
 class EstadoReadyOdometro(Estado):
     def __init__(self, ve: "VirtualEncoder"):

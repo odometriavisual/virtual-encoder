@@ -1,9 +1,6 @@
 # enables mock HALs, ie. runs the encoder without connecting to any hardware peripherals
 debug = false
 
-# uses older RPi camera and IMU insted of the new serdes camera
-use_legacy_camera = false
-
 # defines starting modo for the encoder. Valid values are: "ModoOdometro", "ModoTempo"
 default_modo = "ModoOdometro"
 

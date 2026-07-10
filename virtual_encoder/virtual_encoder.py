@@ -5,10 +5,10 @@ import json
 from pathlib import Path
 from queue import Queue
 
-from .hal.camera import CameraImage, CameraNoise, CameraUDP, CameraPicamera2
+from .hal.camera import CameraImage, CameraNoise, CameraPicamera2
 from .hal.display import DisplayNull, DisplaySSD1306
 from .hal.encoder import EncoderNull, EncoderGPIO
-from .hal.imu import ImuNull, ImuI2C, ImuUDP
+from .hal.imu import ImuNull, ImuI2C
 from .hal.network_interface import NetworkInterfaceConfigFile
 from .hal.relay import RelayNull, RelayGPIO
 from .hal.led import LedNull, LedSerdes
@@ -17,7 +17,6 @@ from .hal.thermal_sensors import ThermalSensorsNull, ThermalSensorsRaspberry
 from .acquisition_writer import AcquisitionWriter
 from .modos import ModoAutonomo, ModoCalibracao, ModoOdometro, ModoTempo
 from .events_stream import EventsStream
-
 
 
 class VirtualEncoder:
@@ -134,22 +133,19 @@ class VirtualEncoder:
     def __setup_imu(self):
         if self.config["debug"]:
             self.imu = ImuNull()
-        elif self.config["use_legacy_camera"]:
-            self.imu = ImuUDP(self)
-            self.imu.start()
         else:
             self.imu = ImuI2C(self)
             self.imu.start()
 
     def __setup_led(self):
-        if self.config["debug"] or self.config["use_legacy_camera"]:
+        if self.config["debug"]:
             self.led = LedNull()
         else:
             self.led = LedSerdes(self.config["gpio"]["led"])
             self.led.turn_on()
 
     def __setup_serdes(self):
-        if self.config["debug"] or self.config["use_legacy_camera"]:
+        if self.config["debug"]:
             self.serdes = SerdesNull()
         else:
             self.serdes = Serdes(
@@ -185,8 +181,6 @@ class VirtualEncoder:
         if self.config["debug"]:
             self.camera = CameraNoise()
             # self.camera = CameraImage("/tmp/picam_imgs/data/1776189949719039126.jpg")
-        elif self.config["use_legacy_camera"]:
-            self.camera = CameraUDP(self)
         else:
             try:
                 self.camera = CameraPicamera2(self, exposure)

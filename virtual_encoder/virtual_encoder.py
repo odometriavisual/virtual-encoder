@@ -15,11 +15,12 @@ from .hal.thermal_sensors import ThermalSensorsNull, ThermalSensorsRaspberry
 from .acquisition_writer import AcquisitionWriter
 from .modos import ModoAutonomo, ModoCalibracao, ModoOdometro, ModoTempo
 from .events_stream import EventsStream
+from .config import Config
 
 
 class VirtualEncoder:
     def __init__(self, config):
-        self.config = config
+        self.config: Config = config
 
         self.spatial_resolution = self.config.camera_spatial_resolution
 

@@ -60,22 +60,31 @@ try:
 
             self.ve = ve
             self.orientation = [0, 0, 0, 1]
-            self.__condition = threading.Condition()
 
-            self.__connect()
+            self._sersor = None
+            self._condition = threading.Condition()
 
-        def __connect(self):
+            self._connect()
+
+        def _connect(self):
             try:
                 i2c = board.I2C()
 
                 connected_devices = i2c.scan()
 
                 if 0x28 in connected_devices:
-                    self.__sensor = adafruit_bno055.BNO055_I2C(i2c, 0x28)
+                    self._sensor = adafruit_bno055.BNO055_I2C(i2c, 0x28)
                 elif 0x29 in connected_devices:
-                    self.__sensor = adafruit_bno055.BNO055_I2C(i2c, 0x29)
+                    self._sensor = adafruit_bno055.BNO055_I2C(i2c, 0x29)
                 else:
                     self.ve.set("imu", False)
+
+                if self._sensor:
+                    match self.ve.config.imu_mode:
+                        case "absolute":
+                            self._sensor.mode = adafruit_bno055.NDOF_MODE
+                        case "relative":
+                            self._sensor.mode = adafruit_bno055.IMUPLUS_MODE
 
             except Exception:
                 self.ve.set("imu", False)
@@ -83,25 +92,25 @@ try:
         def run(self):
             while True:
                 try:
-                    quat = self.__sensor.quaternion
-                    acc = self.__sensor.linear_acceleration
-                    calib_status = self.__sensor.calibration_status
+                    quat = self._sensor.quaternion
+                    acc = self._sensor.linear_acceleration
+                    calib_status = self._sensor.calibration_status
 
-                    with self.__condition:
+                    with self._condition:
                         self.orientation = [*quat, *acc, *calib_status]
                         self.ve.set("imu", self.orientation)
-                        self.__condition.notify_all()
+                        self._condition.notify_all()
 
                 except Exception:
                     self.ve.set("imu", False)
                     time.sleep(5)
-                    self.__connect()
+                    self._connect()
 
                 time.sleep(0.01)
 
         def get_orientation(self) -> list[float]:
-            with self.__condition:
-                self.__condition.wait()
+            with self._condition:
+                self._condition.wait()
                 return self.orientation
 
 except Exception:

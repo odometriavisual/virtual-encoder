@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 from pathlib import Path
-import tomllib
+import json
 import os
 import subprocess
 
@@ -10,7 +10,6 @@ class Config:
     debug: bool = False
     default_modo: str = "ModoOdometro"
 
-    cache: Path = Path("/home/pi/cache.json")
     frontend_directory: Path = Path("/home/pi/virtual-encoder/frontend/dist/")
     acquisition_directory: Path = Path("/home/pi/picam_imgs")
 
@@ -45,56 +44,59 @@ class Config:
     version: str = ""
 
     @staticmethod
-    def get_config_path():
-        return Path(os.getenv("HOME", default="/home/pi") + "/virtual_encoder.toml")
+    def get_static_path():
+        return Path(os.getenv("HOME", default="/home/pi") + "/virtual_encoder.static")
 
     @staticmethod
-    def load():
-        config_path = Config.get_config_path()
+    def get_dynamic_path():
+        return Path(os.getenv("HOME", default="/home/pi") + "/virtual_encoder.dynamic")
 
-        if not config_path.is_file():
-            Path("extra/default_config.toml").copy(config_path)
+    def put_key(self, key, value):
+        dynamic_path = Config.get_dynamic_path()
+        if dynamic_path.is_file():
+            dynamic_config = json.loads(dynamic_path.read_text())
+        else:
+            dynamic_config = dict()
 
-        toml = tomllib.loads(config_path.read_text())
-        config = Config(
-            debug=toml["debug"],
-            default_modo=toml["default_modo"],
-            cache=Path(toml["cache"]),
-            frontend_directory=Path(toml["frontend"]["dist_directory"]),
-            acquisition_directory=Path(toml["acquisition"]["directory"]),
-            gpio_sda=toml["gpio"]["sda"],
-            gpio_scl=toml["gpio"]["scl"],
-            gpio_relay=toml["gpio"]["relay"],
-            gpio_led=toml["gpio"]["led"],
-            gpio_bno_reset=toml["gpio"]["bno_reset"],
-            gpio_serdes_powerdown=toml["gpio"]["serdes_powerdown"],
-            gpio_encoders_panther=toml["gpio"]["encoders_panther"],
-            network_interface=toml["network"]["interface"],
-            camera_min_exposure=toml["camera"]["min_exposure"],
-            camera_max_exposure=toml["camera"]["max_exposure"],
-            camera_target_average=toml["camera"]["target_average"],
-            serdes_serializer_address=toml["serdes"]["serializer_address"],
-            serdes_deserializer_address=toml["serdes"]["deserializer_address"],
-            serdes_verbose=toml["serdes"]["verbose"],
-            serdes_eye_monitor=toml["serdes"]["eye_monitor"],
-            serdes_force_camera_on=toml["serdes"]["force_camera_on"],
-            display_address=toml["display"]["address"],
-            display_width=toml["display"]["width"],
-            display_height=toml["display"]["height"],
-            version=(
-                "v"
-                + subprocess.run(
-                    # "git rev-parse --short HEAD".split(" "),
-                    'git --no-pager log -1 --format="%cI"'.split(" "),
-                    capture_output=True,
-                    encoding="UTF-8",
-                )
-                .stdout.strip()
-                .replace("-", "")
-                .replace(":", "")[3:9]
-            ),
+        dynamic_config[key] = value
+        self.__dict__[key] = value
+
+        Config.get_dynamic_path().write_text(json.dumps(dynamic_config))
+
+    @staticmethod
+    def load_from():
+        static_path = Config.get_static_path()
+        dynamic_path = Config.get_dynamic_path()
+
+        while True:
+            try:
+                static_config = json.loads(static_path.read_text())
+                break
+
+            except Exception:
+                print("Erro ao carregar config estática, carregando config padrão...")
+                Path("extra/default_static.json").copy(static_path)
+
+        if dynamic_path.is_file():
+            dynamic_config = json.loads(dynamic_path.read_text())
+        else:
+            dynamic_config = dict()
+
+        merged_config = static_config | dynamic_config
+
+        print(merged_config)
+        config = Config(*merged_config)
+        config.version=(
+            "v"
+            + subprocess.run(
+                # "git rev-parse --short HEAD".split(" "),
+                'git --no-pager log -1 --format="%cI"'.split(" "),
+                capture_output=True,
+                encoding="UTF-8",
+            )
+            .stdout.strip()
+            .replace("-", "")
+            .replace(":", "")[3:9]
         )
-
-        # validate config
 
         return config

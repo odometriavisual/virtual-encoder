@@ -50,7 +50,6 @@ class Config:
     def __post_init__(self):
         self.frontend_directory = Path(self.frontend_directory)
         self.acquisition_directory = Path(self.acquisition_directory)
-        print(self)
 
     @staticmethod
     def get_static_path():

@@ -39,7 +39,7 @@ export function Monitoramento() {
         { status_text }
       </div>
       <div className={`status camera ${ok(status.camera)}`}>Picam</div>
-      <div className={`status imu ${ok(status.imu)} ${warn(imu_calibrated)}`}>IMU <br/> {status.imu && !imu_calibrated? "Não calibrado": ""} </div>
+      <div className={`status imu ${ok(status.imu)} ${warn(!imu_calibrated)}`}>IMU <br/> {status.imu && !imu_calibrated? "Não calibrado": ""} </div>
     </div>
   )
 }

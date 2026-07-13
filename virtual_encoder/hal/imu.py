@@ -85,9 +85,10 @@ try:
                 try:
                     quat = self.__sensor.quaternion
                     acc = self.__sensor.linear_acceleration
+                    calib_status = self.__sensor.calibration_status
 
                     with self.__condition:
-                        self.orientation = [*quat, *acc]
+                        self.orientation = [*quat, *acc, *calib_status]
                         self.ve.set("imu", self.orientation)
                         self.__condition.notify_all()
 
@@ -102,6 +103,7 @@ try:
             with self.__condition:
                 self.__condition.wait()
                 return self.orientation
+
 except Exception:
 
     class ImuI2C(ImuNull):

@@ -11,18 +11,16 @@ from werkzeug.serving import BaseWSGIServer
 from werkzeug.utils import secure_filename
 
 from virtual_encoder.virtual_encoder import VirtualEncoder
-from virtual_encoder.config import Config
 
 
 class WebuiApp:
-    def __init__(self, ve: VirtualEncoder, config: Config, host="0.0.0.0", port=5000):
+    def __init__(self, ve: VirtualEncoder, host="0.0.0.0", port=5000):
         self.ve = ve
-        self.config: Config = config
 
         self.app = Flask(
             __name__,
             static_url_path="/assets",
-            static_folder=self.config.frontend_directory / "assets",
+            static_folder=self.ve.config.frontend_directory / "assets",
         )
         CORS(self.app)
         self.setup_routes()
@@ -69,7 +67,7 @@ class WebuiApp:
             """
             The web page.
             """
-            with open(self.config.frontend_directory / "index.html", "r") as file:
+            with open(self.ve.config.frontend_directory / "index.html", "r") as file:
                 return file.read()
 
         @self.app.route("/status", methods=["GET"])
@@ -108,12 +106,12 @@ class WebuiApp:
 
         @self.app.route("/ensaios", methods=["GET"])
         def get_ensaio():
-            p = self.config.acquisition_directory
+            p = self.ve.config.acquisition_directory
             return sorted([x.name for x in p.iterdir() if x.is_file()])
 
         @self.app.route("/remove_ensaio/<filename>", methods=["POST"])
         def remove_ensaio(filename):
-            dir = self.config.acquisition_directory
+            dir = self.ve.config.acquisition_directory
             p = dir / filename
             target_dir = dir / "trash"
 
@@ -127,7 +125,7 @@ class WebuiApp:
 
         @self.app.route("/restore_ensaio/<filename>", methods=["POST"])
         def restore_ensaio(filename):
-            dir = self.config.acquisition_directory
+            dir = self.ve.config.acquisition_directory
             p = dir / "trash" / filename
             target_dir = dir
 

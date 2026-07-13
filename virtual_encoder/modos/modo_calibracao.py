@@ -50,9 +50,8 @@ def find_circle_and_bbox(frame):
 
 
 class ModoCalibracao:
-    def __init__(self, ve: "VirtualEncoder", config, tipo, last_modo):
+    def __init__(self, ve: "VirtualEncoder", tipo, last_modo):
         self.ve = ve
-        self.config = config
         self.tipo = tipo
         self.return_modo = last_modo
 
@@ -63,9 +62,9 @@ class ModoCalibracao:
 
     def __calibrate_exposure(self):
         self.ve.camera.calibrate_exposure(
-            min=self.config.camera_min_exposure,
-            max=self.config.camera_max_exposure,
-            target=self.config.camera_target_average,
+            min=self.ve.config.camera_min_exposure,
+            max=self.ve.config.camera_max_exposure,
+            target=self.ve.config.camera_target_average,
         )
 
         self.ve.log_stream.publish("Realizando calibração, aguarde...")
@@ -74,7 +73,7 @@ class ModoCalibracao:
 
         self.ve.log_stream.publish(f"Exposição calibrada para {exposure} us")
 
-        self.ve.save_cache("exposure", exposure)
+        self.ve.config.put_key("camera_exposure", exposure)
 
     def __calibrate_spatial_resolution_photo(self, printed_diameter):
         radius_found = []
@@ -108,7 +107,9 @@ class ModoCalibracao:
                 )
                 self.ve.send_event("reset_position")
 
-                self.ve.save_cache("spatial_resolution", self.ve.spatial_resolution)
+                self.ve.config.put_key(
+                    "camera_spatial_resolution", self.ve.spatial_resolution
+                )
             else:
                 self.ve.log_stream.publish(
                     "Padrão de calibração não encontrado! Tente novamente"
@@ -130,7 +131,9 @@ class ModoCalibracao:
                 f"Resolução espacial calibrada para {inverse_spatial_resolution:.2f} px/mm"
             )
 
-            self.ve.save_cache("spatial_resolution", self.ve.spatial_resolution)
+            self.ve.config.put_key(
+                "camera_spatial_resolution", self.ve.spatial_resolution
+            )
 
         except Exception as e:
             print(e)

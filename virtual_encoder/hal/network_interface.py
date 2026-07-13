@@ -1,6 +1,5 @@
 import subprocess
 import re
-from pathlib import Path
 
 from typing import TYPE_CHECKING
 
@@ -14,12 +13,11 @@ class NetworkInterfaceNull:
 
 
 class NetworkInterfaceConfigFile(NetworkInterfaceNull):
-    def __init__(self, ve: "VirtualEncoder", interface: str, config_path: str):
+    def __init__(self, ve: "VirtualEncoder", interface: str):
         super().__init__()
 
         self.ve = ve
         self.interface = interface
-        self.config_path = Path(config_path)
 
     def get_ip_addresses(self):
         try:

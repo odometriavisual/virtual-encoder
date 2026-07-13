@@ -31,7 +31,7 @@ def main():
     config = Config.load()
     ve = VirtualEncoder(config)
 
-    webui = WebuiApp(ve, config)
+    webui = WebuiApp(ve)
     threading.Thread(target=webui.run, daemon=True).start()
 
     time.sleep(1)

@@ -1,8 +1,6 @@
 import threading
 import subprocess
 import time
-import json
-from pathlib import Path
 from queue import Queue
 
 from .hal.camera import CameraImage, CameraNoise, CameraPicamera2
@@ -23,7 +21,7 @@ class VirtualEncoder:
     def __init__(self, config):
         self.config = config
 
-        self.spatial_resolution = self.load_cache("spatial_resolution", 1)
+        self.spatial_resolution = self.config.camera_spatial_resolution
 
         self.status = {
             "version": config.version,
@@ -71,32 +69,6 @@ class VirtualEncoder:
                 self.modo = ModoTempo(self)
             case _:
                 self.modo = ModoOdometro(self)
-
-    def load_cache(self, key, default_value):
-        cache_file = self.config.cache
-
-        if cache_file.is_file():
-            with open(cache_file, "r") as f:
-                data = json.load(f)
-
-            return data.get(key, default_value)
-
-        else:
-            return default_value
-
-    def save_cache(self, key, value):
-        cache_file = self.config.cache
-
-        if cache_file.is_file():
-            with open(cache_file, "r") as f:
-                data = json.load(f)
-        else:
-            data = dict()
-
-        data[key] = value
-
-        with open(cache_file, "w") as f:
-            json.dump(data, f)
 
     def __setup_display(self):
         if self.config.debug:
@@ -169,14 +141,14 @@ class VirtualEncoder:
 
     def __setup_network_interface(self):
         if self.config.debug:
-            self.network_interface = NetworkInterfaceConfigFile(self, "eno1", "/tmp")
+            self.network_interface = NetworkInterfaceConfigFile(self, "eno1")
         else:
             self.network_interface = NetworkInterfaceConfigFile(
                 self, self.config.network_interface
             )
 
     def __setup_camera(self):
-        exposure = self.load_cache("exposure", None)
+        exposure = self.config.camera_exposure
 
         if self.config.debug:
             self.camera = CameraNoise()

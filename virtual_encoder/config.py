@@ -27,6 +27,10 @@ class Config:
 
     network_interface: str = "eth0"
 
+    imu_mode: str = "absolute"
+
+    camera_spatial_resolution: int = 1
+    camera_exposure: int | None = None
     camera_min_exposure: int = 75
     camera_max_exposure: int = 1000
     camera_target_average: int = 50
@@ -42,6 +46,11 @@ class Config:
     display_height: int = 64
 
     version: str = ""
+
+    def __post_init__(self):
+        self.frontend_directory = Path(self.frontend_directory)
+        self.acquisition_directory = Path(self.acquisition_directory)
+        print(self)
 
     @staticmethod
     def get_static_path():
@@ -64,7 +73,7 @@ class Config:
         Config.get_dynamic_path().write_text(json.dumps(dynamic_config))
 
     @staticmethod
-    def load_from():
+    def load():
         static_path = Config.get_static_path()
         dynamic_path = Config.get_dynamic_path()
 
@@ -84,9 +93,8 @@ class Config:
 
         merged_config = static_config | dynamic_config
 
-        print(merged_config)
-        config = Config(*merged_config)
-        config.version=(
+        config = Config(**merged_config)
+        config.version = (
             "v"
             + subprocess.run(
                 # "git rev-parse --short HEAD".split(" "),

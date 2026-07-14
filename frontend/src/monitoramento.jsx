@@ -30,7 +30,8 @@ export function Monitoramento() {
     status_text += status.display ? "" : "Display não encontrado";
   }
 
-  const imu_calibrated = status.imu && status.imu?.slice(7)?.reduce((acc, cur) => acc && (cur === 3), true);
+  const calib_status = status.imu && status.imu?.slice(7)?.join("");
+  const imu_calibrated = calib_status === "3333";
 
   return (
     <div class="monitoramento">
@@ -39,7 +40,7 @@ export function Monitoramento() {
         { status_text }
       </div>
       <div className={`status camera ${ok(status.camera)}`}>Picam</div>
-      <div className={`status imu ${ok(status.imu)} ${warn(!imu_calibrated)}`}>IMU <br/> {status.imu && !imu_calibrated? "Não calibrado": ""} </div>
+      <div className={`status imu ${ok(status.imu)} ${warn(!imu_calibrated)}`}>IMU <br/> {status.imu && !imu_calibrated? calib_status: ""} </div>
     </div>
   )
 }

@@ -1,21 +1,21 @@
-import threading
 import subprocess
+import threading
 import time
 from queue import Queue
 
-from .hal.camera import CameraImage, CameraNoise, CameraPicamera2
-from .hal.display import DisplayNull, DisplaySSD1306
-from .hal.encoder import EncoderNull, EncoderGPIO
-from .hal.imu import ImuNull, ImuI2C
-from .hal.network_interface import NetworkInterfaceConfigFile
-from .hal.relay import RelayNull, RelayGPIO
-from .hal.led import LedNull, LedSerdes
-from .hal.serdes import SerdesNull, Serdes
-from .hal.thermal_sensors import ThermalSensorsNull, ThermalSensorsRaspberry
 from .acquisition_writer import AcquisitionWriter
-from .modos import ModoAutonomo, ModoCalibracao, ModoOdometro, ModoTempo
-from .events_stream import EventsStream
 from .config import Config
+from .events_stream import EventsStream
+from .hal.camera import CameraAnimation, CameraImage, CameraNoise, CameraPicamera2
+from .hal.display import DisplayNull, DisplaySSD1306
+from .hal.encoder import EncoderGPIO, EncoderNull
+from .hal.imu import ImuI2C, ImuNull
+from .hal.led import LedNull, LedSerdes
+from .hal.network_interface import NetworkInterfaceConfigFile
+from .hal.relay import RelayGPIO, RelayNull
+from .hal.serdes import Serdes, SerdesNull
+from .hal.thermal_sensors import ThermalSensorsNull, ThermalSensorsRaspberry
+from .modos import ModoAutonomo, ModoCalibracao, ModoOdometro, ModoTempo
 
 
 class VirtualEncoder:
@@ -152,7 +152,8 @@ class VirtualEncoder:
         exposure = self.config.camera_exposure
 
         if self.config.debug:
-            self.camera = CameraNoise()
+            self.camera = CameraAnimation()
+            # self.camera = CameraNoise()
             # self.camera = CameraImage("/tmp/picam_imgs/data/1776189949719039126.jpg")
         else:
             try:
@@ -213,16 +214,16 @@ class VirtualEncoder:
                 self.camera.set_exposure(value)
 
             case ModoAutonomo(), ("calibrate", tipo):
-                self.set_modo(ModoCalibracao(self, self.config, tipo, "Autonomo"))
+                self.set_modo(ModoCalibracao(self, tipo, "Autonomo"))
 
             case ModoOdometro(), ("calibrate", tipo):
-                self.set_modo(ModoCalibracao(self, self.config, tipo, "Odometro"))
+                self.set_modo(ModoCalibracao(self, tipo, "Odometro"))
 
             case ModoTempo(), ("calibrate", tipo):
-                self.set_modo(ModoCalibracao(self, self.config, tipo, "Tempo"))
+                self.set_modo(ModoCalibracao(self, tipo, "Tempo"))
 
             case _, ("calibrate", tipo):
-                self.set_modo(ModoCalibracao(self, self.config, tipo, "Odometro"))
+                self.set_modo(ModoCalibracao(self, tipo, "Odometro"))
 
             case _, "start_stream":
                 self.camera.start_stream()

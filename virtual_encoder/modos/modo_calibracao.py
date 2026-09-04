@@ -1,9 +1,10 @@
 import time
+from typing import TYPE_CHECKING
 
 import cv2
 import numpy as np
+
 from virtual_encoder.hal.camera import CameraDrawing
-from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     from virtual_encoder.virtual_encoder import VirtualEncoder
@@ -41,7 +42,7 @@ def find_circle_and_bbox(frame):
             (0, 0, 255),
             3,
         )
-        cv2.circle(frame, (int(round(x)), int(round(y))), int(round(r)), (0, 255, 0), 3)
+        cv2.circle(frame, (round(x), round(y)), round(r), (0, 255, 0), 3)
 
         return float(d), float(d), float(r), frame
 

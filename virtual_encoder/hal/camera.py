@@ -1,9 +1,9 @@
-import numpy as np
-import cv2
 import threading
 import time
-
 from typing import TYPE_CHECKING
+
+import cv2
+import numpy as np
 
 if TYPE_CHECKING:
     from virtual_encoder.virtual_encoder import VirtualEncoder
@@ -62,6 +62,30 @@ class CameraNoise(CameraNull):
 
         return self.default_frame.copy()
 
+class CameraAnimation(CameraNull):
+    def __init__(self):
+        CameraNull.__init__(self)
+
+    def get_img(self):
+        time.sleep(0.05)
+
+        x = np.cos(0.5 * time.time()) * 100
+        y = np.sin(0.5 * time.time()) * 100
+
+        frame = np.zeros((480, 640, 3), dtype=np.uint8)
+
+        np.random.seed(1)
+        for i in range(500):
+            cx = round((np.random.rand() - 0.5) * 640 * 2 - x)
+            cy = round((np.random.rand() - 0.5) * 480 * 2 - y)
+            r = round(np.random.rand() * 30)
+            c = (round(np.random.rand() * 10), round(np.random.rand() * 10), round(np.random.rand() * 10))
+
+            if 0 <= cx < 640 and 0 <= cy < 480:
+                frame = cv2.circle(frame, (cx, cy), r, c, -1)
+
+        self.default_frame = frame
+        return self.default_frame.copy()
 
 class CameraImage(CameraNull):
     def __init__(self, path):

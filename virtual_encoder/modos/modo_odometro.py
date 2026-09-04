@@ -1,5 +1,4 @@
 import threading
-import multiprocessing
 import numpy as np
 
 from visual_odometer import VisualOdometer
@@ -34,7 +33,7 @@ class ModoOdometro:
         self.odometer.feed_image(img)
 
         # Odometer syncronization
-        self.new_image_event = multiprocessing.Event()
+        self.new_image_event = threading.Event()
         self.is_running = True
 
         self.pending_displacement = np.zeros(2)
@@ -53,8 +52,9 @@ class ModoOdometro:
                 self.new_image_event.clear()
 
                 try:
-                    new_displacement = np.array(self.odometer.get_displacement())
-                except ValueError:
+                    x, y, _q = self.odometer.get_displacement()
+                    new_displacement = np.array([-x, y])
+                except ValueError as e:
                     new_displacement = (0, 0)
 
                 self.pending_displacement += new_displacement

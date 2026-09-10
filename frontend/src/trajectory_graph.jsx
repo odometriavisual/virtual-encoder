@@ -89,6 +89,6 @@ export function TrajectoryGraph({ parent_ref }) {
   }, [points])
 
   return (
-    <svg width="100%" height="100%" display={status.modo === 'Odometro' ? 'block' : 'none'} ref={svg_ref} />
+    <svg class="trajectory-graph" width="100%" height="100%" display={status.modo === 'Odometro' ? 'block' : 'none'} ref={svg_ref} />
   );
 }

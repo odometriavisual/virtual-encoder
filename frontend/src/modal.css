@@ -190,4 +190,76 @@
        }
      }
    }
+
+   .modal-config {
+     width: 45%;
+     grid-template-columns: auto;
+
+     section {
+       border: 2px solid hsl(0deg, 0%, 60%);
+       border-radius: 8px;
+       padding: 16px;
+
+       display: flex;
+       flex-direction: column;
+       justify-content: space-between;
+
+       >span {
+         font-size: 1.5em;
+         font-weight: bold;
+         padding-bottom: 0.5em;
+       }
+
+       label {
+         padding: 8px 16px;
+
+         display: flex;
+         flex-direction: row;
+         justify-content: space-between;
+         align-items: center;
+         position: relative;
+
+         .tooltip {
+           transition: 0.4s opacity linear;
+           opacity: 0;
+           visibility: hidden;
+
+           position: absolute;
+           z-index: 1;
+           width: 14em;
+           right: 105%;
+
+           text-align: center;
+
+           border: 1px solid hsl(0deg, 0%, 60%);
+           border-radius: 8px;
+           padding: 8px;
+
+           background-color: black;
+           color: #ffffff;
+         }
+
+         &:has(span:hover) .tooltip {
+           opacity: 1;
+           visibility: visible;
+         }
+
+         input {
+           width: 50%;
+           box-sizing: border-box;
+         }
+
+         span {
+           font-size: 0.9em;
+           border-bottom: 1px dotted black;
+           cursor: help;
+         }
+       }
+
+       svg {
+         width: 5em;
+         height: 5em;
+       }
+     }
+   }
  }

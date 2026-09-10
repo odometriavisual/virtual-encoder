@@ -4,6 +4,6 @@ text {
   user-select: none;
 }
 
-svg {
+trajectory-graph {
   cursor: grab;
 }

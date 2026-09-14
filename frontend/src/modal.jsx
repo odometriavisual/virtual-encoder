@@ -279,7 +279,7 @@ function ModalCalibracao() {
 }
 
 function ModalConfig () {
-  const { status } = useEncoder();
+  const { status, set_modal } = useEncoder();
   const [ zonaMorta, setZonaMorta ] = useState(0.1);
 
   const sr = status?.pos?.sr || 0;
@@ -288,6 +288,16 @@ function ModalConfig () {
   const d = Math.sqrt(dx * dx + dy * dy);
 
   const view_width = Math.max(zonaMorta, 1)+0.1;
+
+  useEffect(() => {
+    encoder_api.get_dead_zone().then(val => setZonaMorta(val));
+  }, []);
+
+
+  const updateZonaMorta = value => {
+    setZonaMorta(value);
+    encoder_api.set_dead_zone(zonaMorta).then(() => {});
+  };
 
   return (
     <div class="modal-content modal-config">
@@ -332,7 +342,7 @@ function ModalConfig () {
         <label>
           <span> Zona morta: </span>
           <span class="tooltip">O encoder irá ignorar deslocamentos menores que o valor escolhido, no diagrama ao lado o raio do círculo é a zona morta e o vetor de deslocamento é desenhado dentro dele</span>
-          <input class="" type="range" min="0.01" max="2.3" step="0.01" value={Math.pow(zonaMorta, 1 / 2)} onInput={ev => setZonaMorta(Math.pow(ev.target.value, 2))} />
+          <input class="" type="range" min="0.01" max="2.3" step="0.01" value={Math.pow(zonaMorta, 1 / 2)} onInput={ev => updateZonaMorta(Math.pow(ev.target.value, 2))} />
 
           <svg viewBox={`-${view_width} -${view_width} ${2*view_width} ${2*view_width}`} xmlns="http://www.w3.org/2000/svg">
             <line x1="0" y1="0" x2={dx} y2={dy} stroke-width="2%" stroke="black" />

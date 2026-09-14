@@ -54,11 +54,13 @@ class ModoOdometro:
                 try:
                     x, y, _q = self.odometer.get_displacement()
                     new_displacement = np.array([-x, y])
+
                 except ValueError as e:
                     new_displacement = (0, 0)
 
-                self.pending_displacement += new_displacement
-                self.acc += new_displacement
+                if np.linalg.norm(new_displacement) >= self.ve.config.dead_zone:
+                    self.pending_displacement += new_displacement
+                    self.acc += new_displacement
 
                 self.ve.set(
                     "pos",

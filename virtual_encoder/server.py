@@ -1,10 +1,10 @@
-import cv2
-import time
 import json
-from pathlib import Path
 import subprocess
+import time
 import zipfile
+from pathlib import Path
 
+import cv2
 from flask import Flask, Response, abort, request, stream_with_context
 from flask_cors import CORS
 from werkzeug.serving import BaseWSGIServer
@@ -205,6 +205,15 @@ class WebuiApp:
                 ("calibrate", ("spatial_resolution", modo, float(param)))
             )
             return ""
+
+        @self.app.route("/dead_zone", methods=["GET"])
+        def get_dead_zone():
+            return { "value": self.ve.config.dead_zone }
+
+        @self.app.route("/dead_zone", methods=["POST"])
+        def post_dead_zone():
+            self.ve.config.put_key("dead_zone", request.json["value"])
+            return "", 200
 
         @self.app.route("/set_exposure/<int:value>", methods=["POST"])
         def set_exposure(value):

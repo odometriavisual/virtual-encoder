@@ -1,8 +1,9 @@
-from dataclasses import dataclass
-from pathlib import Path
 import json
 import os
 import subprocess
+import threading
+from dataclasses import dataclass
+from pathlib import Path
 
 
 @dataclass
@@ -45,11 +46,15 @@ class Config:
     display_width: int = 128
     display_height: int = 64
 
+    dead_zone: float = 0.001
+
     version: str = ""
 
     def __post_init__(self):
         self.frontend_directory = Path(self.frontend_directory)
         self.acquisition_directory = Path(self.acquisition_directory)
+
+        self._lock = threading.Lock()
 
     @staticmethod
     def get_static_path():
@@ -60,16 +65,17 @@ class Config:
         return Path(os.getenv("HOME", default="/home/pi") + "/virtual_encoder.dynamic")
 
     def put_key(self, key, value):
-        dynamic_path = Config.get_dynamic_path()
-        if dynamic_path.is_file():
-            dynamic_config = json.loads(dynamic_path.read_text())
-        else:
-            dynamic_config = dict()
+        with self._lock:
+            dynamic_path = Config.get_dynamic_path()
+            if dynamic_path.is_file():
+                dynamic_config = json.loads(dynamic_path.read_text())
+            else:
+                dynamic_config = {}
 
-        dynamic_config[key] = value
-        self.__dict__[key] = value
+            dynamic_config[key] = value
+            self.__dict__[key] = value
 
-        Config.get_dynamic_path().write_text(json.dumps(dynamic_config))
+            Config.get_dynamic_path().write_text(json.dumps(dynamic_config))
 
     @staticmethod
     def load():

@@ -40,6 +40,20 @@ export async function calibrate_resolution(modo, param) {
   await fetch(`${URL}/calibrate_resolution/${modo}/${param}`, { method });
 }
 
+export async function get_dead_zone() {
+  const method = 'GET';
+  const res = await fetch(`${URL}/dead_zone`, { method });
+  return (await res.json()).value;
+}
+
+export async function set_dead_zone(value) {
+  const method = 'POST';
+  const headers = { "Content-Type": "application/json" };
+  const body = JSON.stringify({ value: value });
+
+  await fetch(`${URL}/dead_zone`, { method, body, headers });
+}
+
 export async function set_exposure(value) {
   const method = 'POST';
   await fetch(`${URL}/set_exposure/${window.exposicao.value}`, { method });

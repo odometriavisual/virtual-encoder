@@ -5,6 +5,8 @@ import { useEffect, useState } from "preact/hooks"
 
 import * as encoder_api from "./encoder_api.js";
 
+import { ModalConfig } from "./modal_config.jsx";
+
 function ModalDesligar() {
   const { set_modal } = useEncoder();
 
@@ -273,82 +275,6 @@ function ModalCalibracao() {
           <span class="spatial-res">{spatial_res.toFixed(2)} px/mm</span>
         </div>
         <button class="btn-movimento" disabled={!isFinite(spatial_res)} onClick={calibrate_displacement}>Calibrar por movimento</button>
-      </section>
-    </div>
-  )
-}
-
-function ModalConfig () {
-  const { status, set_modal } = useEncoder();
-  const [ zonaMorta, setZonaMorta ] = useState(0.1);
-
-  const sr = status?.pos?.sr || 0;
-  const dx = status?.pos?.dx || 0;
-  const dy = status?.pos?.dy || 0;
-  const d = Math.sqrt(dx * dx + dy * dy);
-
-  const view_width = Math.max(zonaMorta, 1)+0.1;
-
-  useEffect(() => {
-    encoder_api.get_dead_zone().then(val => setZonaMorta(val));
-  }, []);
-
-
-  const updateZonaMorta = value => {
-    setZonaMorta(value);
-    encoder_api.set_dead_zone(zonaMorta).then(() => {});
-  };
-
-  return (
-    <div class="modal-content modal-config">
-      <span class="modal-titulo">Configurações</span>
-      <span class="modal-close" onClick={() => set_modal(null)}>&times;</span>
-
-      <section>
-        <span> Rede </span>
-        <label>
-          <span class="tooltip">Endereço de IP estático utilizado quando o encoder é conectado em uma rede local</span>
-
-          <span> IP estático: </span>
-          <input class="" type="text" value={status.rpi5.ip} />
-        </label>
-
-        <label>
-          <span class="tooltip">Endereço de IP estático utilizado quando o encoder é conectado diretamente em um PC windows pelo cabo ethernet</span>
-
-          <span> IP estático (ethernet direct): </span>
-          <input class="" type="text" value="a definir" disabled />
-        </label>
-      </section>
-
-      <section>
-        <span> Sistema de aquisição </span>
-        <label>
-          <span class="tooltip">Quantidade de pulsos enviada ao sistema de aquisição para cada mm de deslocamento detectado</span>
-
-          <span> Pulsos por mm: </span>
-          <input class="" type="number" value={1} />
-        </label>
-        <label>
-          <span class="tooltip">Define o tamanho do pixel em mm. É recomendado utilizar o botão "Calibrar Resolução" na tela inicial para definir essa grandeza</span>
-
-          <span> Resolução espacial (px/mm): </span>
-          <input class="" type="number" value={sr} />
-        </label>
-      </section>
-
-      <section>
-        <span> Filtros </span>
-        <label>
-          <span> Zona morta: </span>
-          <span class="tooltip">O encoder irá ignorar deslocamentos menores que o valor escolhido, no diagrama ao lado o raio do círculo é a zona morta e o vetor de deslocamento é desenhado dentro dele</span>
-          <input class="" type="range" min="0.01" max="2.3" step="0.01" value={Math.pow(zonaMorta, 1 / 2)} onInput={ev => updateZonaMorta(Math.pow(ev.target.value, 2))} />
-
-          <svg viewBox={`-${view_width} -${view_width} ${2*view_width} ${2*view_width}`} xmlns="http://www.w3.org/2000/svg">
-            <line x1="0" y1="0" x2={dx} y2={dy} stroke-width="2%" stroke="black" />
-            <circle cx="0" cy="0" r={zonaMorta} stroke-width="2%" stroke={d < zonaMorta? "green": "red"} fill="none"/>
-          </svg>
-        </label>
       </section>
     </div>
   )

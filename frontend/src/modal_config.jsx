@@ -93,6 +93,86 @@ function Filtros() {
   )
 }
 
+function SoftwareUpdate() {
+  const [info, set_info] = useState({ submit_enable: true, text: "Envie o arquivo para iniciar atualização:" });
+  const [drag_over, set_drag_over] = useState(false);
+
+  useEffect(() => {
+    const prevent = ev => {
+      if ([...ev.dataTransfer.items].some((item) => item.kind === "file")) {
+        ev.preventDefault();
+      }
+    };
+
+    document.addEventListener("drop", prevent);
+    document.addEventListener("dragover", prevent);
+
+    return () => {
+      document.removeEventListener("drop", prevent);
+      document.removeEventListener("dragover", prevent);
+    };
+  }, []);
+
+
+  const on_dragover = ev => {
+    const fileItems = [...ev.dataTransfer.items].filter(
+      (item) => item.kind === "file",
+    );
+
+    if (fileItems.length > 0) {
+      ev.preventDefault();
+      if (fileItems.some((item) => item.type === "application/zip")) {
+        ev.dataTransfer.dropEffect = "copy";
+      } else {
+        ev.dataTransfer.dropEffect = "none";
+      }
+    }
+  };
+
+  const on_drop = async ev => {
+    ev.preventDefault();
+
+    const files = [...ev.dataTransfer.items]
+      .map(item => item.getAsFile())
+      .filter(file => file);
+
+    await submit_zip(files[0]);
+  };
+
+  const submit_zip = async file => {
+    set_info({ submit_enable: false, text: "<h2>Instalando atualização...</h2>" });
+    set_drag_over(false);
+
+    const response = await encoder_api.send_upgrade_zip(file);
+
+    set_info({ submit_enable: true, text: response });
+
+    if (response.indexOf("sucesso") > 0) {
+      await encoder_api.reboot("all");
+
+      setTimeout(() => {
+        window.location.reload();
+      }, 40 * 1000);
+    }
+  };
+
+  return (
+    <section class="software-update">
+      <span> Atualização de software </span>
+      <span dangerouslySetInnerHTML={{ __html: info.text }} />
+
+      {
+        info.submit_enable ?
+          <label className={drag_over ? "drag-over" : ""} onDragover={on_dragover} onDrop={on_drop} onDragenter={() => set_drag_over(true)} onDragleave={() => set_drag_over(false)}>
+            {drag_over ? "Solte o aquivo para enviar" : "Arraste um arquivo aqui, ou aperte aqui para enviar"}
+            <input type="file" accept=".zip" onChange={ev => submit_zip(ev.target.files[0])} disabled={!info.submit_enable} />
+          </label>
+          : null
+      }
+    </section>
+  )
+}
+
 
 export function ModalConfig() {
   const { set_modal } = useEncoder();
@@ -103,6 +183,7 @@ export function ModalConfig() {
       <span class="modal-close" onClick={() => set_modal(null)}>&times;</span>
 
       <Filtros />
+      <SoftwareUpdate />
     </div>
   )
 }

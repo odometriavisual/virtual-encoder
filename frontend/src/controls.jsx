@@ -82,7 +82,7 @@ export function Controls() {
       <button class="row-5 col-11 span-2" onClick={toggle_alinamento}> Toggle Alinhamento </button>
 
       <button class="row-5 col-8 span-2" onClick={() => set_modal("modo")} disabled={!enable_iniciar}> Mudar modo </button>
-      <button class="row-3 col-13 span-2" onClick={() => set_modal("upgrade")} disabled={!enable_iniciar}> Atualizar Software </button>
+      <button class="row-3 col-13 span-2" onClick={() => set_modal("config")} disabled={!enable_iniciar}> Configurações </button>
 
       <button class="row-5 col-13 span-2" onClick={() => set_modal("reiniciar")} disabled={!enable_iniciar}> Reiniciar </button>
       <button class="row-4 col-13 span-2" onClick={() => set_modal("desligar")} disabled={!enable_iniciar}> Desligar </button>

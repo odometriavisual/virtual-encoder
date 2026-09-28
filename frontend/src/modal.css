@@ -106,37 +106,6 @@
      }
    }
 
-   .modal-upgrade {
-     width: 40%;
-
-     label {
-       grid-area: 3 / 1 / auto / span 3;
-
-       display: flex;
-       justify-content: center;
-       align-items: center;
-       padding: 1em;
-
-       height: 128px;
-       border: 2px dashed hsl(0deg, 0%, 60%);
-       border-radius: 16px;
-
-       cursor: pointer;
-
-       &.drag-over {
-         border: 2px dashed hsl(0deg, 0%, 0%);
-       }
-
-       input {
-         display: none;
-       }
-     }
-
-     .modal-info {
-       grid-area: 2 / 1 / auto / span 3;
-     }
-   }
-
    .modal-calibracao {
      width: 45%;
 
@@ -193,6 +162,8 @@
 
    .modal-config {
      width: 45%;
+     max-height: 80%;
+     overflow-y: scroll;
      grid-template-columns: auto;
 
      section {
@@ -204,7 +175,7 @@
        flex-direction: column;
        justify-content: space-between;
 
-       >span {
+       >span:first-child {
          font-size: 1.5em;
          font-weight: bold;
          padding-bottom: 0.5em;
@@ -259,6 +230,29 @@
        svg {
          width: 5em;
          height: 5em;
+       }
+     }
+
+     .software-update {
+       label {
+         margin-top: 0.8em;
+         height: 64px;
+         border: 2px dashed hsl(0deg, 0%, 60%);
+         border-radius: 16px;
+
+         cursor: pointer;
+
+         &.drag-over {
+           border: 2px dashed hsl(0deg, 0%, 0%);
+         }
+
+         input {
+           display: none;
+         }
+       }
+
+       .modal-info {
+         grid-area: 2 / 1 / auto / span 3;
        }
      }
    }

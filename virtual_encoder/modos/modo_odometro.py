@@ -52,11 +52,15 @@ class ModoOdometro:
                 self.new_image_event.clear()
 
                 try:
-                    x, y, _q = self.odometer.get_displacement()
-                    new_displacement = np.array([-x, y])
+                    disp = self.odometer.get_displacement()
+
+                    if len(disp) < 3 or disp[2] < 10:
+                        new_displacement = np.array([-disp[0], disp[1]])
+                    else:
+                        new_displacement = np.array([0, 0], np.float64)
 
                 except ValueError as e:
-                    new_displacement = (0, 0)
+                    new_displacement = np.array([0, 0], np.float64)
 
                 if np.linalg.norm(new_displacement) >= self.ve.config.dead_zone:
                     self.pending_displacement += new_displacement

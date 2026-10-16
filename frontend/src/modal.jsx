@@ -151,7 +151,7 @@ function ModalCalibracao() {
   const spatial_res = Math.abs(r / dist_mm);
 
   const calibrate_photo = () => {
-    encoder_api.calibrate_resolution("photo", 8);
+    encoder_api.calibrate_resolution("photo", 4);
     set_modal(null);
   };
 

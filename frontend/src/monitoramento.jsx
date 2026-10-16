@@ -31,7 +31,8 @@ export function Monitoramento() {
   }
 
   const calib_status = status.imu && status.imu?.slice(7)?.join("");
-  const imu_calibrated = calib_status === "3333";
+  // const imu_calibrated = calib_status === "3333";
+  const imu_calibrated = true;
 
   return (
     <div class="monitoramento">

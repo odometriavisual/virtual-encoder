@@ -25,9 +25,9 @@ class Pulser:
                 self.position_now[i] += 1
                 pending_displacement[i] -= step
 
-            elif pending_displacement[i] < step:
+            elif pending_displacement[i] < -step:
                 self.ve.encoders[i].send_pulse("-")
-                self.position_now[i] += 1
+                self.position_now[i] -= 1
                 pending_displacement[i] += step
 
         travel_vec = self.position_now - self.center_position

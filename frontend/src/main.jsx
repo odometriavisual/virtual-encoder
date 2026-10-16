@@ -27,7 +27,7 @@ function App() {
 
   const [points, set_points] = useState([]);
 
-  const [modal, set_modal] = useState("config");
+  const [modal, set_modal] = useState(null);
 
   const encoder_context_value = {
     status, set_status,

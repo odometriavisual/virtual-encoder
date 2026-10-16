@@ -26,7 +26,7 @@ export function TrajectoryGraph({ parent_ref }) {
     const svg = d3.select(svg_ref.current);
 
     const x = d3.scaleLinear().domain([-100 * w / h, 100 * w / h]).range([0, w]);
-    const y = d3.scaleLinear().domain([-100, 100]).range([0, h]);
+    const y = d3.scaleLinear().domain([100, -100]).range([0, h]);
 
     const build_svg_line = d3.line()
       .x(ps => x(ps.x))
@@ -64,7 +64,7 @@ export function TrajectoryGraph({ parent_ref }) {
       h = parent_ref.current.clientHeight;
 
       x.domain([-100 * w / h, 100 * w / h]).range([0, w]);
-      y.domain([-100, 100]).range([0, h]);
+      y.domain([100, -100]).range([0, h]);
 
       x_axis.ticks(w/120, ".0f").tickSize(h).tickPadding(8 - h);
       y_axis.ticks(h/120, ".0f").tickSize(w).tickPadding(8 - w);

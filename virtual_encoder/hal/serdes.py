@@ -1,5 +1,6 @@
 class SerdesNull:
-    pass
+    def release(self):
+        pass
 
 
 try:
@@ -56,6 +57,10 @@ try:
             )
 
             self.__bus = SMBus(desbus)
+
+        def release(self):
+            self.__bnor.release()
+            self.__pdn.release()
 
         def printv(self, text: str):
             if self.__verbose:

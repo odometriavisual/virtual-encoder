@@ -158,9 +158,11 @@ class VirtualEncoder:
             # self.camera = CameraImage("/tmp/picam_imgs/data/1776189949719039126.jpg")
         else:
             try:
-                self.camera = CameraPicamera2(self, exposure)
-                self.camera.start()
-            except IndexError:
+                new_camera = CameraPicamera2(self, exposure)
+                new_camera.start()
+                self.camera = new_camera
+
+            except Exception:
                 self.camera = CameraImage("extra/resetcamera.jpg")
 
                 def __retry_camera():
@@ -224,11 +226,24 @@ class VirtualEncoder:
                 sys.exit(0)
 
             case _, ("reboot", "camera"):
+                self.set("camera", False)
+                self.camera.stop_stream()
+                time.sleep(0.5)
                 self.camera = CameraImage("extra/resetcamera.jpg")
-                time.sleep(1)
-                self.__setup_serdes()
-                time.sleep(1)
-                self.__setup_camera()
+
+                self.serdes.release()
+                self.serdes = SerdesNull()
+
+                def __parallel_setup_camera():
+                    time.sleep(1)
+                    self.__setup_serdes()
+                    time.sleep(1)
+                    self.__setup_camera()
+
+                setup_camera_thread = threading.Thread(
+                    target=__parallel_setup_camera, daemon=True
+                )
+                setup_camera_thread.start()
 
             case _, ("set_exposure", value):
                 self.camera.set_exposure(value)

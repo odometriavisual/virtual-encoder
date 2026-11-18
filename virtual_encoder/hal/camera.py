@@ -218,7 +218,7 @@ try:
                             self._new_frame_condition.notify_all()
 
                 except Exception:
-                    pass
+                    self.ve.send_event(("reboot", "camera"))
 
                 self.stop_stream()
                 time.sleep(5)

@@ -160,7 +160,16 @@ class VirtualEncoder:
                 self.camera = CameraPicamera2(self, exposure)
                 self.camera.start()
             except IndexError:
-                self.camera = CameraImage("extra/nocamera.jpg")
+                self.camera = CameraImage("extra/resetcamera.jpg")
+
+                def __retry_camera():
+                    time.sleep(5)
+                    self.send_event(("reboot", "camera"))
+
+                retry_camera_thread = threading.Thread(
+                    target=__retry_camera, daemon=True
+                )
+                retry_camera_thread.start()
 
     def __setup_acquisition_writer(self):
         self.acquisition_writer = AcquisitionWriter(
@@ -209,6 +218,13 @@ class VirtualEncoder:
                 self.relay.turn_off()
                 time.sleep(5)
                 self.relay.turn_on()
+
+            case _, ("reboot", "camera"):
+                self.camera = CameraImage("extra/resetcamera.jpg")
+                time.sleep(1)
+                self.__setup_serdes()
+                time.sleep(1)
+                self.__setup_camera()
 
             case _, ("set_exposure", value):
                 self.camera.set_exposure(value)

@@ -1,4 +1,5 @@
 import subprocess
+import sys
 import threading
 import time
 from queue import Queue
@@ -218,6 +219,9 @@ class VirtualEncoder:
                 self.relay.turn_off()
                 time.sleep(5)
                 self.relay.turn_on()
+
+            case _, ("reboot", "software"):
+                sys.exit(0)
 
             case _, ("reboot", "camera"):
                 self.camera = CameraImage("extra/resetcamera.jpg")

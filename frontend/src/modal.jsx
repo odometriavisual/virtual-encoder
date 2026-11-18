@@ -38,11 +38,12 @@ function ModalReiniciar() {
   };
 
   return (
-    <div class="modal-content">
+    <div class="modal-content modal-reiniciar">
       <span class="modal-titulo">Confirme qual componente você deseja reiniciar:</span>
       <span class="modal-close" onClick={() => set_modal(null)}>&times;</span>
       <button class="encoder" onClick={reboot("all")}> Reiniciar encoder e câmera subsea </button>
       <button class="led" onClick={reboot("led")}> Reiniciar LED </button>
+      <button class="software" onClick={reboot("software")}> Reiniciar apenas software </button>
     </div>
   )
 }

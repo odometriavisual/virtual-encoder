@@ -49,6 +49,13 @@
      }
    }
 
+   .modal-reiniciar {
+     display: grid;
+     grid-template-rows: min(64px, auto) auto;
+     grid-template-columns: repeat(3, 1fr);
+     grid-gap: 16px;
+   }
+
    .modal-modos {
      width: 40%;
    }

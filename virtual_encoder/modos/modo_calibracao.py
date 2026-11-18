@@ -62,19 +62,22 @@ class ModoCalibracao:
         pass
 
     def __calibrate_exposure(self):
-        self.ve.camera.calibrate_exposure(
+        self.ve.log_stream.publish("Realizando calibração, aguarde...")
+
+        exposure = self.ve.camera.calibrate_exposure(
             min=self.ve.config.camera_min_exposure,
             max=self.ve.config.camera_max_exposure,
             target=self.ve.config.camera_target_average,
         )
 
-        self.ve.log_stream.publish("Realizando calibração, aguarde...")
+        if exposure is not None:
+            self.ve.log_stream.publish(f"Exposição calibrada para {exposure} us")
 
-        exposure = self.ve.camera.get_exposure()
+            self.ve.config.put_key("camera_exposure", exposure)
 
-        self.ve.log_stream.publish(f"Exposição calibrada para {exposure} us")
+        else:
+            self.ve.log_stream.publish("Não foi possível calibrar exposição, verifique se a câmera está funcionando!")
 
-        self.ve.config.put_key("camera_exposure", exposure)
 
     def __calibrate_spatial_resolution_photo(self, printed_diameter):
         radius_found = []

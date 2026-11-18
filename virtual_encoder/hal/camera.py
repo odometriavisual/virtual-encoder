@@ -248,6 +248,9 @@ try:
             cur = (top + bot) // 2
             count = 20
             while bot < top and count > 0:
+                if self.get_exposure() is None:
+                    return None
+
                 count -= 1
                 self.set_exposure(cur)
                 time.sleep(0.3)
@@ -255,9 +258,15 @@ try:
                     target, self.peek_img(), bot, cur, top
                 )
 
+            return self.get_exposure()
+
         def get_exposure(self):
-            metadata = self._picam2.capture_metadata()
-            return metadata["ExposureTime"]
+            try:
+                metadata = self._picam2.capture_metadata(wait=False).get_result(timeout=.5)
+                return metadata["ExposureTime"]
+
+            except Exception:
+                return None
 
         def set_exposure(self, exposure: int):
             self._picam2.controls.ExposureTime = exposure

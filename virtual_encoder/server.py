@@ -265,7 +265,7 @@ class WebuiApp:
 
             Returns 404 if the component string is invalid
             """
-            if component in ["all", "led", "relay"]:
+            if component in ["all", "led", "relay", "software", "camera"]:
                 self.ve.send_event(("reboot", component))
                 return ""
             else:

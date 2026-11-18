@@ -74,4 +74,4 @@ venv/
 calibration_data
 new_interface
 
-!extra/nocamera.jpg
+!extra/*.jpg

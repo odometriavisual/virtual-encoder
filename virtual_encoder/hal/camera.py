@@ -218,7 +218,7 @@ try:
                             self._new_frame_condition.notify_all()
 
                 except Exception:
-                    pass
+                    self.ve.send_event(("reboot", "camera"))
 
                 self.stop_stream()
                 time.sleep(5)
@@ -235,6 +235,7 @@ try:
             with self._new_frame_condition:
                 if not self._new_frame_condition.wait(3):
                     self._frame = self.default_frame.copy()
+                    self.ve.send_event(("reboot", "camera"))
 
                 return self._frame.copy()
 

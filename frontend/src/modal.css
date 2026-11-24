@@ -170,6 +170,7 @@
    .modal-config {
      width: 45%;
      max-height: 80%;
+     overflow-x: auto;
      overflow-y: scroll;
      grid-template-columns: auto;
 
@@ -205,7 +206,8 @@
            position: absolute;
            z-index: 1;
            width: 14em;
-           right: 105%;
+           left: 10%;
+           /* bottom: .5em; */
 
            text-align: center;
 
@@ -224,6 +226,12 @@
 
          input {
            width: 50%;
+           box-sizing: border-box;
+         }
+
+         button {
+           width: 50%;
+           height: 3em;
            box-sizing: border-box;
          }
 

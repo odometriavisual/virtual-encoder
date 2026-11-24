@@ -26,7 +26,7 @@ function Rede() {
   )
 }
 
-function Acquisicao({sr}) {
+function Aquisicao({sr}) {
   const [invSpatialRes, setInvSpatialRes] = useState(1);
 
   useEffect(() => {
@@ -174,6 +174,20 @@ function SoftwareUpdate() {
 }
 
 
+function Aquisicoes() {
+  return (
+    <section>
+      <span> Aquisições </span>
+      <label>
+        <span class="tooltip">Tenta restaurar aquisições deletados que ainda não foram sobregravados.</span>
+
+        <span> Restaurar aquisições deletadas </span>
+        <button> Restaurar  </button>
+      </label>
+    </section>
+  )
+}
+
 export function ModalConfig() {
   const { set_modal } = useEncoder();
 
@@ -182,6 +196,7 @@ export function ModalConfig() {
       <span class="modal-titulo">Configurações</span>
       <span class="modal-close" onClick={() => set_modal(null)}>&times;</span>
 
+      <Aquisicoes />
       <Filtros />
       <SoftwareUpdate />
     </div>
